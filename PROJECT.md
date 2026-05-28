@@ -2,32 +2,87 @@
 
 生成清新UI风格的交互式HTML图表报告，支持图表视图和明细视图切换。
 
+## 在线访问
+
+- **访问地址**: https://pionkucc.github.io/PSOTWeeklyReport/PSOT_Weekly_Report_2026.05.18-2026.05.22.html
+- **仓库地址**: https://github.com/pionkucc/PSOTWeeklyReport
+
+> 注：仓库为私有，但Pages公开可访问
+
 ## 快速开始
 
 ```bash
 python defect_quality_report.py
 ```
 
-输出文件：`缺陷质量分析报告.html`
+输出文件：`PSOT_Weekly_Report_YYYY.MM.DD-YYYY.MM.DD.html`（根据日期动态生成）
+
+## 更新数据流程
+
+### 方式一：本地脚本推送（推荐）
+
+```bash
+python auto_push.py
+```
+
+脚本自动执行：生成报告 → Git提交 → 推送到GitHub → Actions自动部署
+
+### 方式二：手动操作
+
+1. 替换 `缺陷明细.xlsx` 数据文件
+2. 修改 `config.py` 中的 `SUBTITLE`（日期范围）
+3. 运行 `python defect_quality_report.py`
+4. Git提交并推送
+5. 等待GitHub Actions部署完成
+
+## GitHub Actions 自动部署
+
+### 工作流配置
+
+文件：`.github/workflows/deploy.yml`
+
+**触发条件**：
+- push到main/master分支
+- 修改Excel文件、Python文件、配置文件时触发
+- 支持手动触发（workflow_dispatch）
+
+**部署流程**：
+1. 检出代码
+2. 安装Python依赖
+3. 运行脚本生成HTML
+4. 部署到GitHub Pages
+
+**查看运行状态**：
+```
+https://github.com/pionkucc/PSOTWeeklyReport/actions
+```
 
 ## 项目结构
 
 ```
 F:\AI\Claude Code\Weekly_Report\
 ├── defect_quality_report.py    # 主入口程序
-├── config.py                   # 配置常量模块
+├── config.py                   # 配置常量模块（动态文件名生成）
 ├── data_processor.py           # 数据处理模块
+├── auto_push.py                # 本地自动推送脚本（不提交到仓库）
+├── requirements.txt            # Python依赖清单
+├── .gitignore                  # Git排除配置
+├── .github/
+│   └── workflows/
+│       └── deploy.yml          # GitHub Actions工作流
 ├── views/
 │   ├── __init__.py
 │   ├── chart_views.py          # 图表视图函数
-│   └── detail_view.py          # 明细视图函数
+│   ├── detail_view.py          # 明细视图函数
+│   └── home_view.py            # 主页视图函数
 ├── templates/
 │   ├── __init__.py
 │   └── html_template.py        # HTML模板构建
 ├── versions/                    # 版本备份目录
-│   └── VERSION.md              # 版本记录
+│   ├── VERSION.md              # 版本记录
+│   └── v3.1_modular_backup.zip # v3.1备份
 ├── 缺陷明细.xlsx                # 数据源
-└── 缺陷质量分析报告.html        # 输出报告
+└── PSOT_Weekly_Report_*.html   # 输出报告（动态命名）
 ```
 
 ## 模块说明

@@ -1,5 +1,37 @@
 # 缺陷质量分析报告生成器 - 版本记录
 
+## v3.1 (2026-05-29)
+
+**更新内容**：
+- GitHub Actions自动部署配置
+  - 新增 `.github/workflows/deploy.yml` 工作流文件
+  - push触发自动运行Python脚本生成HTML
+  - 自动部署到GitHub Pages
+  - 支持手动触发（workflow_dispatch）
+- 输出文件名动态生成
+  - 格式：`PSOT_Weekly_Report_开始日期-结束日期.html`
+  - 示例：`PSOT_Weekly_Report_2026.05.18-2026.05.22.html`
+  - 根据SUBTITLE日期范围自动生成
+- 项目配置优化
+  - 新增 `requirements.txt` 依赖清单
+  - 新增 `.gitignore` 排除临时文件
+  - 新增本地脚本 `auto_push.py`（一键生成+推送，不提交到仓库）
+- 仓库设置为私有，Pages保持公开访问
+
+**新增文件**：
+- `.github/workflows/deploy.yml` - GitHub Actions工作流
+- `requirements.txt` - Python依赖清单
+- `.gitignore` - Git排除配置
+- `auto_push.py` - 本地自动推送脚本
+
+**更新文件**：
+- `config.py` - 添加动态文件名生成函数
+
+**备份文件**：
+- `versions/v3.1_modular_backup.zip`
+
+---
+
 ## v2.5 (2026-05-29)
 
 **更新内容**：
@@ -452,3 +484,4 @@
 | v2.2.1 | versions/defect_quality_report_v2.2.1.py | 明细视图+筛选导航+弹窗详情+淡紫色调 |
 | v2.3 | versions/defect_quality_report_v2.3.py | 模块化重构+关联任务项修复 |
 | v2.4.1 | versions/v2.4.1_modular_backup.zip | 主页视图+公共面板卡片+富文本支持 |
+| v3.1 | versions/v3.1_modular_backup.zip | GitHub Actions自动部署+动态文件名+本地推送脚本 |
