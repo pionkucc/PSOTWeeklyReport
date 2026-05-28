@@ -56,7 +56,12 @@
       "Bash(dir *.png)",
       "WebSearch",
       "Bash(python test_tdoc_api.py)",
-      "Bash(git init *)"
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(gh run *)",
+      "Bash(python -c \"from config import OUTPUT_FILE; print\\(OUTPUT_FILE\\)\")",
+      "Bash(python auto_push.py)"
     ]
   }
 }

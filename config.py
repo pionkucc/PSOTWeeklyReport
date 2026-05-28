@@ -30,8 +30,11 @@ INPUT_FILE = '缺陷明细.xlsx'
 def generate_output_filename():
     """根据SUBTITLE日期范围生成文件名"""
     # SUBTITLE格式: "2026-05-18 ~ 2026-05-22"
-    dates = SUBTITLE.replace(' ~ ', '-').replace('-', '.')
-    return f'PSOT_Weekly_Report_{dates}.html'
+    # 输出格式: "PSOT_Weekly_Report_2026.05.18-2026.05.22.html"
+    start, end = SUBTITLE.split(' ~ ')
+    start_date = start.replace('-', '.')
+    end_date = end.replace('-', '.')
+    return f'PSOT_Weekly_Report_{start_date}-{end_date}.html'
 
 OUTPUT_FILE = generate_output_filename()
 
