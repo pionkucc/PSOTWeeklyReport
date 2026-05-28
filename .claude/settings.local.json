@@ -61,7 +61,9 @@
       "Bash(git branch *)",
       "Bash(gh run *)",
       "Bash(python -c \"from config import OUTPUT_FILE; print\\(OUTPUT_FILE\\)\")",
-      "Bash(python auto_push.py)"
+      "Bash(python auto_push.py)",
+      "Bash(zip -r versions/v3.1_modular_backup.zip config.py data_processor.py defect_quality_report.py views/ templates/ .github/workflows/deploy.yml requirements.txt .gitignore auto_push.py)",
+      "Bash(powershell -Command \"Compress-Archive -Path config.py,data_processor.py,defect_quality_report.py,views,templates,.github/workflows/deploy.yml,requirements.txt,.gitignore,auto_push.py -DestinationPath versions/v3.1_modular_backup.zip -Force\")"
     ]
   }
 }
