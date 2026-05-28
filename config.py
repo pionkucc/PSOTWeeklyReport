@@ -19,13 +19,21 @@ COLORS = {
     }
 }
 
-# 文件路径
-INPUT_FILE = '缺陷明细.xlsx'
-OUTPUT_FILE = '缺陷质量分析报告.html'
-
 # 报告标题
 TITLE = 'POST-产品标准化运营工具-质量周报'
 SUBTITLE = '2026-05-18 ~ 2026-05-22'
+
+# 文件路径
+INPUT_FILE = '缺陷明细.xlsx'
+
+# 动态生成输出文件名：PSOT_Weekly_Report_日期范围.html
+def generate_output_filename():
+    """根据SUBTITLE日期范围生成文件名"""
+    # SUBTITLE格式: "2026-05-18 ~ 2026-05-22"
+    dates = SUBTITLE.replace(' ~ ', '-').replace('-', '.')
+    return f'PSOT_Weekly_Report_{dates}.html'
+
+OUTPUT_FILE = generate_output_filename()
 
 # Tooltip样式：圆角+阴影+padding
 TOOLTIP_CSS = "border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);"
