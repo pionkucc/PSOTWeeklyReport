@@ -6,7 +6,7 @@
 import pandas as pd
 import numpy as np
 from openpyxl import load_workbook
-from config import INPUT_FILE, PANEL_SHEET_INDEX
+from config import INPUT_FILE, PANEL_SHEET_INDEX, OVERDUE_DAYS, REWORK_THRESHOLD
 
 
 def load_data():
@@ -104,3 +104,114 @@ def load_sheet2_data():
     except Exception as e:
         print(f'读取Sheet2数据失败: {e}')
         return None
+
+
+def load_warning_data():
+    """
+    读取缺陷预警数据
+
+    返回:
+        dict: {
+            'overdue_rework': 超期返工数据列表,
+            'overdue': 超期数据列表,
+            'rework': 返工数据列表,
+            'total': 总预警数
+        }
+        每条数据包含:
+            - type: 类型标识
+            - code: 缺陷编号
+            - handler: 处理人员
+            - summary: 缺陷摘要
+            - overdue_days: 超期天数
+            - rework_count: 返工次数
+            - full_data: 全部字段字典（用于弹窗）
+    """
+    from datetime import datetime
+
+    try:
+        df = pd.read_excel(INPUT_FILE, sheet_name=0)
+        now = datetime.now()
+
+        overdue_rework_list = []
+        overdue_list = []
+        rework_list = []
+        rework_codes = set()  # 记录已加入超期返工的缺陷编号，避免重复
+
+        # 筛选超期返工数据（优先级最高）
+        # 条件：状态=ReOpen + 返工次数>=阈值 + 有修复时间 + (当前时间-修复时间)>=阈值
+        overdue_rework_mask = (
+            (df['缺陷状态'] == 'ReOpen') &
+            (df['返工次数'] >= REWORK_THRESHOLD) &
+            (df['修复时间'].notna())
+        )
+        for _, row in df[overdue_rework_mask].iterrows():
+            fix_time = pd.to_datetime(row['修复时间'])
+            days_overdue = (now - fix_time).days
+            if days_overdue >= OVERDUE_DAYS:
+                rework_codes.add(row['缺陷编号'])
+                overdue_rework_list.append({
+                    'type': 'overdue_rework',
+                    'code': row['缺陷编号'],
+                    'handler': row['处理人员'] if pd.notna(row['处理人员']) else '',
+                    'summary': row['缺陷摘要'] if pd.notna(row['缺陷摘要']) else '',
+                    'overdue_days': days_overdue,
+                    'rework_count': int(row['返工次数']),
+                    'full_data': row.to_dict()
+                })
+
+        # 按超期天数倒序
+        overdue_rework_list.sort(key=lambda x: (x['overdue_days'], x['rework_count']), reverse=True)
+
+        # 筛选超期数据
+        # 条件：状态=New + (当前时间-登记时间)>=阈值
+        overdue_mask = (df['缺陷状态'] == 'New') & (df['登记时间.1'].notna())
+        for _, row in df[overdue_mask].iterrows():
+            reg_time = pd.to_datetime(row['登记时间.1'])
+            days_overdue = (now - reg_time).days
+            if days_overdue >= OVERDUE_DAYS:
+                overdue_list.append({
+                    'type': 'overdue',
+                    'code': row['缺陷编号'],
+                    'handler': row['处理人员'] if pd.notna(row['处理人员']) else '',
+                    'summary': row['缺陷摘要'] if pd.notna(row['缺陷摘要']) else '',
+                    'overdue_days': days_overdue,
+                    'rework_count': 0,
+                    'full_data': row.to_dict()
+                })
+
+        # 按超期天数倒序
+        overdue_list.sort(key=lambda x: x['overdue_days'], reverse=True)
+
+        # 筛选返工数据（排除已在超期返工中的）
+        # 条件：状态=ReOpen + 返工次数>=阈值 + 未在超期返工列表中
+        rework_mask = (
+            (df['缺陷状态'] == 'ReOpen') &
+            (df['返工次数'] >= REWORK_THRESHOLD) &
+            (~df['缺陷编号'].isin(rework_codes))
+        )
+        for _, row in df[rework_mask].iterrows():
+            rework_list.append({
+                'type': 'rework',
+                'code': row['缺陷编号'],
+                'handler': row['处理人员'] if pd.notna(row['处理人员']) else '',
+                'summary': row['缺陷摘要'] if pd.notna(row['缺陷摘要']) else '',
+                'overdue_days': 0,
+                'rework_count': int(row['返工次数']),
+                'full_data': row.to_dict()
+            })
+
+        # 按返工次数倒序
+        rework_list.sort(key=lambda x: x['rework_count'], reverse=True)
+
+        total = len(overdue_rework_list) + len(overdue_list) + len(rework_list)
+
+        return {
+            'overdue_rework': overdue_rework_list,
+            'overdue': overdue_list,
+            'rework': rework_list,
+            'total': total
+        }
+
+    except Exception as e:
+        print(f'读取预警数据失败: {e}')
+        return {'overdue_rework': [], 'overdue': [], 'rework': [], 'total': 0}

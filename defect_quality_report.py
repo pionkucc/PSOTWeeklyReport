@@ -18,7 +18,7 @@ from pyecharts.commons.utils import JsCode
 
 # 导入模块
 from config import COLORS, TOOLTIP_CSS, TITLE, SUBTITLE, OUTPUT_FILE
-from data_processor import load_data, preprocess_data, load_panels_data, load_sheet2_data
+from data_processor import load_data, preprocess_data, load_panels_data, load_sheet2_data, load_warning_data
 from views.chart_views import (
     chart_to_html,
     create_pie_chart,
@@ -330,9 +330,10 @@ detail_view_html = create_detail_view_html(df, total)
 # 加载公共面板数据
 panels_data = load_panels_data()
 sheet2_data = load_sheet2_data()
+warning_data = load_warning_data()
 
 # 生成主页视图
-home_view_html = create_home_view_html(panels_data, sheet2_data)
+home_view_html = create_home_view_html(panels_data, sheet2_data, warning_data)
 
 # 组装HTML并保存
 html_content = build_html_template(total, metrics_html, charts_html, trend_chart_html, detail_view_html, home_view_html)

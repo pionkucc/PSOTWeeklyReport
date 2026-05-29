@@ -21,7 +21,7 @@ COLORS = {
 
 # 报告标题
 TITLE = 'POST-产品标准化运营工具-质量周报'
-SUBTITLE = '2026-05-18 ~ 2026-05-22'
+SUBTITLE = '报告周期：2026年05月25日-2026年05月29日'
 
 # 文件路径
 INPUT_FILE = '缺陷明细.xlsx'
@@ -29,12 +29,27 @@ INPUT_FILE = '缺陷明细.xlsx'
 # 动态生成输出文件名：PSOT_Weekly_Report_日期范围.html
 def generate_output_filename():
     """根据SUBTITLE日期范围生成文件名"""
-    # SUBTITLE格式: "2026-05-18 ~ 2026-05-22"
-    # 输出格式: "PSOT_Weekly_Report_2026.05.18-2026.05.22.html"
-    start, end = SUBTITLE.split(' ~ ')
-    start_date = start.replace('-', '.')
-    end_date = end.replace('-', '.')
-    return f'PSOT_Weekly_Report_{start_date}-{end_date}.html'
+    import re
+    # 支持两种格式：
+    # 1. "2026-05-18 ~ 2026-05-22"
+    # 2. "报告周期：2026年05月25日-2026年05月29日"
+
+    # 格式2：提取"2026年05月25日-2026年05月29日"
+    match = re.search(r'(\d{4})年(\d{2})月(\d{2})日-(\d{4})年(\d{2})月(\d{2})日', SUBTITLE)
+    if match:
+        start_date = f"{match.group(1)}.{match.group(2)}.{match.group(3)}"
+        end_date = f"{match.group(4)}.{match.group(5)}.{match.group(6)}"
+        return f'PSOT_Weekly_Report_{start_date}-{end_date}.html'
+
+    # 格式1：提取"2026-05-18 ~ 2026-05-22"
+    match = re.search(r'(\d{4}-\d{2}-\d{2})\s*~\s*(\d{4}-\d{2}-\d{2})', SUBTITLE)
+    if match:
+        start_date = match.group(1).replace('-', '.')
+        end_date = match.group(2).replace('-', '.')
+        return f'PSOT_Weekly_Report_{start_date}-{end_date}.html'
+
+    # 无法解析时使用默认文件名
+    return 'PSOT_Weekly_Report.html'
 
 OUTPUT_FILE = generate_output_filename()
 
@@ -44,3 +59,7 @@ TOOLTIP_CSS = "border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 8px rgba
 # 公共面板配置
 PANEL_SHEET_INDEX = 2  # sheet3索引
 PANEL_HEADER_COLOR = '#5DADE2'  # 面板标题背景色
+
+# 缺陷预警阈值配置
+OVERDUE_DAYS = 1        # 超期天数阈值（>=此值为超期）
+REWORK_THRESHOLD = 1    # 返工次数阈值（>=此值为返工预警）

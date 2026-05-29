@@ -3,30 +3,32 @@
 生成主页视图HTML
 """
 
+import json
 import pandas as pd
 from config import PANEL_HEADER_COLOR
 
 
-def create_home_view_html(panels_data, sheet2_data=None):
+def create_home_view_html(panels_data, sheet2_data=None, warning_data=None):
     """
     创建主页视图HTML
 
     参数:
         panels_data: 公共面板数据列表，每项包含 title 和 content_parts
         sheet2_data: Sheet2表格数据DataFrame（测试进度和缺陷统计）
+        warning_data: 缺陷预警数据字典
 
     返回:
         主页视图HTML字符串
     """
+    if warning_data is None:
+        warning_data = {'overdue_rework': [], 'overdue': [], 'rework': [], 'total': 0}
+
     # 生成公共面板卡片HTML
     panels_html = []
     for idx, panel in enumerate(panels_data):
-        # 第一个章节：本周测试概况（精细化处理）
-        # 第二个章节：测试进度和缺陷统计（表格展示）
-        # 其他章节：普通渲染
         is_first = (idx == 0)
         is_second = (idx == 1 and sheet2_data is not None)
-        panel_card = _create_panel_card(panel, is_first=is_first, is_second=is_second, sheet2_data=sheet2_data)
+        panel_card = _create_panel_card(panel, is_first=is_first, is_second=is_second, sheet2_data=sheet2_data, warning_data=warning_data)
         panels_html.append(panel_card)
 
     panels_html_str = '\n'.join(panels_html)
@@ -42,17 +44,19 @@ def create_home_view_html(panels_data, sheet2_data=None):
     return html
 
 
-def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None):
+def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None, warning_data=None):
     """创建单个面板卡片HTML"""
     title = panel['title']
     content_parts = panel['content_parts']
 
+    if warning_data is None:
+        warning_data = {'overdue_rework': [], 'overdue': [], 'rework': [], 'total': 0}
+
     if is_first:
-        # 第一个章节：精细化处理
         lines_html, stats_html = _render_first_panel_content(content_parts)
 
-        # 统计缺陷预警内容的行数
-        warning_count = 0  # 暂时为0，后续可以从数据中获取
+        warning_count = warning_data['total']
+        warning_list_html = _render_warning_list(warning_data)
 
         html = f'''
         <div class="panel-wrapper">
@@ -60,20 +64,20 @@ def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None)
                 <span class="section-title-text">{title}</span>
             </div>
             <div class="panel-row">
-                <div class="panel-card panel-half">
+                <div class="panel-card panel-half" id="left-progress-card">
                     <div class="panel-card-title">测试进度概览</div>
                     <div class="panel-content">
                         {lines_html}
                     </div>
                     {stats_html}
                 </div>
-                <div class="panel-card panel-half">
+                <div class="panel-card panel-half warning-card">
                     <div class="panel-card-title-wrap">
                         <span class="panel-card-title">缺陷预警</span>
                         <span class="count-badge">{warning_count}</span>
                     </div>
-                    <div class="panel-content placeholder-content">
-                        <p class="empty-content">暂无内容</p>
+                    <div class="warning-list" id="warning-list">
+                        {warning_list_html}
                     </div>
                 </div>
             </div>
@@ -95,6 +99,57 @@ def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None)
                 <div class="bar-chart-title">{chart_title}</div>
                 <div class="bar-chart-body">
                     {bar_chart_html}
+                </div>
+            </div>
+        </div>
+        '''
+    elif title == '下周测试计划':
+        # 下周测试计划章节：特殊渲染
+        plan_html = _render_next_week_plan(content_parts)
+
+        html = f'''
+        <div class="panel-wrapper">
+            <div class="panel-section-title">
+                <span class="section-title-text">{title}</span>
+            </div>
+            <div class="panel-card">
+                <div class="next-plan-list">
+                    {plan_html}
+                </div>
+            </div>
+        </div>
+        '''
+    elif title == '待协调事项':
+        # 待协调事项章节：特殊渲染
+        coord_html = _render_coord_items(content_parts)
+
+        html = f'''
+        <div class="panel-wrapper">
+            <div class="panel-section-title">
+                <span class="section-title-text">{title}</span>
+            </div>
+            <div class="panel-card">
+                <div class="coord-list">
+                    {coord_html}
+                </div>
+            </div>
+        </div>
+        '''
+    elif 'UI自动化' in title or '自动化建设' in title:
+        # PSOT-UI自动化建设章节：特殊渲染
+        metrics_html, remaining_html = _render_ui_automation(content_parts)
+
+        html = f'''
+        <div class="panel-wrapper">
+            <div class="panel-section-title">
+                <span class="section-title-text">{title}</span>
+            </div>
+            <div class="panel-card">
+                <div class="three-col">
+                    {metrics_html}
+                </div>
+                <div class="ui-remaining rich-text-content">
+                    {remaining_html}
                 </div>
             </div>
         </div>
@@ -228,6 +283,81 @@ def _get_progress_color(progress_val):
         return '#ef4444'  # 红色
     else:
         return '#1c91fd'  # 蓝色
+
+
+def _render_warning_list(warning_data):
+    """
+    渲染缺陷预警列表
+
+    参数:
+        warning_data: 包含 overdue_rework, overdue, rework, total 的字典
+
+    返回:
+        HTML字符串
+    """
+    items = []
+
+    # 1. 超期返工数据（优先展示）
+    for item in warning_data.get('overdue_rework', []):
+        items.append({
+            'type': 'overdue_rework',
+            'code': item['code'],
+            'handler': item['handler'],
+            'summary': item['summary'],
+            'tag': f"超期{item['overdue_days']}天|返工{item['rework_count']}次",
+            'full_data': item['full_data']
+        })
+
+    # 2. 超期数据
+    for item in warning_data.get('overdue', []):
+        items.append({
+            'type': 'overdue',
+            'code': item['code'],
+            'handler': item['handler'],
+            'summary': item['summary'],
+            'tag': f"超期{item['overdue_days']}天",
+            'full_data': item['full_data']
+        })
+
+    # 3. 返工数据
+    for item in warning_data.get('rework', []):
+        items.append({
+            'type': 'rework',
+            'code': item['code'],
+            'handler': item['handler'],
+            'summary': item['summary'],
+            'tag': f"返工{item['rework_count']}次",
+            'full_data': item['full_data']
+        })
+
+    if not items:
+        return '<p class="empty-content">暂无预警数据</p>'
+
+    # 生成列表HTML
+    rows_html = []
+    for idx, item in enumerate(items):
+        # 将full_data转为JSON字符串存入data属性，处理NaN和特殊值
+        import numpy as np
+        cleaned_data = {}
+        for k, v in item['full_data'].items():
+            if pd.isna(v) or (isinstance(v, float) and np.isnan(v)):
+                cleaned_data[k] = '-'
+            elif isinstance(v, pd.Timestamp):
+                cleaned_data[k] = str(v)
+            elif v == 'NaT':
+                cleaned_data[k] = '-'
+            else:
+                cleaned_data[k] = v
+        full_data_json = json.dumps(cleaned_data, ensure_ascii=False)
+        rows_html.append(f'''
+        <div class="warning-row" data-detail='{full_data_json.replace("'", "&#39;")}'>
+            <span class="warning-dot"></span>
+            <span class="warning-text">{item['code']} <span class="handler-tag">{item['handler']}</span> {item['summary']}</span>
+            <span class="warning-tag">{item['tag']}</span>
+        </div>
+        ''')
+
+    return '\n'.join(rows_html)
 
 
 def _render_progress_bar_chart(df_full, df_display):
@@ -420,6 +550,581 @@ def _render_first_panel_content(content_parts):
         lines = full_text.split('\n')
         lines_html = [f'<p>{line.strip()}</p>' for line in lines if line.strip()]
         return '\n'.join(lines_html), ''
+
+
+def _process_rich_text_content(full_text, remove_first_line=False):
+    """
+    公共方法：处理富文本内容，保留缩进、分割线、表格等样式
+
+    参数:
+        full_text: 原始HTML文本
+        remove_first_line: 是否移除第一行（用于UI自动化建设等需要提取指标的章节）
+
+    返回:
+        处理后的HTML字符串
+    """
+    from bs4 import BeautifulSoup
+
+    if not full_text or not full_text.strip():
+        return ''
+
+    soup = BeautifulSoup(full_text, 'html.parser')
+
+    # 如果需要移除第一行
+    if remove_first_line:
+        first_p = soup.find('p')
+        if first_p:
+            first_p.decompose()
+
+    # 清理空段落
+    for p in soup.find_all('p'):
+        text = p.get_text(strip=True)
+        # 保留只包含&nbsp;的空段落（可能有格式意义）
+        if not text and '&nbsp;' not in str(p):
+            p.decompose()
+
+    # 确保表格样式正确
+    for table in soup.find_all('table'):
+        # 保留表格的原始样式
+        if table.get('border'):
+            table['class'] = 'rich-text-table'
+
+    return str(soup)
+
+
+def _get_rich_text_css():
+    """获取富文本公共CSS样式"""
+    return '''
+    /* 富文本公共样式 */
+    .rich-text-content p {
+        font-size: 13px;
+        line-height: 1.7;
+        color: #333;
+        margin-bottom: 8px;
+    }
+    .rich-text-content p[style*="padding-left"] {
+        margin-bottom: 4px;
+    }
+    .rich-text-content hr {
+        border: none;
+        border-top: 1px solid #e5e7eb;
+        margin: 14px 0;
+    }
+    .rich-text-content ul {
+        padding-left: 20px;
+        margin: 8px 0;
+    }
+    .rich-text-content li {
+        font-size: 13px;
+        line-height: 1.8;
+        color: #333;
+    }
+    .rich-text-content .rich-text-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 12px;
+    }
+    .rich-text-content .rich-text-table th,
+    .rich-text-content .rich-text-table td {
+        border: 1px solid #e5e7eb;
+        padding: 8px 12px;
+        text-align: center;
+    }
+    .rich-text-content .rich-text-table th {
+        background: #f0f4f8;
+        font-weight: 600;
+        color: #333;
+    }
+    .rich-text-content .rich-text-table td {
+        color: #555;
+    }
+    '''
+
+
+def _render_ui_automation(content_parts):
+    """
+    渲染PSOT-UI自动化建设章节
+
+    从第一行提取：完成场景数、自动化执行成功/失败率、下周计划
+    生成三个卡片，下方展示剩余内容
+
+    参数:
+        content_parts: 内容片段列表
+
+    返回:
+        (metrics_html, remaining_html) 元组
+    """
+    import re
+    from bs4 import BeautifulSoup
+
+    # 合并所有文本内容
+    full_text = ''
+    for part in content_parts:
+        text = part.get('text', '')
+        if text:
+            full_text += text
+
+    if not full_text.strip():
+        return '<p class="empty-content">暂无内容</p>', ''
+
+    # 解析HTML
+    soup = BeautifulSoup(full_text, 'html.parser')
+
+    # 提取指标数据
+    scenario_count = ''
+    auto_rate = ''
+    next_plan = ''
+    is_success = True  # 默认成功
+
+    # 获取纯文本用于提取数据
+    plain_text = soup.get_text()
+
+    # 提取完成场景数（格式如 "完成场景数15/70"）
+    scenario_match = re.search(r'完成场景数\s*(\d+/\d+)', plain_text)
+    if scenario_match:
+        scenario_count = scenario_match.group(1)
+
+    # 提取自动化执行成功率（格式如 "自动化执行成功100%" 或 "自动化执行失败100%"）
+    success_match = re.search(r'自动化执行成功\s*(\d+(?:\.\d+)?%)', plain_text)
+    fail_match = re.search(r'自动化执行失败\s*(\d+(?:\.\d+)?%)', plain_text)
+
+    if success_match:
+        auto_rate = success_match.group(1)
+        is_success = True
+    elif fail_match:
+        auto_rate = fail_match.group(1)
+        is_success = False
+
+    # 提取下周计划（格式如 "下周计划：继续推进"）
+    plan_match = re.search(r'下周计划[：:]\s*([^。\n]+)', plain_text)
+    if plan_match:
+        next_plan = plan_match.group(1).strip()
+
+    # SVG图标
+    svg_scenario = '''<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#50A5F4" stroke-width="2" style="margin:0 auto;display:block;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>'''
+
+    # 自动化执行SVG根据状态变色：成功#1C91FD，失败#D93025
+    rate_svg_color = '#D93025' if (not is_success or auto_rate.replace('%', '') != '100') else '#1C91FD'
+    svg_rate = f'''<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="{rate_svg_color}" stroke-width="2" style="margin:0 auto;display:block;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="15"></line><line x1="12" y1="19" x2="12.01" y2="17"></line></svg>'''
+
+    svg_plan = '''<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1C91FD" stroke-width="2" style="margin:0 auto;display:block;"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>'''
+
+    # 确定自动化执行卡片样式
+    rate_bg = '#f0f4f8'
+    rate_color = '#1C91FD'  # 成功时蓝色
+    if not is_success or auto_rate.replace('%', '') != '100':
+        rate_bg = '#fef2f2'
+        rate_color = '#D93025'  # 失败时红色
+
+    # 构建三个卡片
+    metrics_html = f'''
+    <div class="metric-card">
+        {svg_scenario}
+        <div class="metric-label">完成场景数</div>
+        <div class="metric-value">{scenario_count or '-'}</div>
+    </div>
+    <div class="metric-card" style="background:{rate_bg};">
+        {svg_rate}
+        <div class="metric-label">自动化执行{'成功' if is_success else '失败'}</div>
+        <div class="metric-value" style="color:{rate_color};">{auto_rate or '-'}</div>
+    </div>
+    <div class="metric-card">
+        {svg_plan}
+        <div class="metric-label">下周计划</div>
+        <div class="metric-value" style="font-size:16px;">{next_plan or '-'}</div>
+    </div>
+    '''
+
+    # 处理剩余内容：移除第一行（包含指标数据的那一行）
+    remaining_html = _process_rich_text_content(full_text, remove_first_line=True)
+
+    return metrics_html, remaining_html
+
+
+def _render_next_week_plan(content_parts):
+    """
+    渲染下周测试计划章节
+
+    每一行作为一个计划项，每个计划项包含SVG图标和文本内容
+    支持富文本格式（同待协调事项）
+
+    参数:
+        content_parts: 内容片段列表
+
+    返回:
+        HTML字符串
+    """
+    from bs4 import BeautifulSoup
+
+    # 合并所有文本内容
+    full_text = ''
+    for part in content_parts:
+        text = part.get('text', '')
+        if text:
+            full_text += text
+
+    if not full_text.strip():
+        return '<p class="empty-content">暂无内容</p>'
+
+    # SVG图标
+    svg_target = '''<svg viewBox="0 0 25 25" style="width:25px;height:25px;fill:#1C91FD;"><circle cx="12" cy="12" r="12"></circle><circle cx="12" cy="12" r="6" fill="#fff"></circle><circle cx="12" cy="12" r="0" fill="#1C91FD"></circle></svg>'''
+
+    # 解析HTML，保留富文本格式
+    soup = BeautifulSoup(full_text, 'html.parser')
+
+    # 按行分割
+    items_html = []
+
+    # 遍历所有段落元素
+    for element in soup.find_all(['p', 'div']):
+        # 获取内容文本（非空）
+        text = element.get_text(strip=True)
+        if not text:
+            continue
+
+        # 获取HTML内容（保留富文本样式）
+        inner_html = element.decode_contents().strip()
+
+        # 构建计划项HTML
+        items_html.append(f'''
+        <div class="next-plan-item">
+            <div class="next-plan-icon">{svg_target}</div>
+            <div class="next-plan-text">{inner_html}</div>
+        </div>
+        ''')
+
+    # 如果没有段落元素，按换行分割纯文本
+    if not items_html:
+        lines = full_text.split('\n')
+        for line in lines:
+            line = line.strip()
+            if line:
+                # 处理可能存在的HTML标签
+                line_soup = BeautifulSoup(line, 'html.parser')
+                inner_text = line_soup.get_text(strip=True)
+                if inner_text:
+                    items_html.append(f'''
+                    <div class="next-plan-item">
+                        <div class="next-plan-icon">{svg_target}</div>
+                        <div class="next-plan-text">{inner_text}</div>
+                    </div>
+                    ''')
+
+    return '\n'.join(items_html) if items_html else '<p class="empty-content">暂无内容</p>'
+
+
+def _render_coord_items(content_parts):
+    """
+    渲染待协调事项章节
+
+    按序号（如 1、 或 1.）划分事项，每个事项按"——"分隔事项要点和协调人员
+
+    参数:
+        content_parts: 内容片段列表
+
+    返回:
+        HTML字符串
+    """
+    import re
+    from bs4 import BeautifulSoup
+
+    # 合并所有文本内容
+    full_text = ''
+    for part in content_parts:
+        text = part.get('text', '')
+        if text:
+            full_text += text
+
+    if not full_text.strip():
+        return '<p class="empty-content">暂无内容</p>'
+
+    items = []
+
+    # 使用BeautifulSoup解析HTML
+    soup = BeautifulSoup(full_text, 'html.parser')
+
+    # 遍历所有直接子元素（包括 p, div, hr, table 等）
+    current_item = None
+
+    for element in soup.children:
+        # 跳过空白文本节点
+        if isinstance(element, str) and not element.strip():
+            continue
+
+        # 处理标签元素
+        if hasattr(element, 'name'):
+            # 对于非内容元素（hr, table等），直接添加到当前事项
+            if element.name in ['hr', 'table', 'br']:
+                if current_item:
+                    current_item['content'] += '\n' + str(element)
+                continue
+
+            # 对于内容元素（p, div等）
+            if element.name in ['p', 'div']:
+                # 获取纯文本内容
+                p_text = element.get_text(strip=True)
+
+                # 检查是否以序号开头
+                num_match = re.match(r'^(\d+)[、.．]\s*', p_text)
+
+                if num_match:
+                    # 保存上一个事项
+                    if current_item:
+                        items.append(current_item)
+
+                    # 新事项
+                    num = num_match.group(1)
+
+                    # 移除序号后的纯文本
+                    remaining_text = p_text[len(num_match.group(0)):]
+
+                    # 按"——"分割纯文本
+                    if '——' in remaining_text:
+                        dash_pos = remaining_text.find('——')
+                        content_text = remaining_text[:dash_pos].strip()
+                        assignee_text = remaining_text[dash_pos + 2:].strip()
+                    else:
+                        content_text = remaining_text.strip()
+                        assignee_text = ''
+
+                    # 提取事项要点部分的HTML（不包含序号和协调人员）
+                    p_html = str(element)
+
+                    # 构建事项要点HTML：保留原有格式
+                    content_soup = BeautifulSoup(p_html, 'html.parser')
+                    content_p = content_soup.find(['p', 'div'])
+
+                    if content_p:
+                        # 获取内部HTML
+                        inner_html = content_p.decode_contents()
+
+                        # 移除开头的序号
+                        inner_text = content_p.get_text()
+                        if inner_text.strip().startswith(num_match.group(0)):
+                            inner_html = _remove_number_from_html(inner_html, num_match.group(0))
+
+                        # 移除协调人员部分（从"——"开始）
+                        if '——' in inner_html or '——' in content_p.get_text():
+                            inner_html = _remove_assignee_from_html(inner_html, '——')
+
+                        content_html = inner_html.strip()
+                    else:
+                        content_html = content_text
+
+                    current_item = {
+                        'num': num,
+                        'content': content_html,
+                        'assignee': assignee_text
+                    }
+
+                elif current_item:
+                    # 继续上一个事项
+                    p_text_clean = element.get_text(strip=True)
+
+                    if '——' in p_text_clean:
+                        dash_pos = p_text_clean.find('——')
+                        additional_assignee = p_text_clean[dash_pos + 2:].strip()
+
+                        # 保留原始HTML标签和样式
+                        p_html = str(element)
+                        # 移除协调人员部分
+                        p_html_clean = _remove_assignee_from_html(p_html, '——')
+                        current_item['content'] += '\n' + p_html_clean
+                        if additional_assignee:
+                            current_item['assignee'] += ' ' + additional_assignee
+                    else:
+                        # 添加内容，保留完整的HTML格式（包括<p>标签及其样式）
+                        p_html = str(element)
+                        current_item['content'] += '\n' + p_html
+
+    # 保存最后一个事项
+    if current_item:
+        items.append(current_item)
+
+    if not items:
+        return '<p class="empty-content">暂无内容</p>'
+
+    # 渲染HTML
+    items_html = []
+    for item in items:
+        num_html = f'<div class="coord-num">{item["num"]}</div>'
+
+        # 事项要点
+        content_html = item.get('content', '').strip()
+
+        # 清理可能残留的未闭合标签
+        content_html = _clean_html_tags(content_html)
+
+        # 协调人员
+        assignee_html = ''
+        assignee = item.get('assignee', '').strip()
+        if assignee:
+            assignee_html = f'''
+            <div class="coord-assignee">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M11 16h2"></path></svg>
+                <span>{assignee}</span>
+            </div>
+            '''
+
+        text_html = f'''
+        <div class="coord-text">
+            {content_html}
+            {assignee_html}
+        </div>
+        '''
+
+        items_html.append(f'''
+        <div class="coord-item">
+            {num_html}
+            {text_html}
+        </div>
+        ''')
+
+    return '\n'.join(items_html)
+
+
+def _remove_number_from_html(html_content, number_text):
+    """从HTML开头移除序号"""
+    import re
+
+    # 简化处理：直接替换开头的序号文本
+    # 获取纯文本确认开头是序号
+    plain_text = re.sub(r'<[^>]+>', '', html_content)
+
+    if plain_text.strip().startswith(number_text):
+        # 使用正则移除（考虑序号可能在标签内外）
+        # 尝试多种模式
+        patterns = [
+            # 序号直接在开头
+            r'^' + re.escape(number_text),
+            # 序号在开头标签后
+            r'^([^<]*?)' + re.escape(number_text),
+            # 序号可能被标签包裹
+            r'^(<[^>]*>)' + re.escape(number_text),
+        ]
+
+        for pattern in patterns:
+            result = re.sub(pattern, '', html_content, count=1)
+            if result != html_content:
+                return result
+
+    return html_content
+
+
+def _remove_assignee_from_html(html_content, dash_text):
+    """从HTML中移除协调人员部分（从'——'开始的内容）"""
+    import re
+    from bs4 import BeautifulSoup
+
+    # 获取纯文本找到"——"的位置
+    plain_text = re.sub(r'<[^>]+>', '', html_content)
+
+    if dash_text not in plain_text:
+        return html_content
+
+    # 找到"——"在纯文本中的位置
+    dash_pos_plain = plain_text.find(dash_text)
+
+    # 在HTML中找到对应位置
+    # 计算到"——"之前的字符数（不包括HTML标签）
+    char_count = 0
+    html_pos = 0
+    in_tag = False
+
+    for i, c in enumerate(html_content):
+        if c == '<':
+            in_tag = True
+        elif c == '>':
+            in_tag = False
+        elif not in_tag:
+            if char_count < dash_pos_plain:
+                char_count += 1
+                html_pos = i + 1
+            else:
+                break
+
+    # 截取到"——"之前的HTML（包含闭合标签）
+    result = html_content[:html_pos]
+
+    # 确保HTML标签闭合
+    result = _close_html_tags(result)
+
+    return result.strip()
+
+
+def _close_html_tags(html_content):
+    """闭合未闭合的HTML标签"""
+    import re
+
+    # 自闭合标签，不需要闭合
+    void_tags = {'br', 'hr', 'img', 'input', 'meta', 'link', 'col', 'area', 'base', 'embed', 'source', 'track', 'wbr'}
+
+    # 找到所有开始标签
+    open_tags = re.findall(r'<([a-z]+)[^>]*>', html_content, re.IGNORECASE)
+
+    # 找到所有闭合标签
+    close_tags = re.findall(r'</([a-z]+)>', html_content, re.IGNORECASE)
+
+    # 计算需要闭合的标签
+    open_count = {}
+    close_count = {}
+
+    for tag in open_tags:
+        open_count[tag] = open_count.get(tag, 0) + 1
+
+    for tag in close_tags:
+        close_count[tag] = close_count.get(tag, 0) + 1
+
+    # 添加缺失的闭合标签
+    missing_tags = []
+    for tag in open_count:
+        # 跳过自闭合标签
+        if tag.lower() in void_tags:
+            continue
+        missing = open_count[tag] - close_count.get(tag, 0)
+        for _ in range(missing):
+            missing_tags.append(tag)
+
+    # 添加闭合标签（逆序添加，确保正确嵌套）
+    for tag in reversed(missing_tags):
+        html_content += f'</{tag}>'
+
+    return html_content
+
+
+def _clean_html_tags(html_content):
+    """清理HTML标签，确保正确闭合"""
+    return _close_html_tags(html_content)
+
+
+def _split_by_dash(html_content):
+    """
+    按"——"分割HTML内容为事项要点和协调人员
+
+    参数:
+        html_content: HTML内容
+
+    返回:
+        (content_part, assignee_part) 元组
+    """
+    if '——' not in html_content:
+        return html_content, ''
+
+    # 找到"——"在HTML中的位置
+    dash_pos = html_content.find('——')
+
+    # 分割
+    content_part = html_content[:dash_pos]
+    assignee_part = html_content[dash_pos + 2:]  # 跳过"——"
+
+    # 清理assignee中的HTML标签，但保留文本
+    # 由于原始HTML可能没有正确闭合，我们提取纯文本
+    import re
+    assignee_text = re.sub(r'<[^>]+>', '', assignee_part)
+    assignee_text = assignee_text.strip()
+
+    return content_part.strip(), assignee_text
 
 
 def _render_content_lines(content_parts):
@@ -861,6 +1566,340 @@ def get_home_view_css():
         color: #9ca3af;
         font-style: italic;
     }
+
+    /* 待协调事项样式 */
+    .coord-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+    .coord-item {
+        display: flex;
+        gap: 12px;
+        padding: 14px 16px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    .coord-num {
+        width: 28px;
+        height: 28px;
+        background: #1C91FD;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .coord-text {
+        font-size: 13px;
+        line-height: 1.7;
+        flex: 1;
+    }
+    .coord-text hr {
+        border: none;
+        border-top: 1px solid #e5e7eb;
+        margin: 14px 0;
+    }
+    .coord-text table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 12px;
+    }
+    .coord-text th,
+    .coord-text td {
+        border: 1px solid #e5e7eb;
+        padding: 8px 12px;
+        text-align: center;
+    }
+    .coord-text th {
+        background: #f0f4f8;
+        font-weight: 600;
+        color: #333;
+    }
+    .coord-text td {
+        color: #555;
+    }
+    .coord-text p[style*="padding-left"] {
+        margin-bottom: 4px;
+    }
+    .coord-assignee {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 8px;
+        font-size: 12px;
+        color: #D93025;
+        font-weight: 700;
+    }
+
+    /* UI自动化建设 */
+    .three-col {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+    .metric-card {
+        background: #f0f4f8;
+        border-radius: 8px;
+        text-align: center;
+        min-height: 160px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    .metric-card .metric-label {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 8px;
+    }
+    .metric-card .metric-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #50A5F4;
+        margin-top: 4px;
+    }
+    .ui-remaining.rich-text-content {
+        margin-top: 16px;
+    }
+    .ui-remaining.rich-text-content ul {
+        padding-left: 20px;
+        margin: 8px 0;
+    }
+    .ui-remaining.rich-text-content li {
+        font-size: 13px;
+        line-height: 1.8;
+        color: #333;
+    }
+    .ui-remaining.rich-text-content hr {
+        border: none;
+        border-top: 1px solid #e5e7eb;
+        margin: 14px 0;
+    }
+    .ui-remaining.rich-text-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 12px;
+    }
+    .ui-remaining.rich-text-content th,
+    .ui-remaining.rich-text-content td {
+        border: 1px solid #e5e7eb;
+        padding: 8px 12px;
+        text-align: center;
+    }
+    .ui-remaining.rich-text-content th {
+        background: #f0f4f8;
+        font-weight: 600;
+        color: #333;
+    }
+    .ui-remaining.rich-text-content td {
+        color: #555;
+    }
+    .ui-remaining.rich-text-content p[style*="padding-left"] {
+        margin-bottom: 4px;
+    }
+
+    /* 下周测试计划样式 */
+    .next-plan-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .next-plan-item {
+        display: flex;
+        gap: 12px;
+        padding: 14px 16px;
+        background: #f0f7ff;
+        border: 1px solid #dbeafe;
+        border-radius: 8px;
+        align-items: flex-start;
+    }
+    .next-plan-icon {
+        flex-shrink: 0;
+    }
+    .next-plan-text {
+        font-size: 13px;
+        line-height: 1.7;
+        flex: 1;
+        color: #333;
+        align-self: center;
+        margin-top: 3px;
+    }
+    .next-plan-text p {
+        margin: 0;
+    }
+    .next-plan-list .empty-content {
+        color: #9ca3af;
+        font-style: italic;
+    }
+
+    /* 缺陷预警卡片 */
+    .warning-card {
+        display: flex;
+        flex-direction: column;
+    }
+    .warning-list {
+        flex: 1;
+        overflow-y: auto;
+        max-height: 100%;
+    }
+    .warning-list .empty-content {
+        color: #9ca3af;
+        font-style: italic;
+        text-align: center;
+        padding: 20px;
+    }
+    .warning-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-bottom: 6px;
+    }
+    .warning-dot {
+        width: 8px;
+        height: 8px;
+        background: #1C91FD;
+        border-radius: 50%;
+        flex-shrink: 0;
+        margin-right: 8px;
+    }
+    .warning-row:hover {
+        background: #f0f4f8;
+    }
+    .warning-row:last-child {
+        margin-bottom: 0;
+    }
+    .warning-text {
+        flex: 1;
+        font-size: 13px;
+        color: #333;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-right: 10px;
+    }
+    .handler-tag {
+        display: inline-block;
+        padding: 4px 10px;
+        background: #e3f2fd;
+        color: #1976d2;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        margin: 0 4px;
+    }
+    .warning-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        background: #ffdcdb9c;
+        color: #e74c3c;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* 缺陷详情弹窗 */
+    .warning-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    .warning-modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    .warning-modal {
+        background: white;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 700px;
+        max-height: 80vh;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+    }
+    .warning-modal-overlay.active .warning-modal {
+        transform: scale(1);
+    }
+    .warning-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        background: linear-gradient(135deg, #1c91fd 0%, #5DADE2 100%);
+        color: white;
+    }
+    .warning-modal-title {
+        font-size: 16px;
+        font-weight: 600;
+    }
+    .warning-modal-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+    .warning-modal-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    .warning-modal-body {
+        padding: 20px;
+        max-height: calc(80vh - 70px);
+        overflow-y: auto;
+    }
+    .warning-detail-row {
+        display: flex;
+        padding: 10px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .warning-detail-row:last-child {
+        border-bottom: none;
+    }
+    .warning-detail-label {
+        width: 120px;
+        font-weight: 600;
+        color: #6b7280;
+        flex-shrink: 0;
+    }
+    .warning-detail-value {
+        flex: 1;
+        color: #333;
+        word-break: break-all;
+    }
     '''
 
 def get_home_view_js():
@@ -873,5 +1912,136 @@ def get_home_view_js():
                 el.classList.add('overflow');
             }
         });
+
+        // 同步缺陷预警卡片高度
+        syncWarningListHeight();
+        window.addEventListener('resize', syncWarningListHeight);
+
+        // 初始化预警行点击事件
+        initWarningRowClick();
     });
+
+    // 同步缺陷预警列表高度与左侧卡片一致
+    function syncWarningListHeight() {
+        var leftCard = document.getElementById('left-progress-card');
+        var warningList = document.getElementById('warning-list');
+        if (leftCard && warningList) {
+            var leftHeight = leftCard.offsetHeight;
+            var titleHeight = warningList.previousElementSibling ? warningList.previousElementSibling.offsetHeight : 0;
+            // 计算可用高度：左侧卡片高度 - 标题行高度 - padding
+            var availableHeight = leftHeight - 50; // 50px为标题行和padding预留
+            warningList.style.maxHeight = Math.max(availableHeight, 100) + 'px';
+        }
+    }
+
+    // 初始化预警行点击事件
+    function initWarningRowClick() {
+        document.querySelectorAll('.warning-row').forEach(function(row) {
+            row.addEventListener('click', function() {
+                var detailJson = this.getAttribute('data-detail');
+                if (detailJson) {
+                    try {
+                        var detail = JSON.parse(detailJson);
+                        showWarningModal(detail);
+                    } catch (e) {
+                        console.error('解析详情数据失败', e);
+                    }
+                }
+            });
+        });
+    }
+
+    // 显示详情弹窗
+    function showWarningModal(detail) {
+        // 字段名称映射（排除不需要展示的字段）
+        var excludeFields = ['登记时间', '任务分类', '关联任务项'];
+        var fieldLabels = {
+            '缺陷编号': '缺陷编号',
+            '产品线': '产品线',
+            '产品模块': '产品模块',
+            '缺陷状态': '缺陷状态',
+            '缺陷摘要': '缺陷摘要',
+            '优先级': '优先级',
+            '登记人': '登记人',
+            '处理人员': '处理人员',
+            '登记时间.1': '登记时间',
+            '修复时间': '修复时间',
+            '关闭时间': '关闭时间',
+            '发现阶段': '发现阶段',
+            '引入阶段': '引入阶段',
+            '引入原因': '引入原因',
+            '缺陷来源': '缺陷来源',
+            '返工次数': '返工次数',
+            '严重程度': '严重程度',
+            '缺陷类型': '缺陷类型',
+            '缺陷修复周期(天)': '缺陷修复周期(天)',
+            '缺陷关闭周期(天)': '缺陷关闭周期(天)'
+        };
+
+        // 构建详情内容
+        var detailHtml = '';
+        for (var key in detail) {
+            if (detail.hasOwnProperty(key)) {
+                // 跳过排除字段
+                if (excludeFields.indexOf(key) !== -1) continue;
+                // 跳过未定义标签的字段
+                if (!fieldLabels[key]) continue;
+                var label = fieldLabels[key];
+                var value = detail[key];
+                // 处理特殊值
+                if (value === null || value === undefined || value === '' || (typeof value === 'number' && isNaN(value))) {
+                    value = '-';
+                } else if (typeof value === 'object') {
+                    value = JSON.stringify(value);
+                }
+                detailHtml += '<div class="warning-detail-row">' +
+                    '<div class="warning-detail-label">' + label + '</div>' +
+                    '<div class="warning-detail-value">' + value + '</div>' +
+                    '</div>';
+            }
+        }
+
+        // 创建弹窗
+        var modalHtml = '<div class="warning-modal-overlay" id="warning-modal-overlay">' +
+            '<div class="warning-modal">' +
+            '<div class="warning-modal-header">' +
+            '<span class="warning-modal-title">缺陷详情 - ' + (detail['缺陷编号'] || '') + '</span>' +
+            '<button class="warning-modal-close" onclick="closeWarningModal()">&times;</button>' +
+            '</div>' +
+            '<div class="warning-modal-body">' + detailHtml + '</div>' +
+            '</div>' +
+            '</div>';
+
+        // 移除已存在的弹窗
+        var existingModal = document.getElementById('warning-modal-overlay');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // 添加弹窗到页面
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // 显示弹窗
+        setTimeout(function() {
+            document.getElementById('warning-modal-overlay').classList.add('active');
+        }, 10);
+
+        // 点击遮罩关闭
+        document.getElementById('warning-modal-overlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeWarningModal();
+            }
+        });
+    }
+
+    // 关闭详情弹窗
+    function closeWarningModal() {
+        var modal = document.getElementById('warning-modal-overlay');
+        if (modal) {
+            modal.classList.remove('active');
+            setTimeout(function() {
+                modal.remove();
+            }, 300);
+        }
+    }
     '''

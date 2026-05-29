@@ -1,0 +1,4838 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POST-产品标准化运营工具-质量周报</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(22, 119, 255, 0.35) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(22, 119, 255, 0.28) 0%, transparent 50%),
+                radial-gradient(ellipse at 40% 60%, rgba(22, 119, 255, 0.2) 0%, transparent 40%),
+                radial-gradient(ellipse at 70% 30%, rgba(22, 119, 255, 0.22) 0%, transparent 45%),
+                radial-gradient(ellipse at 50% 50%, rgba(22, 119, 255, 0.15) 0%, transparent 60%),
+                linear-gradient(180deg, #d6ebff 0%, #e6f4ff 50%, #f0f5ff 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; color: #2c3e50; }
+        .header h1 { font-size: 36px; font-weight: 700; margin-bottom: 10px; color: #2c3e50; }
+        .header p { font-size: 16px; color: #5d6d7e; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); padding: 20px; transition: all 0.3s ease; position: relative; height: 420px; overflow: hidden; }
+        .card-full { grid-column: 1 / -1; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); padding: 20px 30px; transition: all 0.3s ease; }
+        .card-wide { grid-column: span 2; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); padding: 20px; transition: all 0.3s ease; position: relative; height: 420px; overflow: hidden; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+        .chart-card { height: 100%; }
+        .chart-toolbar { position: absolute; top: 10px; right: 15px; display: flex; gap: 6px; z-index: 10; }
+        .chart-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf0 100%); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #7c8a9a; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+        .chart-btn:hover { background: linear-gradient(135deg, #e0e4e8 0%, #d4d8dc 100%); color: #667eea; transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.12); }
+        .chart-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 3px 8px rgba(102,126,234,0.3); }
+        .chart-container { min-height: 350px; }
+        .table-container { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 20px; background: white; z-index: 5; overflow: hidden; }
+        .table-container.active { display: flex; flex-direction: column; }
+        .table-title { text-align: center; font-size: 16px; color: #2c3e50; font-weight: bold; font-family: 'Microsoft YaHei'; margin-bottom: 15px; flex-shrink: 0; }
+        .table-body { flex: 1; overflow: auto; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: 'Microsoft YaHei'; }
+        .data-table th { background: #f5f7fa; padding: 8px 10px; text-align: left; font-weight: 600; color: #333; border-bottom: 2px solid #e0e0e0; position: sticky; top: 0; }
+        .data-table td { padding: 6px 10px; border-bottom: 1px solid #eee; color: #555; white-space: nowrap; }
+        .data-table tr:hover td { background: #f9f9f9; }
+        .metrics-container { width: 100%; }
+        .metrics-title { text-align: center; font-size: 16px; color: #2c3e50; font-weight: bold; margin-bottom: 20px; font-family: 'Microsoft YaHei'; }
+        .metrics-row { display: flex; gap: 20px; justify-content: stretch; width: 100%; }
+        .metric-card { flex: 1; height: 120px; border-radius: 12px; display: flex; flex-direction: column; align-items: stretch; justify-content: center; transition: all 0.3s ease; cursor: default; padding: 15px 18px; position: relative; }
+        .metric-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .metric-header { display: flex; justify-content: space-between; align-items: center; }
+        .metric-name { font-size: 15px; color: #5a6c7d; font-family: 'Microsoft YaHei'; font-weight: bold; }
+        .metric-icon { width: 22px; height: 22px; opacity: 0.7; position: relative; }
+        .icon-task { width: 20px; height: 22px; border: 2px solid #fff; border-radius: 4px; position: relative; }
+        .icon-task::before { content: ''; position: absolute; top: 5px; left: 4px; width: 10px; height: 2px; background: #fff; border-radius: 1px; }
+        .icon-task::after { content: ''; position: absolute; top: 10px; left: 4px; width: 7px; height: 2px; background: #fff; border-radius: 1px; }
+        .icon-bug { width: 20px; height: 20px; position: relative; }
+        .icon-bug::before { content: ''; position: absolute; top: 3px; left: 5px; width: 10px; height: 14px; border: 2px solid #fff; border-radius: 50% 50% 45% 45%; }
+        .icon-bug::after { content: ''; position: absolute; top: 7px; left: 1px; width: 4px; height: 2px; background: #fff; box-shadow: 12px 0 0 #fff, 6px 6px 0 #fff, 6px 10px 0 #fff; }
+        .icon-chart { width: 22px; height: 22px; position: relative; display: flex; align-items: flex-end; justify-content: space-between; }
+        .icon-chart::before { content: ''; position: absolute; bottom: 0; left: 0; width: 5px; height: 14px; background: #fff; border-radius: 2px 2px 0 0; }
+        .icon-chart::after { content: ''; position: absolute; bottom: 0; right: 0; width: 5px; height: 8px; background: #fff; border-radius: 2px 2px 0 0; }
+        .icon-refresh { width: 20px; height: 20px; position: relative; }
+        .icon-refresh::before { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border: 2px solid #fff; border-radius: 50%; border-top-color: transparent; border-left-color: transparent; transform: rotate(-45deg); }
+        .icon-refresh::after { content: ''; position: absolute; top: 0, right: 3px; width: 6px; height: 6px; border-top: 2px solid #fff; border-right: 2px solid #fff; transform: rotate(45deg); }
+        .icon-clock { width: 20px; height: 20px; border: 2px solid #fff; border-radius: 50%; position: relative; }
+        .icon-clock::before { content: ''; position: absolute; top: 3px; left: 7px; width: 2px; height: 6px; background: #fff; border-radius: 1px; }
+        .icon-clock::after { content: ''; position: absolute; top: 7px; left: 7px; width: 5px; height: 2px; background: #fff; border-radius: 1px; }
+        .metric-value { font-size: 32px; font-weight: bold; color: #2c3e50; font-family: 'Microsoft YaHei'; margin-top: 12px; }
+        .metric-subtitle { font-size: 11px; color: #aaa; font-family: 'Microsoft YaHei'; position: absolute; bottom: 8px; right: 15px; line-height: 1.4; text-align: right; }
+        
+    /* 主页视图容器 */
+    .view-container {
+        display: none;
+    }
+    .view-container.active {
+        display: block;
+    }
+
+    /* 公共面板区域 */
+    .panels-section {
+        margin-top: 0;
+    }
+
+    /* 面板网格 - 单列布局 */
+    .panels-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* 面板包裹 - 标题在卡片上方 */
+    .panel-wrapper {
+    }
+
+    /* 章节标题 - 在卡片外部上方 */
+    .panel-section-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1c91fd;
+    }
+    .panel-section-title::before {
+        content: "";
+        display: block;
+        width: 4px;
+        height: 24px;
+        background: #1c91fd;
+        border-radius: 2px;
+    }
+
+    /* 卡片标题行 */
+    .panel-card-title-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    /* 数量标签 */
+    .count-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 28px;
+        padding: 0 8px;
+        background: #ffdcdb9c;
+        color: #e74c3c;
+        border-radius: 14px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    /* 两列布局 */
+    .panel-row {
+        display: flex;
+        gap: 20px;
+    }
+    .panel-half {
+        flex: 1;
+    }
+    .panel-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .placeholder-content {
+        text-align: center;
+    }
+
+    /* 面板卡片 */
+    .panel-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        padding: 20px;
+    }
+
+    /* 全宽卡片（表格用） */
+    .panel-full-card {
+        padding: 0;
+    }
+
+    /* 表格容器 */
+    .table-wrap {
+        overflow-x: auto;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    /* 统计表格 */
+    .stats-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 13px;
+        min-width: 1000px;
+    }
+    .stats-table th {
+        background: #1c91fd;
+        color: #fff;
+        text-align: center;
+        padding: 12px 16px;
+        font-weight: 600;
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+    }
+    .stats-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+    .stats-table tr:hover td {
+        background: #f8fafc;
+        transition: background .2s;
+    }
+    .stats-table .summary-row {
+        background: #e8f0f8 !important;
+        font-weight: 600;
+    }
+
+    /* 进度条 */
+    .progress-mini {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .progress-track {
+        width: 64px;
+        height: 6px;
+        background: #e5e7eb;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%;
+        background: #1c91fd;
+        border-radius: 6px;
+    }
+    .progress-text {
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    /* 条形图卡片 */
+    .bar-chart-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        margin-top: 20px;
+        padding: 20px;
+    }
+    .bar-chart-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1c91fd;
+        margin-bottom: 16px;
+    }
+    .bar-chart-body .bar-row {
+        margin-bottom: 14px;
+    }
+    .bar-row .bar-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+    .bar-label {
+        font-weight: 600;
+    }
+    .bar-value {
+        color: #1c91fd;
+        font-weight: 700;
+    }
+    .bar-chart-body .bar-track {
+        height: 28px;
+        background: #f0f4f8;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+    .bar-chart-body .bar-fill {
+        height: 100%;
+        background: #1c91fd;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 10px;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        transition: width .6s ease;
+    }
+
+    /* 任务项名称列 */
+    .task-name-cell {
+        display: inline-block;
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
+        cursor: default;
+        position: relative;
+    }
+    .task-name-cell.overflow:hover::after {
+        content: attr(title);
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 100%;
+        background: #1c91fd;
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 400;
+        white-space: normal;
+        max-width: 300px;
+        z-index: 100;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    /* 第一个卡片内的标题 */
+    .panel-card-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1c91fd;
+        margin-bottom: 12px;
+    }
+
+    /* 标签样式 */
+    .badge {
+        display: inline-block;
+        padding: 2px 10px;
+        font-size: 12px;
+        background: #f0f4f8;
+        color: #1c91fd;
+        border-radius: 12px;
+        margin: 0 2px;
+    }
+    .panel-badges {
+        margin-bottom: 12px;
+    }
+
+    /* 进度统计卡片 */
+    .stat-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 12px;
+    }
+    .stat-box {
+        background: #f0f4f8;
+        border-radius: 8px;
+        padding: 16px;
+        text-align: center;
+    }
+    .stat-label {
+        font-size: 12px;
+        color: #6b7280;
+    }
+    .stat-value {
+        font-size: 26px;
+        font-weight: 700;
+        margin-top: 4px;
+    }
+
+    /* 缺陷统计区域 */
+    .defect-summary {
+        border-top: 1px solid #e5e7eb;
+        margin-top: 14px;
+        padding-top: 14px;
+    }
+    .defect-total {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    .defect-count {
+        color: #1c91fd;
+        font-size: 20px;
+        font-weight: 700;
+    }
+    .defect-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .defect-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+    }
+    .defect-item .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .defect-item .label {
+        color: #6b7280;
+    }
+    .defect-item .count {
+        font-weight: 600;
+        margin-left: auto;
+    }
+
+    /* 面板内容 */
+    .panel-content p {
+        color: #333;
+        line-height: 1.8;
+        margin-bottom: 12px;
+        font-size: 14px;
+    }
+    .panel-content p:last-child {
+        margin-bottom: 0;
+    }
+    .panel-content .empty-content {
+        color: #9ca3af;
+        font-style: italic;
+    }
+
+    /* 待协调事项样式 */
+    .coord-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+    .coord-item {
+        display: flex;
+        gap: 12px;
+        padding: 14px 16px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    .coord-num {
+        width: 28px;
+        height: 28px;
+        background: #1C91FD;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .coord-text {
+        font-size: 13px;
+        line-height: 1.7;
+        flex: 1;
+    }
+    .coord-text hr {
+        border: none;
+        border-top: 1px solid #e5e7eb;
+        margin: 14px 0;
+    }
+    .coord-text table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 12px;
+    }
+    .coord-text th,
+    .coord-text td {
+        border: 1px solid #e5e7eb;
+        padding: 8px 12px;
+        text-align: center;
+    }
+    .coord-text th {
+        background: #f0f4f8;
+        font-weight: 600;
+        color: #333;
+    }
+    .coord-text td {
+        color: #555;
+    }
+    .coord-text p[style*="padding-left"] {
+        margin-bottom: 4px;
+    }
+    .coord-assignee {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 8px;
+        font-size: 12px;
+        color: #D93025;
+        font-weight: 700;
+    }
+
+    /* UI自动化建设 */
+    .three-col {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+    .metric-card {
+        background: #f0f4f8;
+        border-radius: 8px;
+        text-align: center;
+        min-height: 160px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    .metric-card .metric-label {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 8px;
+    }
+    .metric-card .metric-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #50A5F4;
+        margin-top: 4px;
+    }
+    .ui-remaining.rich-text-content {
+        margin-top: 16px;
+    }
+    .ui-remaining.rich-text-content ul {
+        padding-left: 20px;
+        margin: 8px 0;
+    }
+    .ui-remaining.rich-text-content li {
+        font-size: 13px;
+        line-height: 1.8;
+        color: #333;
+    }
+    .ui-remaining.rich-text-content hr {
+        border: none;
+        border-top: 1px solid #e5e7eb;
+        margin: 14px 0;
+    }
+    .ui-remaining.rich-text-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 12px;
+    }
+    .ui-remaining.rich-text-content th,
+    .ui-remaining.rich-text-content td {
+        border: 1px solid #e5e7eb;
+        padding: 8px 12px;
+        text-align: center;
+    }
+    .ui-remaining.rich-text-content th {
+        background: #f0f4f8;
+        font-weight: 600;
+        color: #333;
+    }
+    .ui-remaining.rich-text-content td {
+        color: #555;
+    }
+    .ui-remaining.rich-text-content p[style*="padding-left"] {
+        margin-bottom: 4px;
+    }
+
+    /* 下周测试计划样式 */
+    .next-plan-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .next-plan-item {
+        display: flex;
+        gap: 12px;
+        padding: 14px 16px;
+        background: #f0f7ff;
+        border: 1px solid #dbeafe;
+        border-radius: 8px;
+        align-items: flex-start;
+    }
+    .next-plan-icon {
+        flex-shrink: 0;
+    }
+    .next-plan-text {
+        font-size: 13px;
+        line-height: 1.7;
+        flex: 1;
+        color: #333;
+        align-self: center;
+        margin-top: 3px;
+    }
+    .next-plan-text p {
+        margin: 0;
+    }
+    .next-plan-list .empty-content {
+        color: #9ca3af;
+        font-style: italic;
+    }
+
+    /* 缺陷预警卡片 */
+    .warning-card {
+        display: flex;
+        flex-direction: column;
+    }
+    .warning-list {
+        flex: 1;
+        overflow-y: auto;
+        max-height: 100%;
+    }
+    .warning-list .empty-content {
+        color: #9ca3af;
+        font-style: italic;
+        text-align: center;
+        padding: 20px;
+    }
+    .warning-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-bottom: 6px;
+    }
+    .warning-dot {
+        width: 8px;
+        height: 8px;
+        background: #1C91FD;
+        border-radius: 50%;
+        flex-shrink: 0;
+        margin-right: 8px;
+    }
+    .warning-row:hover {
+        background: #f0f4f8;
+    }
+    .warning-row:last-child {
+        margin-bottom: 0;
+    }
+    .warning-text {
+        flex: 1;
+        font-size: 13px;
+        color: #333;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-right: 10px;
+    }
+    .handler-tag {
+        display: inline-block;
+        padding: 4px 10px;
+        background: #e3f2fd;
+        color: #1976d2;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        margin: 0 4px;
+    }
+    .warning-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        background: #ffdcdb9c;
+        color: #e74c3c;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* 缺陷详情弹窗 */
+    .warning-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    .warning-modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    .warning-modal {
+        background: white;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 700px;
+        max-height: 80vh;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+    }
+    .warning-modal-overlay.active .warning-modal {
+        transform: scale(1);
+    }
+    .warning-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        background: linear-gradient(135deg, #1c91fd 0%, #5DADE2 100%);
+        color: white;
+    }
+    .warning-modal-title {
+        font-size: 16px;
+        font-weight: 600;
+    }
+    .warning-modal-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+    .warning-modal-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    .warning-modal-body {
+        padding: 20px;
+        max-height: calc(80vh - 70px);
+        overflow-y: auto;
+    }
+    .warning-detail-row {
+        display: flex;
+        padding: 10px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .warning-detail-row:last-child {
+        border-bottom: none;
+    }
+    .warning-detail-label {
+        width: 120px;
+        font-weight: 600;
+        color: #6b7280;
+        flex-shrink: 0;
+    }
+    .warning-detail-value {
+        flex: 1;
+        color: #333;
+        word-break: break-all;
+    }
+    
+        .view-switch { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; }
+        .view-btn { padding: 10px 20px; border-radius: 25px; border: 2px solid transparent; background: rgba(145, 202, 255, 0.5); color: #ffffff; font-family: 'Microsoft YaHei'; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(22,119,255,0.1); display: inline-flex; align-items: center; }
+        .view-btn:hover { background: rgba(186, 224, 255, 0.7); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(22,119,255,0.2); }
+        .view-btn.active { background: rgba(145, 202, 255, 0.5); color: #ffffff; font-weight: 600; box-shadow: 0 4px 20px rgba(22,119,255,0.2); border: 2px solid rgba(255,255,255,0.85); }
+        .view-btn.home-btn { padding: 10px 14px; border-radius: 50%; }
+        .view-btn.home-btn.active { background: rgba(145, 202, 255, 0.5); border: 2px solid rgba(255,255,255,0.85); }
+        .view-btn.refresh-btn { padding: 10px 14px; border-radius: 50%; }
+        .view-btn svg { flex-shrink: 0; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; border-radius: 16px; padding: 20px; max-width: 95vw; max-height: 95vh; overflow: auto; position: relative; animation: modalIn 0.3s ease; }
+        @keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-close { position: absolute; top: 10px; right: 15px; width: 32px; height: 32px; border-radius: 50%; border: none; background: #f0f0f0; cursor: pointer; font-size: 18px; color: #666; transition: all 0.3s ease; }
+        .modal-close:hover { background: #e74c3c; color: white; transform: rotate(90deg); }
+        .modal-chart { width: 1000px; height: 650px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } .header h1 { font-size: 28px; } .modal-chart { width: 95vw; height: 400px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header" style="position: relative;">
+            <div class="view-switch">
+                <button class="view-btn home-btn active" data-view="home" onclick="switchView('home')"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
+                <button class="view-btn" data-view="chart" onclick="switchView('chart')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zm-2-2h-2v-6h2v6zm-4 0h-2v-4h2v4zm-4 0h-2v-8h2v8z"/></svg>图表</button>
+                <button class="view-btn" data-view="detail" onclick="switchView('detail')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px"><path d="M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h18v2H3v-2zm0 4h12v2H3v-2zm0 4h8v2H3v-2z"/></svg>明细</button>
+                <button class="view-btn refresh-btn" onclick="refreshData()"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
+            </div>
+            <h1>POST-产品标准化运营工具-质量周报</h1>
+            <p>报告周期：2026年05月25日-2026年05月29日 | 共 18 条缺陷数据</p>
+        </div>
+
+        <!-- 主页视图 -->
+        <div class="view-container active" id="homeView">
+            
+    <!-- 公共面板 -->
+    <div class="panels-section">
+        <div class="panels-grid">
+            
+        <div class="panel-wrapper">
+            <div class="panel-section-title">
+                <span class="section-title-text">本周测试概况</span>
+            </div>
+            <div class="panel-row">
+                <div class="panel-card panel-half" id="left-progress-card">
+                    <div class="panel-card-title">测试进度概览</div>
+                    <div class="panel-content">
+                        <p>本周提测功能为<span class="badge">ppt在线编辑</span><span class="badge">导入导出</span><span class="badge">迭代优化</span><span class="badge">AI反向数据剔除</span></p>
+                    </div>
+                    
+        <div class="stat-grid">
+            <div class="stat-box">
+                <div class="stat-label">测试总进度</div>
+                <div class="stat-value" style="color: #1c91fd">100%</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">回归总进度</div>
+                <div class="stat-value" style="color: #1c91fd">95%</div>
+            </div>
+        </div>
+        
+        <div class="defect-summary">
+            <p class="defect-total">本周新增缺陷总数：<span class="defect-count">18</span>个</p>
+            <div class="defect-list">
+                <div class="defect-item"><div class="dot" style="background:#22c55e;"></div><span class="label">已关闭</span><span class="count">13</span></div>
+<div class="defect-item"><div class="dot" style="background:#ef4444;"></div><span class="label">待修复</span><span class="count">3</span></div>
+<div class="defect-item"><div class="dot" style="background:#f59e0b;"></div><span class="label">待验证</span><span class="count">0</span></div>
+<div class="defect-item"><div class="dot" style="background:#8b5cf6;"></div><span class="label">延期</span><span class="count">0</span></div>
+<div class="defect-item"><div class="dot" style="background:#ec4899;"></div><span class="label">重新打开</span><span class="count">2</span></div>
+            </div>
+        </div>
+                </div>
+                <div class="panel-card panel-half warning-card">
+                    <div class="panel-card-title-wrap">
+                        <span class="panel-card-title">缺陷预警</span>
+                        <span class="count-badge">4</span>
+                    </div>
+                    <div class="warning-list" id="warning-list">
+                        
+        <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "导入导出", "缺陷编号": "NL-B-172945", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "New", "缺陷摘要": "【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-27 18:01:00", "修复时间": "-", "关闭时间": "-", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "-", "引入原因": "-", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "2-性能问题", "缺陷修复周期(天)": "/", "缺陷关闭周期(天)": "/"}'>
+            <span class="warning-dot"></span>
+            <span class="warning-text">NL-B-172945 <span class="handler-tag">刘陈明</span> 【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包</span>
+            <span class="warning-tag">超期2天</span>
+        </div>
+        
+
+        <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "历史问题/关联影响", "缺陷编号": "NL-B-172952", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "New", "缺陷摘要": "【属性库】复用属性组性能优化", "优先级": "中", "登记人": "邱钰洁", "处理人员": "王荣坡", "登记时间.1": "2026-05-27 18:45:00", "修复时间": "-", "关闭时间": "-", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "-", "引入原因": "-", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "2-性能问题", "缺陷修复周期(天)": "/", "缺陷关闭周期(天)": "/"}'>
+            <span class="warning-dot"></span>
+            <span class="warning-text">NL-B-172952 <span class="handler-tag">王荣坡</span> 【属性库】复用属性组性能优化</span>
+            <span class="warning-tag">超期2天</span>
+        </div>
+        
+
+        <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "导入导出", "缺陷编号": "NL-B-173213", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "ReOpen", "缺陷摘要": "【导出】导出超时", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-29 08:57:00", "修复时间": "2026-05-29 15:24:45", "关闭时间": "-", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C3-性能问题", "缺陷来源": "研发过程", "返工次数": 1, "严重程度": "一般", "缺陷类型": "2-性能问题", "缺陷修复周期(天)": 0.27, "缺陷关闭周期(天)": "/"}'>
+            <span class="warning-dot"></span>
+            <span class="warning-text">NL-B-173213 <span class="handler-tag">刘陈明</span> 【导出】导出超时</span>
+            <span class="warning-tag">返工1次</span>
+        </div>
+        
+
+        <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "历史问题/关联影响", "缺陷编号": "NL-B-172949", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "ReOpen", "缺陷摘要": "【需求采编】新增商品后，商品的排列顺序随机，倒叙排列", "优先级": "中", "登记人": "邱钰洁", "处理人员": "陈珍桂", "登记时间.1": "2026-05-27 18:20:00", "修复时间": "2026-05-29 17:03:23", "关闭时间": "-", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C20-代码未拉平（新变更）", "缺陷来源": "研发过程", "返工次数": 1, "严重程度": "轻微", "缺陷类型": "6-操作界面", "缺陷修复周期(天)": 1.95, "缺陷关闭周期(天)": "/"}'>
+            <span class="warning-dot"></span>
+            <span class="warning-text">NL-B-172949 <span class="handler-tag">陈珍桂</span> 【需求采编】新增商品后，商品的排列顺序随机，倒叙排列</span>
+            <span class="warning-tag">返工1次</span>
+        </div>
+        
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="panel-wrapper">
+            <div class="panel-section-title">
+                <span class="section-title-text">待协调事项</span>
+            </div>
+            <div class="panel-card panel-full-card">
+                
+    <div class="table-wrap">
+        <table class="stats-table">
+            <thead><tr><th>序号</th><th>周期</th><th>任务分类</th><th>任务项名称</th><th>子任务项</th><th>测试进度</th><th>回归进度</th><th>缺陷总数</th><th>New</th><th>Fixed</th><th>Pending</th><th>Closed</th><th>ReOpen</th></tr></thead>
+            <tbody><tr><td>1</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="ppt在线编辑">ppt在线编辑</span></td><td style="text-align:center;">35</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:20.0%;background:#ef4444"></div></div><span class="progress-text">20%</span></div></td><td style="text-align:center;">4</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">4</td><td style="text-align:center;">0</td></tr><tr><td>2</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="导入导出">导入导出</span></td><td style="text-align:center;">4</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:80.0%;background:#1c91fd"></div></div><span class="progress-text">80%</span></div></td><td style="text-align:center;">6</td><td style="text-align:center;">2</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">3</td><td style="text-align:center;">1</td></tr><tr><td>3</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="AI反向数据剔除">AI反向数据剔除</span></td><td style="text-align:center;">2</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:95.0%;background:#1c91fd"></div></div><span class="progress-text">95%</span></div></td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td></tr><tr><td>4</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="迭代优化">迭代优化</span></td><td style="text-align:center;">18</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td style="text-align:center;">2</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">2</td><td style="text-align:center;">0</td></tr><tr><td>5</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="历史问题/关联影响">历史问题/关联影响</span></td><td style="text-align:center;">/</td><td><span style="color:#9ca3af;">/</span></td><td><span style="color:#9ca3af;">/</span></td><td style="text-align:center;">6</td><td style="text-align:center;">1</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">4</td><td style="text-align:center;">1</td></tr><tr class="summary-row"><td style="font-weight:600;">合计</td><td style="font-weight:600;">2026-05-25 ~ 2026-05-29</td><td style="font-weight:600;">迭代十三</td><td style="text-align:center;font-weight:600;"><span class="task-name-cell" title="/">/</span></td><td style="text-align:center;font-weight:600;">59</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:95.0%;background:#1c91fd"></div></div><span class="progress-text">95%</span></div></td><td style="text-align:center;font-weight:600;">18</td><td style="text-align:center;font-weight:600;">3</td><td style="text-align:center;font-weight:600;">0</td><td style="text-align:center;font-weight:600;">0</td><td style="text-align:center;font-weight:600;">13</td><td style="text-align:center;font-weight:600;">2</td></tr></tbody>
+        </table>
+    </div>
+    
+            </div>
+            <div class="panel-card bar-chart-card">
+                <div class="bar-chart-title">各任务项回归进度对比</div>
+                <div class="bar-chart-body">
+                    
+        <div class="bar-row">
+            <div class="bar-info"><span class="bar-label">ppt在线编辑</span><span class="bar-value" style="color:#ef4444">20%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:20.0%;background:#ef4444">35 个子任务</div></div>
+        </div>
+        
+        <div class="bar-row">
+            <div class="bar-info"><span class="bar-label">导入导出</span><span class="bar-value" style="color:#1c91fd">80%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:80.0%;background:#1c91fd">4 个子任务</div></div>
+        </div>
+        
+        <div class="bar-row">
+            <div class="bar-info"><span class="bar-label">AI反向数据剔除</span><span class="bar-value" style="color:#1c91fd">95%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:95.0%;background:#1c91fd">2 个子任务</div></div>
+        </div>
+        
+        <div class="bar-row">
+            <div class="bar-info"><span class="bar-label">迭代优化</span><span class="bar-value" style="color:#1c91fd">100%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#1c91fd">18 个子任务</div></div>
+        </div>
+        
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="panel-wrapper">
+            <div class="panel-section-title">
+                <span class="section-title-text">测试进度和缺陷统计</span>
+            </div>
+            <div class="panel-card">
+                <div class="panel-content">
+                    <p class="empty-content">暂无内容</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="panel-wrapper">
+            <div class="panel-section-title">
+                <span class="section-title-text">PSOT-UI自动化建设</span>
+            </div>
+            <div class="panel-card">
+                <div class="three-col">
+                    
+    <div class="metric-card">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#50A5F4" stroke-width="2" style="margin:0 auto;display:block;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+        <div class="metric-label">完成场景数</div>
+        <div class="metric-value">15/70</div>
+    </div>
+    <div class="metric-card" style="background:#fef2f2;">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#D93025" stroke-width="2" style="margin:0 auto;display:block;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="15"></line><line x1="12" y1="19" x2="12.01" y2="17"></line></svg>
+        <div class="metric-label">自动化执行成功</div>
+        <div class="metric-value" style="color:#D93025;">80%</div>
+    </div>
+    <div class="metric-card">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1C91FD" stroke-width="2" style="margin:0 auto;display:block;"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+        <div class="metric-label">下周计划</div>
+        <div class="metric-value" style="font-size:16px;">继续推进</div>
+    </div>
+    
+                </div>
+                <div class="ui-remaining rich-text-content">
+                    
+<ul>
+<li><strong>测试资源投入：</strong><br/>邱钰洁：本周计划完成100%<br/>叶怡馨：本周计划完成10%，<strong>因需求上线紧张无法投入</strong><br/>陈彦均：本周计划完成100%</li>
+</ul>
+<hr/>
+<table border="1" cellspacing="0" class="rich-text-table" style="width: 76.0781%; height: 88px;">
+<tbody>
+<tr style="height: 44px;">
+<th style="width: 12.8606%; height: 44px;">开始时间</th>
+<th style="width: 10.8764%; height: 44px;">结束时间</th>
+<th style="width: 11.75%; height: 44px;">执行时长(秒)</th>
+<th style="width: 9.10002%; height: 44px;">用例数</th>
+<th style="width: 10.6699%; height: 44px;">通开始过数</th>
+<th style="width: 10.2165%; height: 44px;">失败数</th>
+<th style="width: 8.42128%; height: 44px;">未执行数</th>
+<th style="width: 12.2679%; height: 44px;">通过率</th>
+</tr>
+<tr style="height: 44px;">
+<th style="width: 12.8606%; height: 44px;">2025-07-11 08:30:05</th>
+<th style="width: 10.8764%; height: 44px;">2025-07-11 08:31:37</th>
+<th style="width: 11.75%; height: 44px;">92</th>
+<th style="width: 9.10002%; height: 44px;">44</th>
+<th style="width: 10.6699%; height: 44px;">44</th>
+<th style="width: 10.2165%; height: 44px;">0</th>
+<th style="width: 8.42128%; height: 44px;">0</th>
+<th style="width: 12.2679%; height: 44px;">100.00%<br/><br/></th>
+</tr>
+</tbody>
+</table>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="panel-wrapper">
+            <div class="panel-section-title">
+                <span class="section-title-text">下周测试计划</span>
+            </div>
+            <div class="panel-card">
+                <div class="next-plan-list">
+                    
+                    <div class="next-plan-item">
+                        <div class="next-plan-icon"><svg viewBox="0 0 25 25" style="width:25px;height:25px;fill:#1C91FD;"><circle cx="12" cy="12" r="12"></circle><circle cx="12" cy="12" r="6" fill="#fff"></circle><circle cx="12" cy="12" r="0" fill="#1C91FD"></circle></svg></div>
+                        <div class="next-plan-text">完成回归测试和缺陷的复测。</div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        
+        </div>
+    </div>
+    
+        </div>
+
+        <!-- 图表视图 -->
+        <div class="view-container" id="chartView">
+            <div class="grid">
+                <div class="card-full"><div class="metrics-container"><div class="metrics-title">质量指标概览</div><div class="metrics-row"><div class="metric-card" style="background:linear-gradient(135deg, rgba(168, 216, 234, 0.7) 0%, rgba(184, 224, 210, 0.7) 100%)"><div class="metric-header"><span class="metric-name">任务项</span><div class="metric-icon icon-task"></div></div><div class="metric-value">5个</div><div class="metric-subtitle">子任务项59个</div></div><div class="metric-card" style="background:linear-gradient(135deg, rgba(247, 220, 111, 0.7) 0%, rgba(249, 213, 167, 0.7) 100%)"><div class="metric-header"><span class="metric-name">平均修复时长</span><div class="metric-icon icon-clock"></div></div><div class="metric-value">1.29天</div><div class="metric-subtitle">最大3天<br>最小0天</div></div><div class="metric-card" style="background:linear-gradient(135deg, rgba(130, 224, 170, 0.7) 0%, rgba(168, 232, 234, 0.7) 100%)"><div class="metric-header"><span class="metric-name">遗留缺陷</span><div class="metric-icon icon-bug"></div></div><div class="metric-value">5个</div><div class="metric-subtitle">关闭率72.2%</div></div><div class="metric-card" style="background:linear-gradient(135deg, rgba(240, 178, 122, 0.7) 0%, rgba(252, 186, 211, 0.7) 100%)"><div class="metric-header"><span class="metric-name">基本流占比</span><div class="metric-icon icon-chart"></div></div><div class="metric-value">83.3%</div><div class="metric-subtitle">15/18个</div></div><div class="metric-card" style="background:linear-gradient(135deg, rgba(170, 150, 218, 0.7) 0%, rgba(214, 234, 223, 0.7) 100%)"><div class="metric-header"><span class="metric-name">返工率</span><div class="metric-icon icon-refresh"></div></div><div class="metric-value">27.8%</div><div class="metric-subtitle">5/18个</div></div></div></div></div>
+                <div class="card-wide chart-card">
+<div id="chart_handler" style="width:100%;height:400px"></div>
+<script>
+echarts.init(document.getElementById('chart_handler')).setOption({
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "bar",
+            "name": "Closed",
+            "legendHoverLink": true,
+            "data": [
+                3,
+                5,
+                2,
+                2,
+                1,
+                0
+            ],
+            "realtimeSort": false,
+            "showBackground": false,
+            "stack": "total",
+            "stackStrategy": "samesign",
+            "cursor": "pointer",
+            "barMinHeight": 0,
+            "barCategoryGap": "20%",
+            "barGap": "30%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": false,
+                "margin": 8,
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            }
+        },
+        {
+            "type": "bar",
+            "name": "Fixed",
+            "legendHoverLink": true,
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            "realtimeSort": false,
+            "showBackground": false,
+            "stack": "total",
+            "stackStrategy": "samesign",
+            "cursor": "pointer",
+            "barMinHeight": 0,
+            "barCategoryGap": "20%",
+            "barGap": "30%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": false,
+                "margin": 8,
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            }
+        },
+        {
+            "type": "bar",
+            "name": "New",
+            "legendHoverLink": true,
+            "data": [
+                2,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "realtimeSort": false,
+            "showBackground": false,
+            "stack": "total",
+            "stackStrategy": "samesign",
+            "cursor": "pointer",
+            "barMinHeight": 0,
+            "barCategoryGap": "20%",
+            "barGap": "30%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": false,
+                "margin": 8,
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            }
+        },
+        {
+            "type": "bar",
+            "name": "Pending",
+            "legendHoverLink": true,
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            "realtimeSort": false,
+            "showBackground": false,
+            "stack": "total",
+            "stackStrategy": "samesign",
+            "cursor": "pointer",
+            "barMinHeight": 0,
+            "barCategoryGap": "20%",
+            "barGap": "30%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": false,
+                "margin": 8,
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            }
+        },
+        {
+            "type": "bar",
+            "name": "ReOpen",
+            "legendHoverLink": true,
+            "data": [
+                1,
+                0,
+                1,
+                0,
+                0,
+                0
+            ],
+            "realtimeSort": false,
+            "showBackground": false,
+            "stack": "total",
+            "stackStrategy": "samesign",
+            "cursor": "pointer",
+            "barMinHeight": 0,
+            "barCategoryGap": "20%",
+            "barGap": "30%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": true,
+                "position": "top",
+                "color": "#2c3e50",
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "formatter": function(p){ var totals = [6, 5, 3, 2, 1, 1]; return totals[p.dataIndex]; },
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            }
+        },
+        {
+            "type": "line",
+            "name": "\u5e73\u5747\u4fee\u590d\u65f6\u957f(\u5929)",
+            "connectNulls": false,
+            "xAxisIndex": 0,
+            "yAxisIndex": 1,
+            "symbol": "circle",
+            "symbolSize": 8,
+            "showSymbol": true,
+            "smooth": true,
+            "clip": true,
+            "step": false,
+            "stackStrategy": "samesign",
+            "data": [
+                [
+                    "\u5218\u9648\u660e",
+                    0.9525
+                ],
+                [
+                    "\u738b\u90a6\u57ce",
+                    0.9800000000000001
+                ],
+                [
+                    "\u9648\u73cd\u6842",
+                    1.6833333333333333
+                ],
+                [
+                    "\u9648\u667a\u4f1fA",
+                    1.395
+                ],
+                [
+                    "\u6234\u6d77\u6d9b",
+                    2.76
+                ],
+                [
+                    "\u738b\u8363\u5761",
+                    0.0
+                ]
+            ],
+            "hoverAnimation": true,
+            "label": {
+                "show": true,
+                "position": "top",
+                "color": "#F5C4D0",
+                "distance": 8,
+                "margin": 8,
+                "fontSize": 12,
+                "fontWeight": "bold",
+                "fontFamily": "Microsoft YaHei",
+                "formatter": function(p){return p.value[1]>0?p.value[1].toFixed(2):''},
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "logBase": 10,
+            "seriesLayoutBy": "column",
+            "lineStyle": {
+                "show": false,
+                "width": 2.5
+            },
+            "areaStyle": {
+                "opacity": 0
+            },
+            "zlevel": 0,
+            "z": 10
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "Closed",
+                "Fixed",
+                "New",
+                "Pending",
+                "ReOpen",
+                "\u5e73\u5747\u4fee\u590d\u65f6\u957f(\u5929)"
+            ],
+            "selected": {},
+            "show": true,
+            "left": "center",
+            "top": "bottom",
+            "orient": "horizontal",
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "textStyle": {
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 11,
+                "richInheritPlainLabel": true
+            },
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10,
+            "triggerEvent": false
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "axis",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "shadow"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "displayTransition": true,
+        "formatter": function(params){var result=params[0].name+'<br/>';params.forEach(function(item){if(item.seriesName==='\u5e73\u5747\u4fee\u590d\u65f6\u957f(\u5929)'){var val=item.value[1]!==undefined?item.value[1]:item.value;result+=item.marker+item.seriesName+': '+val.toFixed(2)+'<br/>';}else{result+=item.marker+item.seriesName+': '+item.value+'<br/>';} });return result;},
+        "textStyle": {
+            "fontSize": 14,
+            "richInheritPlainLabel": true
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "extraCssText": "border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);",
+        "order": "seriesAsc"
+    },
+    "xAxis": [
+        {
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "rotate": 15,
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": false
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0,
+            "data": [
+                "\u5218\u9648\u660e",
+                "\u738b\u90a6\u57ce",
+                "\u9648\u73cd\u6842",
+                "\u9648\u667a\u4f1fA",
+                "\u6234\u6d77\u6d9b",
+                "\u738b\u8363\u5761"
+            ]
+        }
+    ],
+    "yAxis": [
+        {
+            "name": "\u6570\u91cf",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": false,
+                    "type": "dashed"
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0
+        },
+        {
+            "name": "\u5e73\u5747\u4fee\u590d\u65f6\u957f(\u5929)",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "position": "right",
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": false,
+                "lineStyle": {
+                    "show": false
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0
+        }
+    ],
+    "color": [
+        "#B8E0D2",
+        "#D6EADF",
+        "#A8D8EA",
+        "#AA96DA",
+        "#F9D5A7",
+        "#F5C4D0"
+    ],
+    "title": [
+        {
+            "show": true,
+            "text": "\u5904\u7406\u4eba\u5458\u7f3a\u9677\u7edf\u8ba1",
+            "target": "blank",
+            "subtarget": "blank",
+            "left": "center",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "color": "#2c3e50",
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 16,
+                "richInheritPlainLabel": true
+            }
+        }
+    ]
+});
+</script>
+</div>
+                <div class="card chart-card">
+<div id="chart_status" style="width:100%;height:350px"></div>
+<script>
+echarts.init(document.getElementById('chart_status')).setOption({
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "pie",
+            "colorBy": "data",
+            "legendHoverLink": true,
+            "selectedMode": false,
+            "selectedOffset": 10,
+            "clockwise": true,
+            "startAngle": 90,
+            "minAngle": 0,
+            "minShowLabelAngle": 0,
+            "avoidLabelOverlap": true,
+            "stillShowZeroSum": true,
+            "percentPrecision": 2,
+            "showEmptyCircle": true,
+            "emptyCircleStyle": {
+                "color": "lightgray",
+                "borderColor": "#000",
+                "borderWidth": 0,
+                "borderType": "solid",
+                "borderDashOffset": 0,
+                "borderCap": "butt",
+                "borderJoin": "bevel",
+                "borderMiterLimit": 10,
+                "opacity": 1
+            },
+            "data": [
+                {
+                    "name": "Closed",
+                    "value": 13
+                },
+                {
+                    "name": "New",
+                    "value": 3
+                },
+                {
+                    "name": "ReOpen",
+                    "value": 2
+                }
+            ],
+            "radius": [
+                "40.0%",
+                "70%"
+            ],
+            "center": [
+                "50%",
+                "50%"
+            ],
+            "label": {
+                "show": true,
+                "color": "#34495e",
+                "margin": 8,
+                "fontSize": 14,
+                "fontFamily": "Microsoft YaHei",
+                "formatter": "{d}%",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "labelLine": {
+                "show": true,
+                "showAbove": false,
+                "length": 15,
+                "length2": 15,
+                "smooth": false,
+                "minTurnAngle": 90,
+                "maxSurfaceAngle": 90
+            },
+            "itemStyle": {
+                "color":     function(params) {        var colors = ['#82E0AA', '#F7DC6F', '#F0B27A'];        return colors[params.dataIndex];    }    
+            },
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            }
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "Closed",
+                "New",
+                "ReOpen"
+            ],
+            "selected": {},
+            "show": true,
+            "left": "center",
+            "top": "bottom",
+            "orient": "horizontal",
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "textStyle": {
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 11,
+                "richInheritPlainLabel": true
+            },
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10,
+            "triggerEvent": false
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "item",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "line"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "displayTransition": true,
+        "textStyle": {
+            "fontSize": 14,
+            "richInheritPlainLabel": true
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "extraCssText": "border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);",
+        "order": "seriesAsc"
+    },
+    "title": [
+        {
+            "show": true,
+            "text": "\u7f3a\u9677\u72b6\u6001\u5206\u5e03",
+            "target": "blank",
+            "subtarget": "blank",
+            "left": "center",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "color": "#2c3e50",
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 16,
+                "richInheritPlainLabel": true
+            }
+        }
+    ]
+});
+</script>
+</div>
+                <div class="card chart-card">
+<div id="chart_task" style="width:100%;height:350px"></div>
+<div class="custom-legend" style="text-align:center;margin-top:5px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#7FB3D5;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">导入导出</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#76D7C4;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">历史问题/关联影响</span></span><span class="legend-item" data-index="2" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#F7DC6F;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">ppt在线编辑</span></span><span class="legend-item" data-index="3" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#F0B27A;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">迭代优化</span></span></div>
+<script>
+(function() {
+    var categories = ['导入导出', '历史问题/关联影响', 'ppt在线编辑', '迭代优化'];
+    var values = [6, 6, 4, 2];
+    var colors = ['#7FB3D5', '#76D7C4', '#F7DC6F', '#F0B27A'];
+    var selected = {};
+    for (var i = 0; i < categories.length; i++) selected[i] = true;
+
+    function updateChart() {
+        var newCat = [], newVal = [], newColors = [];
+        for (var i = 0; i < categories.length; i++) {
+            if (selected[i]) {
+                newCat.push(categories[i]);
+                newVal.push(values[i]);
+                newColors.push(colors[i]);
+            }
+        }
+        chart.setOption({
+            yAxis: {data: newCat},
+            series: {
+                data: newVal,
+                itemStyle: {
+                    color: function(params) { return newColors[params.dataIndex]; }
+                }
+            }
+        });
+    }
+
+    var chart = echarts.init(document.getElementById('chart_task'));
+    chart.setOption({
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "bar",
+            "name": "\u6570\u91cf",
+            "legendHoverLink": true,
+            "data": [
+                6,
+                6,
+                4,
+                2
+            ],
+            "realtimeSort": false,
+            "showBackground": false,
+            "stackStrategy": "samesign",
+            "cursor": "pointer",
+            "barMinHeight": 0,
+            "barCategoryGap": "20%",
+            "barGap": "30%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": true,
+                "position": "right",
+                "margin": 8,
+                "fontSize": 12,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "itemStyle": {
+                "color": function(params) { var colors = ['#7FB3D5', '#76D7C4', '#F7DC6F', '#F0B27A']; return colors[params.dataIndex]; },
+                "borderColor": "white",
+                "borderWidth": 2,
+                "opacity": 0.85
+            },
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            }
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "\u6570\u91cf"
+            ],
+            "selected": {},
+            "show": false,
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10,
+            "triggerEvent": false
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "axis",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "shadow"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "displayTransition": true,
+        "textStyle": {
+            "fontSize": 14,
+            "richInheritPlainLabel": true
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "extraCssText": "border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);",
+        "order": "seriesAsc"
+    },
+    "xAxis": [
+        {
+            "name": "\u6570\u91cf",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": false,
+                    "type": "dashed"
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0
+        }
+    ],
+    "yAxis": [
+        {
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": false,
+                "lineStyle": {
+                    "show": false
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0,
+            "data": [
+                "\u5bfc\u5165\u5bfc\u51fa",
+                "\u5386\u53f2\u95ee\u9898/\u5173\u8054\u5f71\u54cd",
+                "ppt\u5728\u7ebf\u7f16\u8f91",
+                "\u8fed\u4ee3\u4f18\u5316"
+            ]
+        }
+    ],
+    "title": [
+        {
+            "show": true,
+            "text": "\u5173\u8054\u4efb\u52a1\u9879\u7edf\u8ba1",
+            "target": "blank",
+            "subtarget": "blank",
+            "left": "center",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "color": "#2c3e50",
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 16,
+                "richInheritPlainLabel": true
+            }
+        }
+    ]
+});
+    chart.setOption({grid: {left: '120px', right: '60px', top: '50px', bottom: '30px'}});
+
+    var legendItems = document.querySelectorAll('#chart_task + .custom-legend .legend-item');
+    legendItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            var idx = parseInt(this.getAttribute('data-index'));
+            selected[idx] = !selected[idx];
+            this.style.opacity = selected[idx] ? 1 : 0.3;
+            updateChart();
+        });
+    });
+})();
+</script>
+</div>
+                <div class="card-wide chart-card">
+<div id="chart_trend" style="width:100%;height:350px"></div>
+<script>
+echarts.init(document.getElementById('chart_trend')).setOption({
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "line",
+            "name": "\u65b0\u589e\u7f3a\u9677",
+            "connectNulls": false,
+            "xAxisIndex": 0,
+            "symbol": "circle",
+            "symbolSize": 8,
+            "showSymbol": true,
+            "smooth": true,
+            "clip": true,
+            "step": false,
+            "stackStrategy": "samesign",
+            "data": [
+                [
+                    "05-18",
+                    0
+                ],
+                [
+                    "05-19",
+                    0
+                ],
+                [
+                    "05-20",
+                    0
+                ],
+                [
+                    "05-21",
+                    0
+                ],
+                [
+                    "05-22",
+                    0
+                ]
+            ],
+            "hoverAnimation": true,
+            "label": {
+                "show": false,
+                "margin": 8,
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "logBase": 10,
+            "seriesLayoutBy": "column",
+            "lineStyle": {
+                "show": false
+            },
+            "areaStyle": {
+                "opacity": 0.3
+            },
+            "zlevel": 0,
+            "z": 0
+        },
+        {
+            "type": "line",
+            "name": "\u9057\u7559\u7f3a\u9677",
+            "connectNulls": false,
+            "xAxisIndex": 0,
+            "symbol": "circle",
+            "symbolSize": 8,
+            "showSymbol": true,
+            "smooth": true,
+            "clip": true,
+            "step": false,
+            "stackStrategy": "samesign",
+            "data": [
+                [
+                    "05-18",
+                    0
+                ],
+                [
+                    "05-19",
+                    0
+                ],
+                [
+                    "05-20",
+                    0
+                ],
+                [
+                    "05-21",
+                    0
+                ],
+                [
+                    "05-22",
+                    0
+                ]
+            ],
+            "hoverAnimation": true,
+            "label": {
+                "show": false,
+                "margin": 8,
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "logBase": 10,
+            "seriesLayoutBy": "column",
+            "lineStyle": {
+                "show": false
+            },
+            "areaStyle": {
+                "opacity": 0.3
+            },
+            "zlevel": 0,
+            "z": 0
+        },
+        {
+            "type": "line",
+            "name": "\u5173\u95ed\u7f3a\u9677",
+            "connectNulls": false,
+            "xAxisIndex": 0,
+            "symbol": "circle",
+            "symbolSize": 8,
+            "showSymbol": true,
+            "smooth": true,
+            "clip": true,
+            "step": false,
+            "stackStrategy": "samesign",
+            "data": [
+                [
+                    "05-18",
+                    0
+                ],
+                [
+                    "05-19",
+                    0
+                ],
+                [
+                    "05-20",
+                    0
+                ],
+                [
+                    "05-21",
+                    0
+                ],
+                [
+                    "05-22",
+                    0
+                ]
+            ],
+            "hoverAnimation": true,
+            "label": {
+                "show": false,
+                "margin": 8,
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "logBase": 10,
+            "seriesLayoutBy": "column",
+            "lineStyle": {
+                "show": false
+            },
+            "areaStyle": {
+                "opacity": 0.3
+            },
+            "zlevel": 0,
+            "z": 0
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "\u65b0\u589e\u7f3a\u9677",
+                "\u9057\u7559\u7f3a\u9677",
+                "\u5173\u95ed\u7f3a\u9677"
+            ],
+            "selected": {},
+            "show": true,
+            "left": "center",
+            "top": "bottom",
+            "orient": "horizontal",
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "textStyle": {
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 11,
+                "richInheritPlainLabel": true
+            },
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10,
+            "triggerEvent": false
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "axis",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "line"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "displayTransition": true,
+        "textStyle": {
+            "fontSize": 14,
+            "richInheritPlainLabel": true
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "extraCssText": "border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);",
+        "order": "seriesAsc"
+    },
+    "xAxis": [
+        {
+            "name": "\u65e5\u671f",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": false
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0,
+            "data": [
+                "05-18",
+                "05-19",
+                "05-20",
+                "05-21",
+                "05-22"
+            ]
+        }
+    ],
+    "yAxis": [
+        {
+            "name": "\u7f3a\u9677\u6570\u91cf",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": false,
+                    "type": "dashed"
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0
+        }
+    ],
+    "color": [
+        "#A0E7E5",
+        "#FFD69B",
+        "#F5C4D0"
+    ],
+    "title": [
+        {
+            "show": true,
+            "text": "\u7f3a\u9677\u8d8b\u52bf\u5206\u6790",
+            "target": "blank",
+            "subtarget": "blank",
+            "left": "center",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "color": "#2c3e50",
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 16,
+                "richInheritPlainLabel": true
+            }
+        }
+    ]
+});
+</script>
+</div>
+                <div class="card chart-card">
+<div id="chart_histogram" style="width:100%;height:300px"></div>
+<script>
+echarts.init(document.getElementById('chart_histogram')).setOption({
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "bar",
+            "name": "\u6570\u91cf",
+            "legendHoverLink": true,
+            "data": [
+                null,
+                null,
+                null
+            ],
+            "realtimeSort": false,
+            "showBackground": false,
+            "stackStrategy": "samesign",
+            "cursor": "pointer",
+            "barMinHeight": 0,
+            "barCategoryGap": "20%",
+            "barGap": "30%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": true,
+                "position": "top",
+                "margin": 8,
+                "fontSize": 12,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "itemStyle": {
+                "color": "#7FB3D5",
+                "borderColor": "white",
+                "borderWidth": 2,
+                "opacity": 0.85
+            },
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            }
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "\u6570\u91cf"
+            ],
+            "selected": {},
+            "show": false,
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10,
+            "triggerEvent": false
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "axis",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "shadow"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "displayTransition": true,
+        "textStyle": {
+            "fontSize": 14,
+            "richInheritPlainLabel": true
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "extraCssText": "border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);",
+        "order": "seriesAsc"
+    },
+    "xAxis": [
+        {
+            "name": "\u4fee\u590d\u5468\u671f(\u5929)",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 10,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": false
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0,
+            "data": [
+                "0-1",
+                "1-2",
+                "2-3"
+            ]
+        }
+    ],
+    "yAxis": [
+        {
+            "name": "\u6570\u91cf",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": false,
+                    "type": "dashed"
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0
+        }
+    ],
+    "title": [
+        {
+            "show": true,
+            "text": "\u7f3a\u9677\u4fee\u590d\u5468\u671f\u5206\u5e03",
+            "target": "blank",
+            "subtext": "\u5e73\u5747 1.3\u5929",
+            "subtarget": "blank",
+            "left": "center",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "color": "#2c3e50",
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 16,
+                "richInheritPlainLabel": true
+            },
+            "subtextStyle": {
+                "color": "#E74C3C",
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 12,
+                "richInheritPlainLabel": true
+            }
+        }
+    ]
+});
+</script>
+</div><div class="card chart-card">
+<div id="chart_rework" style="width:100%;height:350px"></div>
+<script>
+echarts.init(document.getElementById('chart_rework')).setOption({
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "pie",
+            "colorBy": "data",
+            "legendHoverLink": true,
+            "selectedMode": false,
+            "selectedOffset": 10,
+            "clockwise": true,
+            "startAngle": 90,
+            "minAngle": 0,
+            "minShowLabelAngle": 0,
+            "avoidLabelOverlap": true,
+            "stillShowZeroSum": true,
+            "percentPrecision": 2,
+            "showEmptyCircle": true,
+            "emptyCircleStyle": {
+                "color": "lightgray",
+                "borderColor": "#000",
+                "borderWidth": 0,
+                "borderType": "solid",
+                "borderDashOffset": 0,
+                "borderCap": "butt",
+                "borderJoin": "bevel",
+                "borderMiterLimit": 10,
+                "opacity": 1
+            },
+            "data": [
+                {
+                    "name": "\u65e0\u8fd4\u5de5",
+                    "value": 13
+                },
+                {
+                    "name": "\u8fd4\u5de51\u6b21",
+                    "value": 5
+                }
+            ],
+            "radius": [
+                "40%",
+                "70%"
+            ],
+            "center": [
+                "50%",
+                "45%"
+            ],
+            "label": {
+                "show": true,
+                "margin": 8,
+                "fontFamily": "Microsoft YaHei",
+                "formatter": "{b}: {d}%",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "labelLine": {
+                "show": true,
+                "showAbove": false,
+                "length": 15,
+                "length2": 15,
+                "smooth": false,
+                "minTurnAngle": 90,
+                "maxSurfaceAngle": 90
+            },
+            "itemStyle": {
+                "color": function(params) { var colors = ['#82E0AA', '#F7DC6F']; return colors[params.dataIndex]; }
+            },
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            }
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "\u65e0\u8fd4\u5de5",
+                "\u8fd4\u5de51\u6b21"
+            ],
+            "selected": {},
+            "show": true,
+            "left": "center",
+            "top": "bottom",
+            "orient": "horizontal",
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "textStyle": {
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 11,
+                "richInheritPlainLabel": true
+            },
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10,
+            "triggerEvent": false
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "item",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "line"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "displayTransition": true,
+        "textStyle": {
+            "fontSize": 14,
+            "richInheritPlainLabel": true
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "extraCssText": "border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);",
+        "order": "seriesAsc"
+    },
+    "title": [
+        {
+            "show": true,
+            "text": "\u7f3a\u9677\u8fd4\u5de5\u60c5\u51b5",
+            "target": "blank",
+            "subtarget": "blank",
+            "left": "center",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "color": "#2c3e50",
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 16,
+                "richInheritPlainLabel": true
+            }
+        }
+    ]
+});
+</script>
+</div><div class="card chart-card">
+<div id="chart_stage" style="width:100%;height:350px"></div>
+<div class="custom-legend" style="text-align:center;margin-top:5px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#A8D8EA;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">2.1-系统测试【基本流】</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#AA96DA;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">2.2-系统测试【备选流】</span></span><span class="legend-item" data-index="2" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FCBAD3;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">4.1-回归测试【基本流】</span></span><span class="legend-item" data-index="3" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FFFFD2;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">4.2-回归测试【备选流】</span></span></div>
+<script>
+(function() {
+    var categories = ['2.1-系统测试【基本流】', '2.2-系统测试【备选流】', '4.1-回归测试【基本流】', '4.2-回归测试【备选流】'];
+    var values = [12, 0, 3, 3];
+    var colors = ['#A8D8EA', '#AA96DA', '#FCBAD3', '#FFFFD2'];
+    var selected = {};
+    for (var i = 0; i < categories.length; i++) selected[i] = true;
+
+    function updateChart() {
+        var newCat = [], newVal = [], newColors = [];
+        for (var i = 0; i < categories.length; i++) {
+            if (selected[i]) {
+                newCat.push(categories[i]);
+                newVal.push(values[i]);
+                newColors.push(colors[i]);
+            }
+        }
+        chart.setOption({
+            yAxis: {data: newCat},
+            series: {
+                data: newVal,
+                itemStyle: {color: function(params) { return newColors[params.dataIndex]; }}
+            }
+        });
+    }
+
+    var chart = echarts.init(document.getElementById('chart_stage'));
+    chart.setOption({
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "bar",
+            "name": "\u6570\u91cf",
+            "legendHoverLink": true,
+            "data": [
+                12,
+                0,
+                3,
+                3
+            ],
+            "realtimeSort": false,
+            "showBackground": false,
+            "stackStrategy": "samesign",
+            "cursor": "pointer",
+            "barMinHeight": 0,
+            "barCategoryGap": "20%",
+            "barGap": "30%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": true,
+                "position": "right",
+                "margin": 8,
+                "fontSize": 12,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "itemStyle": {
+                "color": function(params) { var colors = ['#A8D8EA', '#AA96DA', '#FCBAD3', '#FFFFD2']; return colors[params.dataIndex]; },
+                "borderColor": "white",
+                "borderWidth": 2,
+                "opacity": 0.85
+            },
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            }
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "\u6570\u91cf"
+            ],
+            "selected": {},
+            "show": false,
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10,
+            "triggerEvent": false
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "axis",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "shadow"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "displayTransition": true,
+        "textStyle": {
+            "fontSize": 14,
+            "richInheritPlainLabel": true
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "extraCssText": "border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);",
+        "order": "seriesAsc"
+    },
+    "xAxis": [
+        {
+            "name": "\u6570\u91cf",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": false,
+                    "type": "dashed"
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0
+        }
+    ],
+    "yAxis": [
+        {
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": false,
+                "lineStyle": {
+                    "show": false
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0,
+            "data": [
+                "2.1-\u7cfb\u7edf\u6d4b\u8bd5\u3010\u57fa\u672c\u6d41\u3011",
+                "2.2-\u7cfb\u7edf\u6d4b\u8bd5\u3010\u5907\u9009\u6d41\u3011",
+                "4.1-\u56de\u5f52\u6d4b\u8bd5\u3010\u57fa\u672c\u6d41\u3011",
+                "4.2-\u56de\u5f52\u6d4b\u8bd5\u3010\u5907\u9009\u6d41\u3011"
+            ]
+        }
+    ],
+    "title": [
+        {
+            "show": true,
+            "text": "\u7f3a\u9677\u53d1\u73b0\u9636\u6bb5\u5206\u5e03",
+            "target": "blank",
+            "subtarget": "blank",
+            "left": "center",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "color": "#2c3e50",
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 16,
+                "richInheritPlainLabel": true
+            }
+        }
+    ]
+});
+    chart.setOption({grid: {left: '200px', right: '60px', top: '50px', bottom: '30px'}});
+
+    var legendItems = document.querySelectorAll('#chart_stage + .custom-legend .legend-item');
+    legendItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            var idx = parseInt(this.getAttribute('data-index'));
+            selected[idx] = !selected[idx];
+            this.style.opacity = selected[idx] ? 1 : 0.3;
+            updateChart();
+        });
+    });
+})();
+</script>
+</div><div class="card chart-card">
+<div id="chart_type" style="width:100%;height:420px"></div>
+<script>
+echarts.init(document.getElementById('chart_type')).setOption({
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "pie",
+            "colorBy": "data",
+            "legendHoverLink": true,
+            "selectedMode": false,
+            "selectedOffset": 10,
+            "clockwise": true,
+            "startAngle": 90,
+            "minAngle": 0,
+            "minShowLabelAngle": 0,
+            "avoidLabelOverlap": true,
+            "stillShowZeroSum": true,
+            "percentPrecision": 2,
+            "showEmptyCircle": true,
+            "emptyCircleStyle": {
+                "color": "lightgray",
+                "borderColor": "#000",
+                "borderWidth": 0,
+                "borderType": "solid",
+                "borderDashOffset": 0,
+                "borderCap": "butt",
+                "borderJoin": "bevel",
+                "borderMiterLimit": 10,
+                "opacity": 1
+            },
+            "data": [
+                {
+                    "name": "5-\u6570\u636e\u4e22\u5931\u6216\u9519\u8bef",
+                    "value": 5
+                },
+                {
+                    "name": "6-\u64cd\u4f5c\u754c\u9762",
+                    "value": 5
+                },
+                {
+                    "name": "8-\u8f93\u5165\u6821\u9a8c",
+                    "value": 3
+                },
+                {
+                    "name": "2-\u6027\u80fd\u95ee\u9898",
+                    "value": 3
+                },
+                {
+                    "name": "29-\u5176\u5b83",
+                    "value": 1
+                },
+                {
+                    "name": "3-\u529f\u80fd\u4e0d\u53ef\u7528",
+                    "value": 1
+                }
+            ],
+            "radius": [
+                "35.0%",
+                "60%"
+            ],
+            "center": [
+                "50%",
+                "50%"
+            ],
+            "label": {
+                "show": true,
+                "color": "#34495e",
+                "margin": 8,
+                "fontSize": 14,
+                "fontFamily": "Microsoft YaHei",
+                "formatter": "{d}%",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "labelLine": {
+                "show": true,
+                "showAbove": false,
+                "length": 15,
+                "length2": 15,
+                "smooth": false,
+                "minTurnAngle": 90,
+                "maxSurfaceAngle": 90
+            },
+            "itemStyle": {
+                "color":     function(params) {        var colors = ['#A8D8EA', '#AA96DA', '#FCBAD3', '#FFFFD2', '#C4E1C1', '#F9D5A7', '#B8E0D2', '#D6EADF'];        return colors[params.dataIndex];    }    
+            },
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            }
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "5-\u6570\u636e\u4e22\u5931\u6216\u9519\u8bef",
+                "6-\u64cd\u4f5c\u754c\u9762",
+                "8-\u8f93\u5165\u6821\u9a8c",
+                "2-\u6027\u80fd\u95ee\u9898",
+                "29-\u5176\u5b83",
+                "3-\u529f\u80fd\u4e0d\u53ef\u7528"
+            ],
+            "selected": {},
+            "show": true,
+            "left": "center",
+            "top": "bottom",
+            "orient": "horizontal",
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "textStyle": {
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 11,
+                "richInheritPlainLabel": true
+            },
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10,
+            "triggerEvent": false
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "item",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "line"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "displayTransition": true,
+        "textStyle": {
+            "fontSize": 14,
+            "richInheritPlainLabel": true
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "extraCssText": "border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);",
+        "order": "seriesAsc"
+    },
+    "title": [
+        {
+            "show": true,
+            "text": "\u7f3a\u9677\u7c7b\u578b\u5206\u5e03",
+            "target": "blank",
+            "subtarget": "blank",
+            "left": "center",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "color": "#2c3e50",
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 16,
+                "richInheritPlainLabel": true
+            }
+        }
+    ]
+});
+</script>
+</div><div class="card chart-card">
+<div id="chart_cause" style="width:100%;height:350px"></div>
+<div class="custom-legend" style="text-align:center;margin-top:5px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#A8D8EA;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">C7-旧有程序问题</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#AA96DA;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">C4-逻辑错误</span></span><span class="legend-item" data-index="2" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FCBAD3;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">C6-资源获取和释放问题</span></span><span class="legend-item" data-index="3" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FFFFD2;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">C3-性能问题</span></span><span class="legend-item" data-index="4" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#C4E1C1;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">D5-测试环境错误</span></span><span class="legend-item" data-index="5" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#F9D5A7;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">C20-代码未拉平（新变更）</span></span></div>
+<script>
+(function() {
+    var categories = ['C7-旧有程序问题', 'C4-逻辑错误', 'C6-资源获取和释放问题', 'C3-性能问题', 'D5-测试环境错误', 'C20-代码未拉平（新变更）'];
+    var values = [6, 4, 2, 1, 1, 1];
+    var colors = ['#A8D8EA', '#AA96DA', '#FCBAD3', '#FFFFD2', '#C4E1C1', '#F9D5A7', '#B8E0D2', '#D6EADF'];
+    var selected = {};
+    for (var i = 0; i < categories.length; i++) selected[i] = true;
+
+    function updateChart() {
+        var newCat = [], newVal = [], newColors = [];
+        for (var i = 0; i < categories.length; i++) {
+            if (selected[i]) {
+                newCat.push(categories[i]);
+                newVal.push(values[i]);
+                newColors.push(colors[i]);
+            }
+        }
+        chart.setOption({
+            yAxis: {data: newCat},
+            series: {
+                data: newVal,
+                itemStyle: {color: function(params) { return newColors[params.dataIndex]; }}
+            }
+        });
+    }
+
+    var chart = echarts.init(document.getElementById('chart_cause'));
+    chart.setOption({
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "bar",
+            "name": "\u6570\u91cf",
+            "legendHoverLink": true,
+            "data": [
+                6,
+                4,
+                2,
+                1,
+                1,
+                1
+            ],
+            "realtimeSort": false,
+            "showBackground": false,
+            "stackStrategy": "samesign",
+            "cursor": "pointer",
+            "barMinHeight": 0,
+            "barCategoryGap": "20%",
+            "barGap": "30%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": true,
+                "position": "right",
+                "margin": 8,
+                "fontSize": 12,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "itemStyle": {
+                "color": function(params) { var colors = ['#A8D8EA', '#AA96DA', '#FCBAD3', '#FFFFD2', '#C4E1C1', '#F9D5A7', '#B8E0D2', '#D6EADF']; return colors[params.dataIndex]; },
+                "borderColor": "white",
+                "borderWidth": 2,
+                "opacity": 0.85
+            },
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            }
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "\u6570\u91cf"
+            ],
+            "selected": {},
+            "show": false,
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10,
+            "triggerEvent": false
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "axis",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "shadow"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "displayTransition": true,
+        "textStyle": {
+            "fontSize": 14,
+            "richInheritPlainLabel": true
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "extraCssText": "border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);",
+        "order": "seriesAsc"
+    },
+    "xAxis": [
+        {
+            "name": "\u6570\u91cf",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": false,
+                    "type": "dashed"
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0
+        }
+    ],
+    "yAxis": [
+        {
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": false,
+                "lineStyle": {
+                    "show": false
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0,
+            "data": [
+                "C7-\u65e7\u6709\u7a0b\u5e8f\u95ee\u9898",
+                "C4-\u903b\u8f91\u9519\u8bef",
+                "C6-\u8d44\u6e90\u83b7\u53d6\u548c\u91ca\u653e\u95ee\u9898",
+                "C3-\u6027\u80fd\u95ee\u9898",
+                "D5-\u6d4b\u8bd5\u73af\u5883\u9519\u8bef",
+                "C20-\u4ee3\u7801\u672a\u62c9\u5e73\uff08\u65b0\u53d8\u66f4\uff09"
+            ]
+        }
+    ],
+    "title": [
+        {
+            "show": true,
+            "text": "\u7f3a\u9677\u5f15\u5165\u539f\u56e0\u5206\u6790",
+            "target": "blank",
+            "subtarget": "blank",
+            "left": "center",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "color": "#2c3e50",
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 16,
+                "richInheritPlainLabel": true
+            }
+        }
+    ]
+});
+    chart.setOption({grid: {left: '140px', right: '60px', top: '50px', bottom: '30px'}});
+
+    var legendItems = document.querySelectorAll('#chart_cause + .custom-legend .legend-item');
+    legendItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            var idx = parseInt(this.getAttribute('data-index'));
+            selected[idx] = !selected[idx];
+            this.style.opacity = selected[idx] ? 1 : 0.3;
+            updateChart();
+        });
+    });
+})();
+</script>
+</div><div class="card chart-card">
+<div id="chart_priority" style="width:100%;height:350px"></div>
+<div class="custom-legend" style="text-align:center;margin-top:-20px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#E57373;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">优先</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FFB74D;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">高</span></span><span class="legend-item" data-index="2" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#64B5F6;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">中</span></span><span class="legend-item" data-index="3" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#81C784;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">低</span></span></div>
+<script>
+(function() {
+    var categories = ['优先', '高', '中', '低'];
+    var values = [0, 2, 16, 0];
+    var colors = ['#E57373', '#FFB74D', '#64B5F6', '#81C784'];
+    var selected = {};
+    for (var i = 0; i < categories.length; i++) selected[i] = true;
+
+    function updateChart() {
+        var newCat = [], newVal = [], newColors = [];
+        for (var i = 0; i < categories.length; i++) {
+            if (selected[i]) {
+                newCat.push(categories[i]);
+                newVal.push(values[i]);
+                newColors.push(colors[i]);
+            }
+        }
+        chart.setOption({
+            xAxis: {data: newCat},
+            series: {
+                data: newVal,
+                itemStyle: {color: function(params) { return newColors[params.dataIndex]; }}
+            }
+        });
+    }
+
+    var chart = echarts.init(document.getElementById('chart_priority'));
+    chart.setOption({
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "bar",
+            "name": "\u6570\u91cf",
+            "legendHoverLink": true,
+            "data": [
+                0,
+                2,
+                16,
+                0
+            ],
+            "realtimeSort": false,
+            "showBackground": false,
+            "stackStrategy": "samesign",
+            "cursor": "pointer",
+            "barMinHeight": 0,
+            "barCategoryGap": "20%",
+            "barGap": "30%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": true,
+                "position": "top",
+                "margin": 8,
+                "fontSize": 12,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "itemStyle": {
+                "color": function(params) { var colors = ['#E57373', '#FFB74D', '#64B5F6', '#81C784']; return colors[params.dataIndex]; },
+                "borderColor": "white",
+                "borderWidth": 2,
+                "opacity": 0.85
+            },
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            }
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "\u6570\u91cf"
+            ],
+            "selected": {},
+            "show": false,
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10,
+            "triggerEvent": false
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "axis",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "shadow"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "displayTransition": true,
+        "textStyle": {
+            "fontSize": 14,
+            "richInheritPlainLabel": true
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "extraCssText": "border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);",
+        "order": "seriesAsc"
+    },
+    "xAxis": [
+        {
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": false
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0,
+            "data": [
+                "\u4f18\u5148",
+                "\u9ad8",
+                "\u4e2d",
+                "\u4f4e"
+            ]
+        }
+    ],
+    "yAxis": [
+        {
+            "name": "\u6570\u91cf",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": false,
+                    "type": "dashed"
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0
+        }
+    ],
+    "title": [
+        {
+            "show": true,
+            "text": "\u7f3a\u9677\u4f18\u5148\u7ea7\u5206\u5e03",
+            "target": "blank",
+            "subtarget": "blank",
+            "left": "center",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "color": "#2c3e50",
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 16,
+                "richInheritPlainLabel": true
+            }
+        }
+    ]
+});
+
+    var legendItems = document.querySelectorAll('#chart_priority + .custom-legend .legend-item');
+    legendItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            var idx = parseInt(this.getAttribute('data-index'));
+            selected[idx] = !selected[idx];
+            this.style.opacity = selected[idx] ? 1 : 0.3;
+            updateChart();
+        });
+    });
+})();
+</script>
+</div><div class="card chart-card">
+<div id="chart_severity" style="width:100%;height:350px"></div>
+<div class="custom-legend" style="text-align:center;margin-top:5px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#E57373;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">严重</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FFB74D;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">一般</span></span><span class="legend-item" data-index="2" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#64B5F6;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">轻微</span></span><span class="legend-item" data-index="3" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#81C784;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">建议</span></span></div>
+<script>
+(function() {
+    var categories = ['严重', '一般', '轻微', '建议'];
+    var values = [0, 6, 9, 0];
+    var colors = ['#E57373', '#FFB74D', '#64B5F6', '#81C784'];
+    var selected = {};
+    for (var i = 0; i < categories.length; i++) selected[i] = true;
+
+    function updateChart() {
+        var newCat = [], newVal = [], newColors = [];
+        for (var i = 0; i < categories.length; i++) {
+            if (selected[i]) {
+                newCat.push(categories[i]);
+                newVal.push(values[i]);
+                newColors.push(colors[i]);
+            }
+        }
+        chart.setOption({
+            yAxis: {data: newCat},
+            series: {
+                data: newVal,
+                itemStyle: {color: function(params) { return newColors[params.dataIndex]; }}
+            }
+        });
+    }
+
+    var chart = echarts.init(document.getElementById('chart_severity'));
+    chart.setOption({
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "bar",
+            "name": "\u6570\u91cf",
+            "legendHoverLink": true,
+            "data": [
+                0,
+                6,
+                9,
+                0
+            ],
+            "realtimeSort": false,
+            "showBackground": false,
+            "stackStrategy": "samesign",
+            "cursor": "pointer",
+            "barMinHeight": 0,
+            "barCategoryGap": "20%",
+            "barGap": "30%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": true,
+                "position": "right",
+                "margin": 8,
+                "fontSize": 12,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "itemStyle": {
+                "color": function(params) { var colors = ['#E57373', '#FFB74D', '#64B5F6', '#81C784']; return colors[params.dataIndex]; },
+                "borderColor": "white",
+                "borderWidth": 2,
+                "opacity": 0.85
+            },
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            }
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "\u6570\u91cf"
+            ],
+            "selected": {},
+            "show": false,
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10,
+            "triggerEvent": false
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "axis",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "shadow"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "displayTransition": true,
+        "textStyle": {
+            "fontSize": 14,
+            "richInheritPlainLabel": true
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "extraCssText": "border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);",
+        "order": "seriesAsc"
+    },
+    "xAxis": [
+        {
+            "name": "\u6570\u91cf",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": false,
+                    "type": "dashed"
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0
+        }
+    ],
+    "yAxis": [
+        {
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": false,
+                "lineStyle": {
+                    "show": false
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0,
+            "data": [
+                "\u4e25\u91cd",
+                "\u4e00\u822c",
+                "\u8f7b\u5fae",
+                "\u5efa\u8bae"
+            ]
+        }
+    ],
+    "title": [
+        {
+            "show": true,
+            "text": "\u7f3a\u9677\u4e25\u91cd\u7a0b\u5ea6\u5206\u5e03",
+            "target": "blank",
+            "subtarget": "blank",
+            "left": "center",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "color": "#2c3e50",
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 16,
+                "richInheritPlainLabel": true
+            }
+        }
+    ]
+});
+    chart.setOption({grid: {left: '80px', right: '60px', top: '50px', bottom: '30px'}});
+
+    var legendItems = document.querySelectorAll('#chart_severity + .custom-legend .legend-item');
+    legendItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            var idx = parseInt(this.getAttribute('data-index'));
+            selected[idx] = !selected[idx];
+            this.style.opacity = selected[idx] ? 1 : 0.3;
+            updateChart();
+        });
+    });
+})();
+</script>
+</div><div class="card chart-card">
+<div id="chart_intro" style="width:100%;height:350px"></div>
+<div class="custom-legend" style="text-align:center;margin-top:5px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#7FB3D5;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">C-软件编码</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#76D7C4;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">D-软件测试</span></span></div>
+<script>
+(function() {
+    var categories = ['C-软件编码', 'D-软件测试'];
+    var values = [14, 1];
+    var colors = ['#7FB3D5', '#76D7C4', '#F7DC6F', '#F0B27A', '#E59866', '#AF7AC5', '#85C1E9', '#82E0AA'];
+    var selected = {};
+    for (var i = 0; i < categories.length; i++) selected[i] = true;
+
+    function updateChart() {
+        var newCat = [], newVal = [], newColors = [];
+        for (var i = 0; i < categories.length; i++) {
+            if (selected[i]) {
+                newCat.push(categories[i]);
+                newVal.push(values[i]);
+                newColors.push(colors[i]);
+            }
+        }
+        chart.setOption({
+            yAxis: {data: newCat},
+            series: {
+                data: newVal,
+                itemStyle: {color: function(params) { return newColors[params.dataIndex]; }}
+            }
+        });
+    }
+
+    var chart = echarts.init(document.getElementById('chart_intro'));
+    chart.setOption({
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "bar",
+            "name": "\u6570\u91cf",
+            "legendHoverLink": true,
+            "data": [
+                14,
+                1
+            ],
+            "realtimeSort": false,
+            "showBackground": false,
+            "stackStrategy": "samesign",
+            "cursor": "pointer",
+            "barMinHeight": 0,
+            "barCategoryGap": "20%",
+            "barGap": "30%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": true,
+                "position": "right",
+                "margin": 8,
+                "fontSize": 12,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "itemStyle": {
+                "color": function(params) { var colors = ['#7FB3D5', '#76D7C4', '#F7DC6F', '#F0B27A', '#E59866', '#AF7AC5', '#85C1E9', '#82E0AA']; return colors[params.dataIndex]; },
+                "borderColor": "white",
+                "borderWidth": 2,
+                "opacity": 0.85
+            },
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            }
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "\u6570\u91cf"
+            ],
+            "selected": {},
+            "show": false,
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10,
+            "triggerEvent": false
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "axis",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "shadow"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "displayTransition": true,
+        "textStyle": {
+            "fontSize": 14,
+            "richInheritPlainLabel": true
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "extraCssText": "border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);",
+        "order": "seriesAsc"
+    },
+    "xAxis": [
+        {
+            "name": "\u6570\u91cf",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": false,
+                    "type": "dashed"
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0
+        }
+    ],
+    "yAxis": [
+        {
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTruncate": {},
+            "nameMoveOverlap": true,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 11,
+                "fontFamily": "Microsoft YaHei",
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "silent": false,
+            "triggerEvent": false,
+            "splitLine": {
+                "show": false,
+                "lineStyle": {
+                    "show": false
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0,
+            "data": [
+                "C-\u8f6f\u4ef6\u7f16\u7801",
+                "D-\u8f6f\u4ef6\u6d4b\u8bd5"
+            ]
+        }
+    ],
+    "title": [
+        {
+            "show": true,
+            "text": "\u7f3a\u9677\u5f15\u5165\u9636\u6bb5\u5206\u5e03",
+            "target": "blank",
+            "subtarget": "blank",
+            "left": "center",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "color": "#2c3e50",
+                "fontFamily": "Microsoft YaHei",
+                "fontSize": 16,
+                "richInheritPlainLabel": true
+            }
+        }
+    ]
+});
+    chart.setOption({grid: {left: '140px', right: '60px', top: '50px', bottom: '30px'}});
+
+    var legendItems = document.querySelectorAll('#chart_intro + .custom-legend .legend-item');
+    legendItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            var idx = parseInt(this.getAttribute('data-index'));
+            selected[idx] = !selected[idx];
+            this.style.opacity = selected[idx] ? 1 : 0.3;
+            updateChart();
+        });
+    });
+})();
+</script>
+</div>
+            </div>
+        </div>
+
+        <div class="view-container" id="detailView">
+            
+<div id="detailVueApp">
+    <div class="filter-bar" :class="{ 'filter-collapsed': filterCollapsed }">
+        <div class="filter-row">
+            <div class="filter-group">
+                <span class="filter-label">状态</span>
+                <el-select v-model="filters.status" placeholder="全部" clearable size="small" style="width: 100px" @change="onFilterChange">
+                    <el-option v-for="s in statusOptions" :key="s" :label="s" :value="s"></el-option>
+                </el-select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">处理人员</span>
+                <el-select v-model="filters.handler" placeholder="全部" clearable size="small" style="width: 120px" @change="onFilterChange">
+                    <el-option v-for="h in handlerOptions" :key="h" :label="h" :value="h"></el-option>
+                </el-select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">优先级</span>
+                <el-select v-model="filters.priority" placeholder="全部" clearable size="small" style="width: 80px" @change="onFilterChange">
+                    <el-option v-for="p in priorityOptions" :key="p" :label="p" :value="p"></el-option>
+                </el-select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">发现阶段</span>
+                <el-select v-model="filters.stage" placeholder="全部" clearable size="small" style="width: 160px" @change="onFilterChange">
+                    <el-option v-for="st in stageOptions" :key="st" :label="st" :value="st"></el-option>
+                </el-select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">缺陷类型</span>
+                <el-select v-model="filters.defectType" placeholder="全部" clearable size="small" style="width: 120px" @change="onFilterChange">
+                    <el-option v-for="t in typeOptions" :key="t" :label="t" :value="t"></el-option>
+                </el-select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">日期</span>
+                <el-select v-model="filters.dateType" size="small" style="width: 90px" @change="onDateTypeChange">
+                    <el-option label="登记时间" value="register"></el-option>
+                    <el-option label="修复时间" value="modify"></el-option>
+                    <el-option label="关闭时间" value="close"></el-option>
+                </el-select>
+            </div>
+            <div class="filter-group">
+                <el-date-picker
+                    v-model="filters.dateRange"
+                    type="daterange"
+                    range-separator="~"
+                    start-placeholder="开始"
+                    end-placeholder="结束"
+                    value-format="YYYY-MM-DD"
+                    size="small"
+                    style="width: 210px"
+                    @change="onFilterChange"
+                ></el-date-picker>
+            </div>
+            <el-button size="small" style="border-color: #AA96DA; color: #AA96DA; background: #fff;" @click="resetFilters">重置</el-button>
+        </div>
+        <div class="filter-row filter-row-extra">
+            <span class="filter-stats">共 {{ filteredCount }} 条</span>
+            <el-button type="text" size="small" class="filter-toggle" @click="toggleFilter">
+                {{ filterCollapsed ? '展开' : '收起' }}
+                <span :class="filterCollapsed ? 'arrow-down' : 'arrow-up'"></span>
+            </el-button>
+        </div>
+    </div>
+
+    <div class="detail-table-container">
+        <table class="detail-table">
+            <thead>
+                <tr>
+                    <th class="col-0">缺陷编号</th>
+                    <th class="col-1">缺陷状态</th>
+                    <th class="col-2">缺陷摘要</th>
+                    <th class="col-3">优先级</th>
+                    <th class="col-4">严重程度</th>
+                    <th class="col-5">处理人员</th>
+                    <th class="col-6">修复周期(天)</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(row, idx) in filteredData" :key="idx" @dblclick="showDetail(filteredIndices[idx])">
+                    <td v-for="(key, colIdx) in colKeys" :key="colIdx" :class="key === '缺陷摘要' ? 'summary-cell' : ''">
+                        <span v-if="key === '缺陷状态'" :class="'status-tag status-' + row[key]">{{ row[key] }}</span>
+                        <span v-else-if="key === '优先级'" :class="getPriorityClass(row[key])">{{ row[key] }}</span>
+                        <span v-else>{{ row[key] }}</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <el-dialog v-model="modalVisible" title="缺陷明细" width="600px" :close-on-click-modal="true" destroy-on-close>
+        <div class="modal-body">
+            <div v-for="(key, i) in detailKeys" :key="i" class="detail-item">
+                <div class="detail-label">{{ detailColNames[i] }}</div>
+                <div class="detail-value">
+                    <span v-if="key === '缺陷状态'" :class="'status-tag status-' + detailData[key]">{{ detailData[key] || '--' }}</span>
+                    <span v-else-if="key === '优先级'" :class="getPriorityClass(detailData[key])">{{ detailData[key] || '--' }}</span>
+                    <span v-else>{{ detailData[key] || '--' }}</span>
+                </div>
+            </div>
+        </div>
+    </el-dialog>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus/dist/index.css">
+<style>
+    /* Element Plus 样式隔离 - 只在 detailVueApp 内生效 */
+    #detailVueApp .filter-bar { background: #fff; border-radius: 12px; padding: 12px 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    #detailVueApp .filter-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    #detailVueApp .filter-row-extra { margin-top: 10px; justify-content: space-between; padding-top: 10px; border-top: 1px dashed #eee; }
+    #detailVueApp .filter-group { display: flex; align-items: center; gap: 6px; }
+    #detailVueApp .filter-label { font-family: 'Microsoft YaHei'; font-size: 13px; color: #555; white-space: nowrap; }
+    #detailVueApp .filter-stats { font-family: 'Microsoft YaHei'; font-size: 13px; color: #AA96DA; }
+    #detailVueApp .filter-toggle { font-family: 'Microsoft YaHei'; font-size: 12px; color: #999; padding: 0; }
+    #detailVueApp .filter-toggle:hover { color: #AA96DA; }
+    #detailVueApp .arrow-up, #detailVueApp .arrow-down { display: inline-block; width: 0; height: 0; margin-left: 4px; vertical-align: middle; }
+    #detailVueApp .arrow-up { border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 5px solid currentColor; }
+    #detailVueApp .arrow-down { border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid currentColor; }
+    #detailVueApp .filter-collapsed .filter-row:not(.filter-row-extra) { max-height: 0; overflow: hidden; margin: 0; padding: 0; }
+    #detailVueApp .filter-collapsed .filter-row-extra { margin-top: 0; padding-top: 0; border-top: none; }
+    #detailVueApp .detail-table-container { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow-x: auto; }
+    #detailVueApp .detail-table { width: 100%; border-collapse: collapse; font-family: 'Microsoft YaHei'; font-size: 13px; }
+    #detailVueApp .detail-table th { background: #f5f5f5; color: #666; padding: 12px 10px; text-align: left; font-weight: normal; white-space: nowrap; border-bottom: 1px solid #eee; }
+    #detailVueApp .detail-table th:first-child { border-radius: 8px 0 0 0; }
+    #detailVueApp .detail-table th:last-child { border-radius: 0 8px 0 0; }
+    #detailVueApp .detail-table tbody tr { transition: all 0.15s; cursor: pointer; }
+    #detailVueApp .detail-table tbody tr:hover { background: #fafafa; transform: scale(1.01); }
+    #detailVueApp .detail-table td { padding: 10px; border-bottom: 1px solid #f0f0f0; color: #444; }
+    #detailVueApp .detail-table tbody tr:last-child td { border-bottom: none; }
+    #detailVueApp .detail-table .col-0 { width: 130px; color: #AA96DA; }
+    #detailVueApp .detail-table .col-1 { width: 80px; }
+    #detailVueApp .detail-table .col-2 { min-width: 180px; }
+    #detailVueApp .detail-table .col-3 { width: 60px; }
+    #detailVueApp .detail-table .col-4 { width: 70px; }
+    #detailVueApp .detail-table .col-5 { width: 90px; }
+    #detailVueApp .detail-table .col-6 { width: 80px; }
+    #detailVueApp .detail-table td.summary-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 250px; }
+    #detailVueApp .detail-table td.summary-cell:hover { white-space: normal; word-break: break-all; background: #fff; box-shadow: 0 2px 8px rgba(170,150,218,0.2); z-index: 10; position: relative; border-radius: 4px; padding: 10px; }
+    #detailVueApp .status-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    #detailVueApp .status-New { background: #FFF9C4; color: #F9A825; }
+    #detailVueApp .status-Closed { background: #E8F5E9; color: #66BB6A; }
+    #detailVueApp .status-Fixed { background: #E0F7FA; color: #4DD0E1; }
+    #detailVueApp .status-Pending { background: #F3E5F5; color: #AB47BC; }
+    #detailVueApp .status-ReOpen { background: #FFEBEE; color: #EF5350; }
+    #detailVueApp .priority-high { color: #EF5350; }
+    #detailVueApp .priority-medium { color: #FFA726; }
+    #detailVueApp .priority-low { color: #AA96DA; }
+    #detailVueApp .modal-body { padding: 10px 0; }
+    #detailVueApp .detail-item { display: flex; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; background: #fff; transition: all 0.2s; }
+    #detailVueApp .detail-item:hover { background: #fafafa; transform: translateX(6px); }
+    #detailVueApp .detail-item:last-child { margin-bottom: 0; }
+    #detailVueApp .detail-label { width: 90px; flex-shrink: 0; font-family: 'Microsoft YaHei'; font-size: 13px; color: #AA96DA; font-weight: bold; }
+    #detailVueApp .detail-value { flex: 1; font-family: 'Microsoft YaHei'; font-size: 13px; color: #333; word-break: break-all; }
+    /* el-dialog 毛玻璃背景 */
+    .el-overlay { background: rgba(170,150,218,0.15) !important; backdrop-filter: blur(8px) !important; }
+    /* el-dialog 弹窗样式 */
+    .el-dialog { border-radius: 16px !important; box-shadow: 0 12px 40px rgba(170,150,218,0.25) !important; animation: dialogPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important; }
+    @keyframes dialogPop { from { transform: scale(0.8) translateY(-30px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+    .el-dialog__header { background: #f8f9fa !important; border-radius: 16px 16px 0 0 !important; padding: 16px 20px !important; border-bottom: 1px solid #eee !important; display: flex !important; align-items: center !important; justify-content: space-between !important; }
+    .el-dialog__title { font-family: 'Microsoft YaHei' !important; color: #AA96DA !important; font-size: 16px !important; }
+    .el-dialog__headerbtn { position: relative !important; top: 0 !important; right: 0 !important; width: 32px !important; height: 32px !important; background: #fff !important; border: 1px solid #eee !important; border-radius: 50% !important; transition: all 0.3s !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+    .el-dialog__headerbtn:hover { transform: rotate(90deg); background: #AA96DA !important; border-color: #AA96DA !important; }
+    .el-dialog__headerbtn .el-dialog__close { color: #AA96DA !important; font-size: 16px !important; }
+    .el-dialog__headerbtn:hover .el-dialog__close { color: #fff !important; }
+    .el-dialog__body { padding: 20px !important; max-height: 60vh !important; overflow-y: auto !important; }
+    .el-dialog__body::-webkit-scrollbar { width: 4px; }
+    .el-dialog__body::-webkit-scrollbar-thumb { background: #AA96DA; border-radius: 2px; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/element-plus"></script>
+<script>
+(function() {
+    var appData = {
+        allData: [{"缺陷编号": "NL-B-173312", "缺陷状态": "New", "缺陷摘要": "【导入】【属性库】非生产态属性组的名称也被导入", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "缺陷修复周期(天)": ""}, {"缺陷编号": "NL-B-173213", "缺陷状态": "ReOpen", "缺陷摘要": "【导出】导出超时", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "缺陷修复周期(天)": 0.27}, {"缺陷编号": "NL-B-172952", "缺陷状态": "New", "缺陷摘要": "【属性库】复用属性组性能优化", "优先级": "中", "严重程度": "一般", "处理人员": "王荣坡", "缺陷修复周期(天)": ""}, {"缺陷编号": "NL-B-172950", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】导出ppt失败", "优先级": "中", "严重程度": "较高", "处理人员": "陈珍桂", "缺陷修复周期(天)": 0.97}, {"缺陷编号": "NL-B-172949", "缺陷状态": "ReOpen", "缺陷摘要": "【需求采编】新增商品后，商品的排列顺序随机，倒叙排列", "优先级": "中", "严重程度": "轻微", "处理人员": "陈珍桂", "缺陷修复周期(天)": 1.95}, {"缺陷编号": "NL-B-172948", "缺陷状态": "Closed", "缺陷摘要": "【产品需求列表】创建时间未显示", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "缺陷修复周期(天)": 0.64}, {"缺陷编号": "NL-B-172947", "缺陷状态": "Closed", "缺陷摘要": "【元数据视图】产品信息图、产商品类目树的查询重置按钮丢失", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "缺陷修复周期(天)": 1.63}, {"缺陷编号": "NL-B-172946", "缺陷状态": "Closed", "缺陷摘要": "【产品一码】商品线为空时，不展示“-”", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "缺陷修复周期(天)": 0.04}, {"缺陷编号": "NL-B-172945", "缺陷状态": "New", "缺陷摘要": "【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "缺陷修复周期(天)": ""}, {"缺陷编号": "NL-B-172944", "缺陷状态": "Closed", "缺陷摘要": "【浏览器缓存】不同环境登录相同账号，会触发“重新加载站点”提示", "优先级": "中", "严重程度": "轻微", "处理人员": "陈智伟A", "缺陷修复周期(天)": 0.97}, {"缺陷编号": "NL-B-172713", "缺陷状态": "Closed", "缺陷摘要": "【商品构成】产品线必填未生效", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "缺陷修复周期(天)": 0.52}, {"缺陷编号": "NL-B-172712", "缺陷状态": "Closed", "缺陷摘要": "【动作库】动作库，节点名称未必填", "优先级": "中", "严重程度": "轻微", "处理人员": "陈智伟A", "缺陷修复周期(天)": 1.82}, {"缺陷编号": "NL-B-172711", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品】商品线6个层级，导出数据多了个null", "优先级": "中", "严重程度": "一般", "处理人员": "戴海涛", "缺陷修复周期(天)": 2.76}, {"缺陷编号": "NL-B-172710", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx字体样式调整", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "缺陷修复周期(天)": 1.91}, {"缺陷编号": "NL-B-172709", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx改造类型样式没有", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "缺陷修复周期(天)": 1.59}, {"缺陷编号": "NL-B-172708", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_商品定价清单.xlsx内容错误", "优先级": "中", "严重程度": "一般", "处理人员": "王邦城", "缺陷修复周期(天)": 0.51}, {"缺陷编号": "NL-B-172700", "缺陷状态": "Closed", "缺陷摘要": "【导入】【规则库_销售规则】规则未与生产态数据做反向校验，不存在的规则不允许导入", "优先级": "高", "严重程度": "较高", "处理人员": "陈珍桂", "缺陷修复周期(天)": 2.13}, {"缺陷编号": "NL-B-172698", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品定价详情】某商品拥有多个定价时，定价详情导出数据不完整", "优先级": "高", "严重程度": "较高", "处理人员": "王邦城", "缺陷修复周期(天)": 1.6}],
+        allDetailData: [{"缺陷编号": "NL-B-173312", "缺陷状态": "New", "缺陷摘要": "【导入】【属性库】非生产态属性组的名称也被导入", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "", "引入原因": "", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-29 16:19:00", "修复时间": "NaT", "关闭时间": "NaT", "缺陷修复周期(天)": "", "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-173213", "缺陷状态": "ReOpen", "缺陷摘要": "【导出】导出超时", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C3-性能问题", "缺陷来源": "研发过程", "缺陷类型": "2-性能问题", "登记人": "邱钰洁", "登记时间.1": "2026-05-29 08:57:00", "修复时间": "2026-05-29 15:24:45", "关闭时间": "NaT", "缺陷修复周期(天)": 0.27, "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172952", "缺陷状态": "New", "缺陷摘要": "【属性库】复用属性组性能优化", "优先级": "中", "严重程度": "一般", "处理人员": "王荣坡", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "", "引入原因": "", "缺陷来源": "研发过程", "缺陷类型": "2-性能问题", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:45:00", "修复时间": "NaT", "关闭时间": "NaT", "缺陷修复周期(天)": "", "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172950", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】导出ppt失败", "优先级": "中", "严重程度": "较高", "处理人员": "陈珍桂", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "D-软件测试", "引入原因": "D5-测试环境错误", "缺陷来源": "研发过程", "缺陷类型": "3-功能不可用", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:22:00", "修复时间": "2026-05-28 17:41:00", "关闭时间": "2026-05-29 08:49:00", "缺陷修复周期(天)": 0.97, "缺陷关闭周期(天)": 1.6}, {"缺陷编号": "NL-B-172949", "缺陷状态": "ReOpen", "缺陷摘要": "【需求采编】新增商品后，商品的排列顺序随机，倒叙排列", "优先级": "中", "严重程度": "轻微", "处理人员": "陈珍桂", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C20-代码未拉平（新变更）", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:20:00", "修复时间": "2026-05-29 17:03:23", "关闭时间": "NaT", "缺陷修复周期(天)": 1.95, "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172948", "缺陷状态": "Closed", "缺陷摘要": "【产品需求列表】创建时间未显示", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:18:00", "修复时间": "2026-05-28 09:38:00", "关闭时间": "2026-05-29 08:50:00", "缺陷修复周期(天)": 0.64, "缺陷关闭周期(天)": 1.61}, {"缺陷编号": "NL-B-172947", "缺陷状态": "Closed", "缺陷摘要": "【元数据视图】产品信息图、产商品类目树的查询重置按钮丢失", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C6-资源获取和释放问题", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:12:00", "修复时间": "2026-05-29 09:21:00", "关闭时间": "2026-05-29 17:31:00", "缺陷修复周期(天)": 1.63, "缺陷关闭周期(天)": 1.97}, {"缺陷编号": "NL-B-172946", "缺陷状态": "Closed", "缺陷摘要": "【产品一码】商品线为空时，不展示“-”", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:07:00", "修复时间": "2026-05-27 19:01:00", "关闭时间": "2026-05-29 08:50:00", "缺陷修复周期(天)": 0.04, "缺陷关闭周期(天)": 1.61}, {"缺陷编号": "NL-B-172945", "缺陷状态": "New", "缺陷摘要": "【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "", "引入原因": "", "缺陷来源": "研发过程", "缺陷类型": "2-性能问题", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:01:00", "修复时间": "NaT", "关闭时间": "NaT", "缺陷修复周期(天)": "", "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172944", "缺陷状态": "Closed", "缺陷摘要": "【浏览器缓存】不同环境登录相同账号，会触发“重新加载站点”提示", "优先级": "中", "严重程度": "轻微", "处理人员": "陈智伟A", "发现阶段": "4.2-回归测试【备选流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "缺陷类型": "29-其它", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 17:58:00", "修复时间": "2026-05-28 17:08:00", "关闭时间": "2026-05-29 17:34:00", "缺陷修复周期(天)": 0.97, "缺陷关闭周期(天)": 1.98}, {"缺陷编号": "NL-B-172713", "缺陷状态": "Closed", "缺陷摘要": "【商品构成】产品线必填未生效", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "缺陷类型": "8-输入校验", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:29:00", "修复时间": "2026-05-26 09:51:00", "关闭时间": "2026-05-26 21:02:00", "缺陷修复周期(天)": 0.52, "缺陷关闭周期(天)": 0.98}, {"缺陷编号": "NL-B-172712", "缺陷状态": "Closed", "缺陷摘要": "【动作库】动作库，节点名称未必填", "优先级": "中", "严重程度": "轻微", "处理人员": "陈智伟A", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "8-输入校验", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:20:00", "修复时间": "2026-05-27 16:54:00", "关闭时间": "2026-05-27 17:25:00", "缺陷修复周期(天)": 1.82, "缺陷关闭周期(天)": 1.84}, {"缺陷编号": "NL-B-172711", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品】商品线6个层级，导出数据多了个null", "优先级": "中", "严重程度": "一般", "处理人员": "戴海涛", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:11:00", "修复时间": "2026-05-28 15:32:00", "关闭时间": "2026-05-29 17:34:00", "缺陷修复周期(天)": 2.76, "缺陷关闭周期(天)": 3.85}, {"缺陷编号": "NL-B-172710", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx字体样式调整", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:08:00", "修复时间": "2026-05-27 19:00:00", "关闭时间": "2026-05-29 08:59:00", "缺陷修复周期(天)": 1.91, "缺陷关闭周期(天)": 3.49}, {"缺陷编号": "NL-B-172709", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx改造类型样式没有", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:07:00", "修复时间": "2026-05-27 11:15:00", "关闭时间": "2026-05-27 18:29:00", "缺陷修复周期(天)": 1.59, "缺陷关闭周期(天)": 1.89}, {"缺陷编号": "NL-B-172708", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_商品定价清单.xlsx内容错误", "优先级": "中", "严重程度": "一般", "处理人员": "王邦城", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C6-资源获取和释放问题", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:06:00", "修复时间": "2026-05-26 09:23:00", "关闭时间": "2026-05-26 21:07:00", "缺陷修复周期(天)": 0.51, "缺陷关闭周期(天)": 1}, {"缺陷编号": "NL-B-172700", "缺陷状态": "Closed", "缺陷摘要": "【导入】【规则库_销售规则】规则未与生产态数据做反向校验，不存在的规则不允许导入", "优先级": "高", "严重程度": "较高", "处理人员": "陈珍桂", "发现阶段": "4.2-回归测试【备选流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "8-输入校验", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 18:54:00", "修复时间": "2026-05-27 21:58:00", "关闭时间": "2026-05-29 08:59:00", "缺陷修复周期(天)": 2.13, "缺陷关闭周期(天)": 3.59}, {"缺陷编号": "NL-B-172698", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品定价详情】某商品拥有多个定价时，定价详情导出数据不完整", "优先级": "高", "严重程度": "较高", "处理人员": "王邦城", "发现阶段": "4.2-回归测试【备选流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 18:38:00", "修复时间": "2026-05-27 09:09:00", "关闭时间": "2026-05-27 18:37:00", "缺陷修复周期(天)": 1.6, "缺陷关闭周期(天)": 2}],
+        colKeys: ["缺陷编号", "缺陷状态", "缺陷摘要", "优先级", "严重程度", "处理人员", "缺陷修复周期(天)"],
+        detailColNames: ["缺陷编号", "缺陷状态", "缺陷摘要", "优先级", "严重程度", "处理人员", "发现阶段", "引入阶段", "引入原因", "缺陷来源", "缺陷类型", "登记人", "登记时间", "修改时间", "关闭时间", "修复周期(天)", "关闭周期(天)"],
+        registerDates: ["2026-05-29", "2026-05-29", "2026-05-27", "2026-05-27", "2026-05-27", "2026-05-27", "2026-05-27", "2026-05-27", "2026-05-27", "2026-05-27", "2026-05-25", "2026-05-25", "2026-05-25", "2026-05-25", "2026-05-25", "2026-05-25", "2026-05-25", "2026-05-25"],
+        modifyDates: ["", "2026-05-29", "", "2026-05-28", "2026-05-29", "2026-05-28", "2026-05-29", "2026-05-27", "", "2026-05-28", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-27", "2026-05-27", "2026-05-26", "2026-05-27", "2026-05-27"],
+        closeDates: ["", "", "", "2026-05-29", "", "2026-05-29", "2026-05-29", "2026-05-29", "", "2026-05-29", "2026-05-26", "2026-05-27", "2026-05-29", "2026-05-29", "2026-05-27", "2026-05-26", "2026-05-29", "2026-05-27"],
+        statusOptions: ["Closed", "New", "ReOpen"],
+        handlerOptions: ["刘陈明", "戴海涛", "王荣坡", "王邦城", "陈智伟A", "陈珍桂"],
+        priorityOptions: ["低", "中", "高", "优先"],
+        stageOptions: ["2.1-系统测试【基本流】", "4.1-回归测试【基本流】", "4.2-回归测试【备选流】"],
+        typeOptions: ["2-性能问题", "29-其它", "3-功能不可用", "5-数据丢失或错误", "6-操作界面", "8-输入校验"],
+        registerRange: ["2026-05-25", "2026-05-29"],
+        modifyRange: ["2026-05-26", "2026-05-29"],
+        closeRange: ["2026-05-26", "2026-05-29"]
+    };
+
+    var detailVueApp = Vue.createApp({
+        data() {
+            return {
+                filters: {
+                    status: '',
+                    handler: '',
+                    priority: '',
+                    stage: '',
+                    defectType: '',
+                    dateType: 'register',
+                    dateRange: appData.registerRange
+                },
+                modalVisible: false,
+                detailData: {},
+                filterCollapsed: true
+            };
+        },
+        computed: {
+            filteredData() {
+                var result = [];
+                var indices = [];
+                for (var idx = 0; idx < appData.allData.length; idx++) {
+                    var row = appData.allData[idx];
+                    if (this.filters.status && row['缺陷状态'] !== this.filters.status) continue;
+                    if (this.filters.handler && row['处理人员'] !== this.filters.handler) continue;
+                    if (this.filters.priority && row['优先级'] !== this.filters.priority) continue;
+                    if (this.filters.stage && row['发现阶段'] !== this.filters.stage) continue;
+                    if (this.filters.defectType && row['缺陷类型'] !== this.filters.defectType) continue;
+
+                    var dateList;
+                    if (this.filters.dateType === 'register') {
+                        dateList = appData.registerDates;
+                    } else if (this.filters.dateType === 'modify') {
+                        dateList = appData.modifyDates;
+                    } else {
+                        dateList = appData.closeDates;
+                    }
+
+                    var dateVal = dateList[idx];
+                    if (this.filters.dateRange && this.filters.dateRange.length === 2) {
+                        if (dateVal && (dateVal < this.filters.dateRange[0] || dateVal > this.filters.dateRange[1])) continue;
+                    }
+
+                    result.push(row);
+                    indices.push(idx);
+                }
+                this._filteredIndices = indices;
+                return result;
+            },
+            filteredIndices() {
+                return this._filteredIndices || [];
+            },
+            filteredCount() {
+                return this.filteredData.length;
+            },
+            detailKeys() {
+                return Object.keys(appData.allDetailData[0] || {});
+            },
+            colKeys() { return appData.colKeys; },
+            detailColNames() { return appData.detailColNames; },
+            statusOptions() { return appData.statusOptions; },
+            handlerOptions() { return appData.handlerOptions; },
+            priorityOptions() { return appData.priorityOptions; },
+            stageOptions() { return appData.stageOptions; },
+            typeOptions() { return appData.typeOptions; }
+        },
+        methods: {
+            getPriorityClass(val) {
+                if (val === '优先' || val === '高') return 'priority-high';
+                if (val === '中') return 'priority-medium';
+                return 'priority-low';
+            },
+            onFilterChange() {},
+            onDateTypeChange() {
+                if (this.filters.dateType === 'register') {
+                    this.filters.dateRange = appData.registerRange;
+                } else if (this.filters.dateType === 'modify') {
+                    this.filters.dateRange = appData.modifyRange;
+                } else {
+                    this.filters.dateRange = appData.closeRange;
+                }
+            },
+            resetFilters() {
+                this.filters.status = '';
+                this.filters.handler = '';
+                this.filters.priority = '';
+                this.filters.stage = '';
+                this.filters.defectType = '';
+                this.filters.dateType = 'register';
+                this.filters.dateRange = appData.registerRange;
+            },
+            toggleFilter() {
+                this.filterCollapsed = !this.filterCollapsed;
+            },
+            showDetail(idx) {
+                this.detailData = appData.allDetailData[idx] || {};
+                this.modalVisible = true;
+            }
+        }
+    });
+
+    detailVueApp.use(ElementPlus);
+    detailVueApp.mount('#detailVueApp');
+})();
+</script>
+
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="modalChart" class="modal-chart"></div>
+        </div>
+    </div>
+
+    <script>
+        var chartConfigs = [
+            { title: '处理人员缺陷统计', categoryCol: '处理人员', hasPercent: false },
+            { title: '缺陷状态分布', categoryCol: '缺陷状态', hasPercent: true },
+            { title: '关联任务项统计', categoryCol: '任务项', hasPercent: false },
+            { title: '缺陷趋势分析', categoryCol: '日期', hasPercent: false },
+            { title: '缺陷修复周期分布', categoryCol: '修复周期(天)', hasPercent: false },
+            { title: '缺陷返工情况', categoryCol: '返工次数', hasPercent: true },
+            { title: '缺陷发现阶段分布', categoryCol: '发现阶段', hasPercent: false },
+            { title: '缺陷类型分布', categoryCol: '缺陷类型', hasPercent: true },
+            { title: '缺陷引入原因分析', categoryCol: '引入原因', hasPercent: false },
+            { title: '缺陷优先级分布', categoryCol: '优先级', hasPercent: false },
+            { title: '缺陷严重程度分布', categoryCol: '严重程度', hasPercent: false },
+            { title: '缺陷引入阶段分布', categoryCol: '引入阶段', hasPercent: false }
+        ];
+
+        document.querySelectorAll('.chart-card').forEach(function(card, idx) {
+            var chartDiv = card.querySelector('div[id^="chart_"]');
+            if (!chartDiv) return;
+
+            var chartId = chartDiv.id;
+            var wrapper = card.closest('.card') || card.closest('.card-wide');
+            var toolbar = document.createElement('div');
+            toolbar.className = 'chart-toolbar';
+            toolbar.innerHTML = '<button class="chart-btn" title="切换表格" onclick="toggleTable(\'' + chartId + '\', ' + idx + ')">📊</button><button class="chart-btn" title="放大" onclick="enlargeChart(\'' + chartId + '\')">⛶</button>';
+            wrapper.insertBefore(toolbar, wrapper.firstChild);
+
+            var tableDiv = document.createElement('div');
+            tableDiv.className = 'table-container';
+            tableDiv.id = 'table_' + chartId;
+            wrapper.appendChild(tableDiv);
+        });
+
+        function toggleTable(chartId, idx) {
+            var chartDiv = document.getElementById(chartId);
+            var wrapper = chartDiv.closest('.card') || chartDiv.closest('.card-wide');
+            var tableDiv = document.getElementById('table_' + chartId);
+            var btns = wrapper.querySelectorAll('.chart-btn');
+            var toggleBtn = btns[0];
+            var config = chartConfigs[idx] || { categoryCol: '类别', hasPercent: false };
+
+            if (tableDiv.classList.contains('active')) {
+                tableDiv.classList.remove('active');
+                chartDiv.style.display = 'block';
+                var customLegend = wrapper.querySelector('.custom-legend');
+                if (customLegend) customLegend.style.display = 'block';
+                toggleBtn.classList.remove('active');
+                var chart = echarts.getInstanceByDom(document.getElementById(chartId));
+                if (chart) chart.resize();
+            } else {
+                tableDiv.classList.add('active');
+                chartDiv.style.display = 'none';
+                var customLegend = wrapper.querySelector('.custom-legend');
+                if (customLegend) customLegend.style.display = 'none';
+                toggleBtn.classList.add('active');
+
+                var chart = echarts.getInstanceByDom(document.getElementById(chartId));
+                if (chart) {
+                    var option = chart.getOption();
+                    var titleText = '';
+                    if (option.title && option.title[0] && option.title[0].text) {
+                        titleText = option.title[0].text;
+                    }
+
+                    var titleHtml = titleText ? '<div class="table-title">' + titleText + '</div>' : '';
+
+                    if (option.series && option.series[0] && option.series[0].type === 'pie') {
+                        var pieData = option.series[0].data;
+                        if (!pieData || pieData.length === 0) {
+                            tableDiv.innerHTML = '<div class="table-title">暂无数据</div>';
+                            return;
+                        }
+                        var total = 0;
+                        pieData.forEach(function(item) {
+                            var val = (typeof item === 'object') ? (item.value || 0) : (Array.isArray(item) ? item[1] : 0);
+                            total += val;
+                        });
+
+                        var headers = '<tr><th>' + config.categoryCol + '</th><th>数量</th>';
+                        if (config.hasPercent) headers += '<th>占比</th>';
+                        headers += '</tr>';
+
+                        var html = titleHtml + '<div class="table-body"><table class="data-table"><thead>' + headers + '</thead><tbody>';
+                        pieData.forEach(function(item) {
+                            var name = (typeof item === 'object') ? item.name : (Array.isArray(item) ? item[0] : item);
+                            var val = (typeof item === 'object') ? (item.value || 0) : (Array.isArray(item) ? item[1] : 0);
+                            html += '<tr><td>' + name + '</td><td>' + val + '</td>';
+                            if (config.hasPercent) {
+                                var percent = (val / total * 100).toFixed(1);
+                                html += '<td>' + percent + '%</td>';
+                            }
+                            html += '</tr>';
+                        });
+                        html += '</tbody></table></div>';
+                        tableDiv.innerHTML = html;
+                    } else {
+                        var categories = [];
+                        var isHorizontal = option.yAxis && option.yAxis[0] && option.yAxis[0].data && option.yAxis[0].data.length > 0;
+
+                        if (isHorizontal) {
+                            categories = option.yAxis[0].data;
+                        } else if (option.xAxis && option.xAxis[0] && option.xAxis[0].data) {
+                            categories = option.xAxis[0].data;
+                        }
+
+                        var seriesCount = option.series.length;
+                        var isMultiSeries = seriesCount > 1;
+
+                        if (isMultiSeries) {
+                            var headers = '<tr><th>' + config.categoryCol + '</th>';
+                            option.series.forEach(function(s) {
+                                if (s.name) headers += '<th>' + s.name + '</th>';
+                            });
+                            headers += '</tr>';
+
+                            var html = titleHtml + '<div class="table-body"><table class="data-table"><thead>' + headers + '</thead><tbody>';
+
+                            for (var i = 0; i < categories.length; i++) {
+                                html += '<tr><td>' + categories[i] + '</td>';
+                                option.series.forEach(function(s) {
+                                    var val = s.data[i];
+                                    var displayVal;
+                                    if (typeof val === 'object' && val !== null) {
+                                        displayVal = val.value !== undefined ? val.value : (Array.isArray(val) ? val[1] : val);
+                                    } else {
+                                        displayVal = val;
+                                    }
+                                    if (s.name && s.name.indexOf('修复时长') !== -1 && typeof displayVal === 'number') {
+                                        html += '<td>' + displayVal.toFixed(2) + '</td>';
+                                    } else {
+                                        html += '<td>' + (displayVal !== undefined && displayVal !== null ? displayVal : 0) + '</td>';
+                                    }
+                                });
+                                html += '</tr>';
+                            }
+                            html += '</tbody></table></div>';
+                            tableDiv.innerHTML = html;
+                        } else {
+                            var values = [];
+                            if (option.series[0] && option.series[0].data) {
+                                option.series[0].data.forEach(function(v) {
+                                    if (typeof v === 'object' && v !== null && v.value !== undefined) {
+                                        values.push(v.value);
+                                    } else {
+                                        values.push(v);
+                                    }
+                                });
+                            }
+
+                            var headers = '<tr><th>' + config.categoryCol + '</th><th>数量</th></tr>';
+                            var html = titleHtml + '<div class="table-body"><table class="data-table"><thead>' + headers + '</thead><tbody>';
+                            for (var i = 0; i < categories.length; i++) {
+                                html += '<tr><td>' + categories[i] + '</td><td>' + (values[i] || 0) + '</td></tr>';
+                            }
+                            html += '</tbody></table></div>';
+                            tableDiv.innerHTML = html;
+                        }
+                    }
+                }
+            }
+        }
+
+        function enlargeChart(chartId) {
+            var modal = document.getElementById('modalOverlay');
+            var modalChartDiv = document.getElementById('modalChart');
+
+            var originalChart = echarts.getInstanceByDom(document.getElementById(chartId));
+            if (!originalChart) return;
+
+            modal.classList.add('active');
+
+            var modalChart = echarts.init(modalChartDiv);
+            var option = originalChart.getOption();
+            modalChart.setOption(option);
+        }
+
+        function closeModal(event) {
+            if (event && event.target !== document.getElementById('modalOverlay')) return;
+            var modal = document.getElementById('modalOverlay');
+            modal.classList.remove('active');
+            var modalChart = echarts.getInstanceByDom(document.getElementById('modalChart'));
+            if (modalChart) modalChart.dispose();
+        }
+
+        function switchView(view) {
+            var homeView = document.getElementById('homeView');
+            var chartView = document.getElementById('chartView');
+            var detailView = document.getElementById('detailView');
+            var btns = document.querySelectorAll('.view-btn');
+            btns.forEach(function(btn) {
+                btn.classList.remove('active');
+                if (btn.dataset.view === view) btn.classList.add('active');
+            });
+            if (view === 'home') {
+                homeView.style.display = 'block';
+                chartView.style.display = 'none';
+                detailView.style.display = 'none';
+            } else if (view === 'chart') {
+                homeView.style.display = 'none';
+                chartView.style.display = 'block';
+                detailView.style.display = 'none';
+                setTimeout(function() {
+                    document.querySelectorAll('div[id^="chart_"]').forEach(function(chartDiv) {
+                        var chart = echarts.getInstanceByDom(chartDiv);
+                        if (chart) chart.resize();
+                    });
+                }, 100);
+            } else {
+                homeView.style.display = 'none';
+                chartView.style.display = 'none';
+                detailView.style.display = 'block';
+            }
+        }
+        function refreshData() {
+            // TODO: 刷新数据功能待实现
+            console.log('刷新数据');
+        }
+        
+    // 检测任务项名称是否超出宽度
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.task-name-cell').forEach(function(el) {
+            if (el.scrollWidth > el.clientWidth) {
+                el.classList.add('overflow');
+            }
+        });
+
+        // 同步缺陷预警卡片高度
+        syncWarningListHeight();
+        window.addEventListener('resize', syncWarningListHeight);
+
+        // 初始化预警行点击事件
+        initWarningRowClick();
+    });
+
+    // 同步缺陷预警列表高度与左侧卡片一致
+    function syncWarningListHeight() {
+        var leftCard = document.getElementById('left-progress-card');
+        var warningList = document.getElementById('warning-list');
+        if (leftCard && warningList) {
+            var leftHeight = leftCard.offsetHeight;
+            var titleHeight = warningList.previousElementSibling ? warningList.previousElementSibling.offsetHeight : 0;
+            // 计算可用高度：左侧卡片高度 - 标题行高度 - padding
+            var availableHeight = leftHeight - 50; // 50px为标题行和padding预留
+            warningList.style.maxHeight = Math.max(availableHeight, 100) + 'px';
+        }
+    }
+
+    // 初始化预警行点击事件
+    function initWarningRowClick() {
+        document.querySelectorAll('.warning-row').forEach(function(row) {
+            row.addEventListener('click', function() {
+                var detailJson = this.getAttribute('data-detail');
+                if (detailJson) {
+                    try {
+                        var detail = JSON.parse(detailJson);
+                        showWarningModal(detail);
+                    } catch (e) {
+                        console.error('解析详情数据失败', e);
+                    }
+                }
+            });
+        });
+    }
+
+    // 显示详情弹窗
+    function showWarningModal(detail) {
+        // 字段名称映射（排除不需要展示的字段）
+        var excludeFields = ['登记时间', '任务分类', '关联任务项'];
+        var fieldLabels = {
+            '缺陷编号': '缺陷编号',
+            '产品线': '产品线',
+            '产品模块': '产品模块',
+            '缺陷状态': '缺陷状态',
+            '缺陷摘要': '缺陷摘要',
+            '优先级': '优先级',
+            '登记人': '登记人',
+            '处理人员': '处理人员',
+            '登记时间.1': '登记时间',
+            '修复时间': '修复时间',
+            '关闭时间': '关闭时间',
+            '发现阶段': '发现阶段',
+            '引入阶段': '引入阶段',
+            '引入原因': '引入原因',
+            '缺陷来源': '缺陷来源',
+            '返工次数': '返工次数',
+            '严重程度': '严重程度',
+            '缺陷类型': '缺陷类型',
+            '缺陷修复周期(天)': '缺陷修复周期(天)',
+            '缺陷关闭周期(天)': '缺陷关闭周期(天)'
+        };
+
+        // 构建详情内容
+        var detailHtml = '';
+        for (var key in detail) {
+            if (detail.hasOwnProperty(key)) {
+                // 跳过排除字段
+                if (excludeFields.indexOf(key) !== -1) continue;
+                // 跳过未定义标签的字段
+                if (!fieldLabels[key]) continue;
+                var label = fieldLabels[key];
+                var value = detail[key];
+                // 处理特殊值
+                if (value === null || value === undefined || value === '' || (typeof value === 'number' && isNaN(value))) {
+                    value = '-';
+                } else if (typeof value === 'object') {
+                    value = JSON.stringify(value);
+                }
+                detailHtml += '<div class="warning-detail-row">' +
+                    '<div class="warning-detail-label">' + label + '</div>' +
+                    '<div class="warning-detail-value">' + value + '</div>' +
+                    '</div>';
+            }
+        }
+
+        // 创建弹窗
+        var modalHtml = '<div class="warning-modal-overlay" id="warning-modal-overlay">' +
+            '<div class="warning-modal">' +
+            '<div class="warning-modal-header">' +
+            '<span class="warning-modal-title">缺陷详情 - ' + (detail['缺陷编号'] || '') + '</span>' +
+            '<button class="warning-modal-close" onclick="closeWarningModal()">&times;</button>' +
+            '</div>' +
+            '<div class="warning-modal-body">' + detailHtml + '</div>' +
+            '</div>' +
+            '</div>';
+
+        // 移除已存在的弹窗
+        var existingModal = document.getElementById('warning-modal-overlay');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // 添加弹窗到页面
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // 显示弹窗
+        setTimeout(function() {
+            document.getElementById('warning-modal-overlay').classList.add('active');
+        }, 10);
+
+        // 点击遮罩关闭
+        document.getElementById('warning-modal-overlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeWarningModal();
+            }
+        });
+    }
+
+    // 关闭详情弹窗
+    function closeWarningModal() {
+        var modal = document.getElementById('warning-modal-overlay');
+        if (modal) {
+            modal.classList.remove('active');
+            setTimeout(function() {
+                modal.remove();
+            }, 300);
+        }
+    }
+    
+    </script>
+</body>
+</html>

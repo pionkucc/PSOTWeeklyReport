@@ -19,6 +19,10 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         body {{
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
             background:
                 radial-gradient(ellipse at 20% 20%, rgba(22, 119, 255, 0.35) 0%, transparent 50%),
                 radial-gradient(ellipse at 80% 80%, rgba(22, 119, 255, 0.28) 0%, transparent 50%),
@@ -28,6 +32,7 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
                 linear-gradient(180deg, #d6ebff 0%, #e6f4ff 50%, #f0f5ff 100%);
             min-height: 100vh;
             padding: 30px 20px;
+            -webkit-font-smoothing: antialiased;
         }}
         .container {{ max-width: 1400px; margin: 0 auto; }}
         .header {{ text-align: center; margin-bottom: 30px; color: #2c3e50; }}
