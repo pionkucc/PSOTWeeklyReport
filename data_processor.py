@@ -94,3 +94,13 @@ def load_panels_data():
 
     wb.close()
     return panels
+
+
+def load_sheet2_data():
+    """读取Sheet2测试进度和缺陷统计数据"""
+    try:
+        df = pd.read_excel(INPUT_FILE, sheet_name=1)
+        return df
+    except Exception as e:
+        print(f'读取Sheet2数据失败: {e}')
+        return None

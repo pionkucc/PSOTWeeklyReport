@@ -63,7 +63,18 @@
       "Bash(python -c \"from config import OUTPUT_FILE; print\\(OUTPUT_FILE\\)\")",
       "Bash(python auto_push.py)",
       "Bash(zip -r versions/v3.1_modular_backup.zip config.py data_processor.py defect_quality_report.py views/ templates/ .github/workflows/deploy.yml requirements.txt .gitignore auto_push.py)",
-      "Bash(powershell -Command \"Compress-Archive -Path config.py,data_processor.py,defect_quality_report.py,views,templates,.github/workflows/deploy.yml,requirements.txt,.gitignore,auto_push.py -DestinationPath versions/v3.1_modular_backup.zip -Force\")"
+      "Bash(powershell -Command \"Compress-Archive -Path config.py,data_processor.py,defect_quality_report.py,views,templates,.github/workflows/deploy.yml,requirements.txt,.gitignore,auto_push.py -DestinationPath versions/v3.1_modular_backup.zip -Force\")",
+      "Bash(git rm *)",
+      "Bash(python generate_json.py)",
+      "Bash(python -c \"import pandas as pd; df = pd.read_excel\\('缺陷明细.xlsx'\\); print\\(list\\(df.columns\\)\\)\")",
+      "Bash(python -c \"import pandas as pd; df = pd.read_excel\\('缺陷明细.xlsx'\\); print\\([c for c in df.columns]\\)\")",
+      "Bash(python -c \"import pandas as pd; import json; df = pd.read_excel\\('缺陷明细.xlsx'\\); print\\(json.dumps\\(list\\(df.columns\\), ensure_ascii=False\\)\\)\")",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(unzip -l v2.4.2_modular_backup.zip)",
+      "Bash(unzip -o versions/v2.4.2_modular_backup.zip)",
+      "Bash(git checkout *)",
+      "Bash(git restore *)"
     ]
   }
 }

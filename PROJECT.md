@@ -80,7 +80,8 @@ F:\AI\Claude Code\Weekly_Report\
 │   └── html_template.py        # HTML模板构建
 ├── versions/                    # 版本备份目录
 │   ├── VERSION.md              # 版本记录
-│   └── v3.1_modular_backup.zip # v3.1备份
+│   ├── v3.1_modular_backup.zip # v3.1备份
+│   └── v3.2_modular_backup.zip # v3.2备份
 ├── 缺陷明细.xlsx                # 数据源
 └── PSOT_Weekly_Report_*.html   # 输出报告（动态命名）
 ```
@@ -135,6 +136,14 @@ COLORS = {
 - **参数**：`df` - DataFrame
 - **返回**：处理后的 DataFrame
 
+#### `load_panels_data()`
+- **功能**：读取Sheet3公共面板数据，保留富文本格式
+- **返回**：面板数据列表，每项包含 title 和 content_parts
+
+#### `load_sheet2_data()`
+- **功能**：读取Sheet2测试进度和缺陷统计数据
+- **返回**：DataFrame（测试进度表格数据）
+
 ---
 
 ### 3. views/chart_views.py - 图表视图模块
@@ -176,7 +185,37 @@ COLORS = {
 
 ---
 
-### 5. templates/html_template.py - HTML模板模块
+### 5. views/home_view.py - 主页视图模块
+
+**职责**：生成主页视图HTML
+
+**导出函数**：
+
+#### `create_home_view_html(panels_data, sheet2_data)`
+- **功能**：创建主页视图HTML
+- **参数**：
+  - `panels_data`: 公共面板数据列表
+  - `sheet2_data`: Sheet2表格数据DataFrame
+- **返回**：HTML字符串
+
+**功能特性**：
+1. **本周测试概况**：两列卡片布局
+   - 测试进度概览：动态提取[xxx]标签、进度指标、缺陷统计
+   - 缺陷预警：带圆形数量标签（背景色#ffdcdb9c）
+2. **测试进度和缺陷统计**：表格 + 条形图双卡片
+   - 表格：Sheet2数据，表头蓝色(#1c91fd)
+   - 进度列：圆形进度条，<30%红色，>=30%蓝色
+   - 条形图：各任务项进度对比，100%时自动切换回归进度
+
+#### `get_home_view_css()`
+- **功能**：获取主页视图专用CSS
+
+#### `get_home_view_js()`
+- **功能**：获取主页视图专用JS（tooltip宽度检测）
+
+---
+
+### 6. templates/html_template.py - HTML模板模块
 
 **职责**：组装完整的HTML报告页面
 
@@ -198,7 +237,7 @@ COLORS = {
 
 ---
 
-### 6. defect_quality_report.py - 主入口程序
+### 7. defect_quality_report.py - 主入口程序
 
 **职责**：协调各模块，生成完整报告
 
@@ -220,9 +259,12 @@ COLORS = {
    - 缺陷优先级分布
    - 缺陷严重程度分布
    - 缺陷引入阶段分布
-4. 生成明细视图 (detail_view.create_detail_view_html)
-5. 组装HTML模板 (html_template.build_html_template)
-6. 保存报告 (html_template.save_report)
+4. 加载公共面板数据 (data_processor.load_panels_data)
+5. 加载Sheet2数据 (data_processor.load_sheet2_data)
+6. 生成主页视图 (home_view.create_home_view_html)
+7. 生成明细视图 (detail_view.create_detail_view_html)
+8. 组装HTML模板 (html_template.build_html_template)
+9. 保存报告 (html_template.save_report)
 ```
 
 ---
