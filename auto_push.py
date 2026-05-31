@@ -1,27 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-自动推送脚本（双平台版）
-支持推送到 GitHub 和 GitLab（极狐）
+自动推送脚本
+推送到 GitHub，自动部署到 GitHub Pages
 """
 
 import subprocess
 import sys
-import os
 
-# 远程仓库配置
-REMOTES = {
-    'github': {
-        'name': 'GitHub',
-        'url': 'https://github.com/pionkucc/PSOTWeeklyReport.git',
-        'pipeline_url': 'https://github.com/pionkucc/PSOTWeeklyReport/actions',
-        'pages_url': 'https://pionkucc.github.io/PSOTWeeklyReport'
-    },
-    'gitlab': {
-        'name': 'GitLab（极狐）',
-        'url': 'https://jihulab.com/psot-qc/weekly-report-project.git',
-        'pipeline_url': 'https://jihulab.com/psot-qc/weekly-report-project/-/pipelines',
-        'pages_url': 'https://psot-qc.pages.jihulab.com/weekly-report-project'
-    }
+# GitHub 远程仓库配置
+REMOTE = {
+    'name': 'GitHub',
+    'key': 'github',
+    'url': 'https://github.com/pionkucc/PSOTWeeklyReport.git',
+    'pipeline_url': 'https://github.com/pionkucc/PSOTWeeklyReport/actions',
+    'pages_url': 'https://pionkucc.github.io/PSOTWeeklyReport/PSOT_Weekly_Report.html'
 }
 
 def run_command(cmd, description):
@@ -34,38 +26,26 @@ def run_command(cmd, description):
     print(f"[成功] {result.stdout.strip() if result.stdout.strip() else '完成'}")
     return True
 
-def setup_remotes():
+def setup_remote():
     """配置远程仓库"""
     print("\n[配置] 检查远程仓库...")
     result = subprocess.run("git remote -v", shell=True, capture_output=True, text=True)
     current_remotes = result.stdout
 
-    for key, config in REMOTES.items():
-        if key not in current_remotes:
-            print(f"[新增] 添加远程仓库: {key} -> {config['url']}")
-            subprocess.run(f"git remote add {key} {config['url']}", shell=True)
-        else:
-            print(f"[已存在] 远程仓库: {key}")
+    if REMOTE['key'] not in current_remotes:
+        print(f"[新增] 添加远程仓库: {REMOTE['key']} -> {REMOTE['url']}")
+        subprocess.run(f"git remote add {REMOTE['key']} {REMOTE['url']}", shell=True)
+    else:
+        print(f"[已存在] 远程仓库: {REMOTE['key']}")
 
-def push_to_remote(remote_key):
-    """推送到指定远程仓库"""
-    config = REMOTES[remote_key]
-    print(f"\n{'=' * 50}")
-    print(f"[推送] 推送到 {config['name']}...")
-    print(f"{'=' * 50}")
-
-    if not run_command(f"git push {remote_key}", f"git push {remote_key}"):
-        return False
-
-    print(f"\n[完成] {config['name']} 推送成功！")
-    print(f"[CI/CD] {config['pipeline_url']}")
-    print(f"[Pages] {config['pages_url']}")
-    return True
+    # 移除gitlab远程仓库（如果存在）
+    if 'gitlab' in current_remotes:
+        print("[清理] 移除GitLab远程仓库...")
+        subprocess.run("git remote remove gitlab", shell=True)
 
 def main():
     print("=" * 50)
     print("PSOT Weekly Report 自动推送脚本")
-    print("（双平台版：GitHub + GitLab）")
     print("=" * 50)
 
     # 1. 生成报告
@@ -104,37 +84,21 @@ def main():
         sys.exit(1)
 
     # 5. 配置远程仓库
-    setup_remotes()
+    setup_remote()
 
-    # 6. 选择推送平台
-    print("\n" + "=" * 50)
-    print("[选择] 请选择推送平台:")
-    print("  1 - 仅推送到 GitHub")
-    print("  2 - 仅推送到 GitLab（极狐）")
-    print("  3 - 同时推送到 GitHub 和 GitLab")
-    print("=" * 50)
+    # 6. 推送到GitHub
+    print(f"\n{'=' * 50}")
+    print(f"[推送] 推送到 {REMOTE['name']}...")
+    print(f"{'=' * 50}")
 
-    choice = input("请输入选项 (1/2/3，默认为1): ").strip() or '1'
-
-    success = True
-    if choice == '1':
-        success = push_to_remote('github')
-    elif choice == '2':
-        success = push_to_remote('gitlab')
-    elif choice == '3':
-        success_github = push_to_remote('github')
-        success_gitlab = push_to_remote('gitlab')
-        success = success_github and success_gitlab
-    else:
-        print("[错误] 无效选项，默认推送到 GitHub")
-        success = push_to_remote('github')
-
-    if not success:
+    if not run_command(f"git push {REMOTE['key']} main", f"git push {REMOTE['key']}"):
         sys.exit(1)
 
-    print("\n" + "=" * 50)
-    print("[全部完成] 推送成功！")
-    print("=" * 50)
+    print(f"\n{'=' * 50}")
+    print(f"[全部完成] 推送成功！")
+    print(f"[CI/CD] {REMOTE['pipeline_url']}")
+    print(f"[Pages] {REMOTE['pages_url']}")
+    print(f"{'=' * 50}")
 
 if __name__ == "__main__":
     main()
