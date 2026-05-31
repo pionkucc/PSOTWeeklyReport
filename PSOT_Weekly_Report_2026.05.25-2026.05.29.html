@@ -25,7 +25,7 @@
         }
         .container { max-width: 1400px; margin: 0 auto; }
         .header { text-align: center; margin-bottom: 30px; color: #2c3e50; }
-        .header h1 { font-size: 36px; font-weight: 700; margin-bottom: 10px; color: #2c3e50; }
+        .header h1 { font-size: 36px; font-weight: 700; margin-bottom: 10px; margin-top: 20px; color: #103979; }
         .header p { font-size: 16px; color: #5d6d7e; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
         .card { background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); padding: 20px; transition: all 0.3s ease; position: relative; height: 420px; overflow: hidden; }
@@ -104,14 +104,14 @@
         margin-bottom: 12px;
         font-size: 18px;
         font-weight: 700;
-        color: #1c91fd;
+        color: #103979;
     }
     .panel-section-title::before {
         content: "";
         display: block;
         width: 4px;
         height: 24px;
-        background: #1c91fd;
+        background: #103979;
         border-radius: 2px;
     }
 
@@ -262,7 +262,7 @@
         font-weight: 700;
     }
     .bar-chart-body .bar-track {
-        height: 28px;
+        height: 20px;
         background: #f0f4f8;
         border-radius: 14px;
         overflow: hidden;
@@ -314,7 +314,7 @@
     .panel-card-title {
         font-size: 15px;
         font-weight: 600;
-        color: #1c91fd;
+        color: #103979;
         margin-bottom: 12px;
     }
 
@@ -489,23 +489,23 @@
         grid-template-columns: repeat(3, 1fr);
         gap: 30px;
     }
-    .metric-card {
+    .three-col .metric-card {
         background: #f0f4f8;
         border-radius: 8px;
         text-align: center;
         min-height: 160px;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .metric-card:hover {
+    .three-col .metric-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
-    .metric-card .metric-label {
+    .three-col .metric-card .metric-label {
         font-size: 12px;
         color: #6b7280;
         margin-top: 8px;
     }
-    .metric-card .metric-value {
+    .three-col .metric-card .metric-value {
         font-size: 22px;
         font-weight: 700;
         color: #50A5F4;
@@ -658,14 +658,15 @@
         flex-shrink: 0;
     }
 
-    /* 缺陷详情弹窗 */
+    /* 缺陷详情弹窗 - 与明细视图一致 */
     .warning-modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(170,150,218,0.15);
+        backdrop-filter: blur(8px);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -682,66 +683,87 @@
         background: white;
         border-radius: 16px;
         width: 90%;
-        max-width: 700px;
+        max-width: 600px;
         max-height: 80vh;
         overflow: hidden;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-        transform: scale(0.9);
-        transition: transform 0.3s ease;
+        box-shadow: 0 12px 40px rgba(170,150,218,0.25);
+        transform: scale(0.8) translateY(-30px);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .warning-modal-overlay.active .warning-modal {
-        transform: scale(1);
+        transform: scale(1) translateY(0);
+        opacity: 1;
     }
     .warning-modal-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 16px 20px;
-        background: linear-gradient(135deg, #1c91fd 0%, #5DADE2 100%);
-        color: white;
+        background: #f8f9fa;
+        border-radius: 16px 16px 0 0;
+        border-bottom: 1px solid #eee;
     }
     .warning-modal-title {
+        font-family: 'Microsoft YaHei';
         font-size: 16px;
+        color: #1C91FD;
         font-weight: 600;
     }
     .warning-modal-close {
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        border: none;
-        color: white;
-        font-size: 20px;
+        background: #fff;
+        border: 1px solid #eee;
+        color: #1C91FD;
+        font-size: 16px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background 0.2s;
+        transition: all 0.3s;
     }
     .warning-modal-close:hover {
-        background: rgba(255, 255, 255, 0.3);
+        transform: rotate(90deg);
+        background: #1C91FD;
+        border-color: #1C91FD;
+        color: #fff;
     }
     .warning-modal-body {
         padding: 20px;
-        max-height: calc(80vh - 70px);
+        max-height: 60vh;
         overflow-y: auto;
     }
+    .warning-modal-body::-webkit-scrollbar { width: 4px; }
+    .warning-modal-body::-webkit-scrollbar-thumb { background: #1C91FD; border-radius: 2px; }
     .warning-detail-row {
         display: flex;
-        padding: 10px 0;
-        border-bottom: 1px solid #e5e7eb;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        background: #fff;
+        transition: all 0.2s;
+    }
+    .warning-detail-row:hover {
+        background: #fafafa;
+        transform: translateX(6px);
     }
     .warning-detail-row:last-child {
-        border-bottom: none;
+        margin-bottom: 0;
     }
     .warning-detail-label {
-        width: 120px;
-        font-weight: 600;
-        color: #6b7280;
+        width: 90px;
         flex-shrink: 0;
+        font-family: 'Microsoft YaHei';
+        font-size: 13px;
+        color: #1C91FD;
+        font-weight: bold;
     }
     .warning-detail-value {
         flex: 1;
+        font-family: 'Microsoft YaHei';
+        font-size: 13px;
         color: #333;
         word-break: break-all;
     }
@@ -820,35 +842,42 @@
                 <div class="panel-card panel-half warning-card">
                     <div class="panel-card-title-wrap">
                         <span class="panel-card-title">缺陷预警</span>
-                        <span class="count-badge">4</span>
+                        <span class="count-badge">5</span>
                     </div>
                     <div class="warning-list" id="warning-list">
                         
-        <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "导入导出", "缺陷编号": "NL-B-172945", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "New", "缺陷摘要": "【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-27 18:01:00", "修复时间": "-", "关闭时间": "-", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "-", "引入原因": "-", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "2-性能问题", "缺陷修复周期(天)": "/", "缺陷关闭周期(天)": "/"}'>
-            <span class="warning-dot"></span>
-            <span class="warning-text">NL-B-172945 <span class="handler-tag">刘陈明</span> 【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包</span>
-            <span class="warning-tag">超期2天</span>
-        </div>
-        
-
-        <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "历史问题/关联影响", "缺陷编号": "NL-B-172952", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "New", "缺陷摘要": "【属性库】复用属性组性能优化", "优先级": "中", "登记人": "邱钰洁", "处理人员": "王荣坡", "登记时间.1": "2026-05-27 18:45:00", "修复时间": "-", "关闭时间": "-", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "-", "引入原因": "-", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "2-性能问题", "缺陷修复周期(天)": "/", "缺陷关闭周期(天)": "/"}'>
-            <span class="warning-dot"></span>
-            <span class="warning-text">NL-B-172952 <span class="handler-tag">王荣坡</span> 【属性库】复用属性组性能优化</span>
-            <span class="warning-tag">超期2天</span>
-        </div>
-        
-
         <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "导入导出", "缺陷编号": "NL-B-173213", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "ReOpen", "缺陷摘要": "【导出】导出超时", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-29 08:57:00", "修复时间": "2026-05-29 15:24:45", "关闭时间": "-", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C3-性能问题", "缺陷来源": "研发过程", "返工次数": 1, "严重程度": "一般", "缺陷类型": "2-性能问题", "缺陷修复周期(天)": 0.27, "缺陷关闭周期(天)": "/"}'>
             <span class="warning-dot"></span>
             <span class="warning-text">NL-B-173213 <span class="handler-tag">刘陈明</span> 【导出】导出超时</span>
-            <span class="warning-tag">返工1次</span>
+            <span class="warning-tag">超期2天|返工1次</span>
         </div>
         
 
         <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "历史问题/关联影响", "缺陷编号": "NL-B-172949", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "ReOpen", "缺陷摘要": "【需求采编】新增商品后，商品的排列顺序随机，倒叙排列", "优先级": "中", "登记人": "邱钰洁", "处理人员": "陈珍桂", "登记时间.1": "2026-05-27 18:20:00", "修复时间": "2026-05-29 17:03:23", "关闭时间": "-", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C20-代码未拉平（新变更）", "缺陷来源": "研发过程", "返工次数": 1, "严重程度": "轻微", "缺陷类型": "6-操作界面", "缺陷修复周期(天)": 1.95, "缺陷关闭周期(天)": "/"}'>
             <span class="warning-dot"></span>
             <span class="warning-text">NL-B-172949 <span class="handler-tag">陈珍桂</span> 【需求采编】新增商品后，商品的排列顺序随机，倒叙排列</span>
-            <span class="warning-tag">返工1次</span>
+            <span class="warning-tag">超期1天|返工1次</span>
+        </div>
+        
+
+        <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "导入导出", "缺陷编号": "NL-B-172945", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "New", "缺陷摘要": "【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-27 18:01:00", "修复时间": "-", "关闭时间": "-", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "-", "引入原因": "-", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "2-性能问题", "缺陷修复周期(天)": "/", "缺陷关闭周期(天)": "/"}'>
+            <span class="warning-dot"></span>
+            <span class="warning-text">NL-B-172945 <span class="handler-tag">刘陈明</span> 【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包</span>
+            <span class="warning-tag">超期3天</span>
+        </div>
+        
+
+        <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "历史问题/关联影响", "缺陷编号": "NL-B-172952", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "New", "缺陷摘要": "【属性库】复用属性组性能优化", "优先级": "中", "登记人": "邱钰洁", "处理人员": "王荣坡", "登记时间.1": "2026-05-27 18:45:00", "修复时间": "-", "关闭时间": "-", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "-", "引入原因": "-", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "2-性能问题", "缺陷修复周期(天)": "/", "缺陷关闭周期(天)": "/"}'>
+            <span class="warning-dot"></span>
+            <span class="warning-text">NL-B-172952 <span class="handler-tag">王荣坡</span> 【属性库】复用属性组性能优化</span>
+            <span class="warning-tag">超期3天</span>
+        </div>
+        
+
+        <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "导入导出", "缺陷编号": "NL-B-173312", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "New", "缺陷摘要": "【导入】【属性库】非生产态属性组的名称也被导入", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-29 16:19:00", "修复时间": "-", "关闭时间": "-", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "-", "引入原因": "-", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "5-数据丢失或错误", "缺陷修复周期(天)": "/", "缺陷关闭周期(天)": "/"}'>
+            <span class="warning-dot"></span>
+            <span class="warning-text">NL-B-173312 <span class="handler-tag">刘陈明</span> 【导入】【属性库】非生产态属性组的名称也被导入</span>
+            <span class="warning-tag">超期1天</span>
         </div>
         
                     </div>
@@ -4299,7 +4328,7 @@ echarts.init(document.getElementById('chart_type')).setOption({
                     @change="onFilterChange"
                 ></el-date-picker>
             </div>
-            <el-button size="small" style="border-color: #AA96DA; color: #AA96DA; background: #fff;" @click="resetFilters">重置</el-button>
+            <el-button size="small" style="border-color: #1C91FD; color: #1C91FD; background: #fff;" @click="resetFilters">重置</el-button>
         </div>
         <div class="filter-row filter-row-extra">
             <span class="filter-stats">共 {{ filteredCount }} 条</span>
@@ -4358,9 +4387,9 @@ echarts.init(document.getElementById('chart_type')).setOption({
     #detailVueApp .filter-row-extra { margin-top: 10px; justify-content: space-between; padding-top: 10px; border-top: 1px dashed #eee; }
     #detailVueApp .filter-group { display: flex; align-items: center; gap: 6px; }
     #detailVueApp .filter-label { font-family: 'Microsoft YaHei'; font-size: 13px; color: #555; white-space: nowrap; }
-    #detailVueApp .filter-stats { font-family: 'Microsoft YaHei'; font-size: 13px; color: #AA96DA; }
+    #detailVueApp .filter-stats { font-family: 'Microsoft YaHei'; font-size: 13px; color: #1C91FD; }
     #detailVueApp .filter-toggle { font-family: 'Microsoft YaHei'; font-size: 12px; color: #999; padding: 0; }
-    #detailVueApp .filter-toggle:hover { color: #AA96DA; }
+    #detailVueApp .filter-toggle:hover { color: #1C91FD; }
     #detailVueApp .arrow-up, #detailVueApp .arrow-down { display: inline-block; width: 0; height: 0; margin-left: 4px; vertical-align: middle; }
     #detailVueApp .arrow-up { border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 5px solid currentColor; }
     #detailVueApp .arrow-down { border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid currentColor; }
@@ -4375,7 +4404,7 @@ echarts.init(document.getElementById('chart_type')).setOption({
     #detailVueApp .detail-table tbody tr:hover { background: #fafafa; transform: scale(1.01); }
     #detailVueApp .detail-table td { padding: 10px; border-bottom: 1px solid #f0f0f0; color: #444; }
     #detailVueApp .detail-table tbody tr:last-child td { border-bottom: none; }
-    #detailVueApp .detail-table .col-0 { width: 130px; color: #AA96DA; }
+    #detailVueApp .detail-table .col-0 { width: 130px; color: #1C91FD; }
     #detailVueApp .detail-table .col-1 { width: 80px; }
     #detailVueApp .detail-table .col-2 { min-width: 180px; }
     #detailVueApp .detail-table .col-3 { width: 60px; }
@@ -4392,12 +4421,12 @@ echarts.init(document.getElementById('chart_type')).setOption({
     #detailVueApp .status-ReOpen { background: #FFEBEE; color: #EF5350; }
     #detailVueApp .priority-high { color: #EF5350; }
     #detailVueApp .priority-medium { color: #FFA726; }
-    #detailVueApp .priority-low { color: #AA96DA; }
+    #detailVueApp .priority-low { color: #1C91FD; }
     #detailVueApp .modal-body { padding: 10px 0; }
     #detailVueApp .detail-item { display: flex; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; background: #fff; transition: all 0.2s; }
     #detailVueApp .detail-item:hover { background: #fafafa; transform: translateX(6px); }
     #detailVueApp .detail-item:last-child { margin-bottom: 0; }
-    #detailVueApp .detail-label { width: 90px; flex-shrink: 0; font-family: 'Microsoft YaHei'; font-size: 13px; color: #AA96DA; font-weight: bold; }
+    #detailVueApp .detail-label { width: 90px; flex-shrink: 0; font-family: 'Microsoft YaHei'; font-size: 13px; color: #1C91FD; font-weight: bold; }
     #detailVueApp .detail-value { flex: 1; font-family: 'Microsoft YaHei'; font-size: 13px; color: #333; word-break: break-all; }
     /* el-dialog 毛玻璃背景 */
     .el-overlay { background: rgba(170,150,218,0.15) !important; backdrop-filter: blur(8px) !important; }
@@ -4405,14 +4434,14 @@ echarts.init(document.getElementById('chart_type')).setOption({
     .el-dialog { border-radius: 16px !important; box-shadow: 0 12px 40px rgba(170,150,218,0.25) !important; animation: dialogPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important; }
     @keyframes dialogPop { from { transform: scale(0.8) translateY(-30px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
     .el-dialog__header { background: #f8f9fa !important; border-radius: 16px 16px 0 0 !important; padding: 16px 20px !important; border-bottom: 1px solid #eee !important; display: flex !important; align-items: center !important; justify-content: space-between !important; }
-    .el-dialog__title { font-family: 'Microsoft YaHei' !important; color: #AA96DA !important; font-size: 16px !important; }
+    .el-dialog__title { font-family: 'Microsoft YaHei' !important; color: #1C91FD !important; font-size: 16px !important; }
     .el-dialog__headerbtn { position: relative !important; top: 0 !important; right: 0 !important; width: 32px !important; height: 32px !important; background: #fff !important; border: 1px solid #eee !important; border-radius: 50% !important; transition: all 0.3s !important; display: flex !important; align-items: center !important; justify-content: center !important; }
-    .el-dialog__headerbtn:hover { transform: rotate(90deg); background: #AA96DA !important; border-color: #AA96DA !important; }
-    .el-dialog__headerbtn .el-dialog__close { color: #AA96DA !important; font-size: 16px !important; }
+    .el-dialog__headerbtn:hover { transform: rotate(90deg); background: #1C91FD !important; border-color: #1C91FD !important; }
+    .el-dialog__headerbtn .el-dialog__close { color: #1C91FD !important; font-size: 16px !important; }
     .el-dialog__headerbtn:hover .el-dialog__close { color: #fff !important; }
     .el-dialog__body { padding: 20px !important; max-height: 60vh !important; overflow-y: auto !important; }
     .el-dialog__body::-webkit-scrollbar { width: 4px; }
-    .el-dialog__body::-webkit-scrollbar-thumb { background: #AA96DA; border-radius: 2px; }
+    .el-dialog__body::-webkit-scrollbar-thumb { background: #1C91FD; border-radius: 2px; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
@@ -4420,7 +4449,7 @@ echarts.init(document.getElementById('chart_type')).setOption({
 <script>
 (function() {
     var appData = {
-        allData: [{"缺陷编号": "NL-B-173312", "缺陷状态": "New", "缺陷摘要": "【导入】【属性库】非生产态属性组的名称也被导入", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "缺陷修复周期(天)": ""}, {"缺陷编号": "NL-B-173213", "缺陷状态": "ReOpen", "缺陷摘要": "【导出】导出超时", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "缺陷修复周期(天)": 0.27}, {"缺陷编号": "NL-B-172952", "缺陷状态": "New", "缺陷摘要": "【属性库】复用属性组性能优化", "优先级": "中", "严重程度": "一般", "处理人员": "王荣坡", "缺陷修复周期(天)": ""}, {"缺陷编号": "NL-B-172950", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】导出ppt失败", "优先级": "中", "严重程度": "较高", "处理人员": "陈珍桂", "缺陷修复周期(天)": 0.97}, {"缺陷编号": "NL-B-172949", "缺陷状态": "ReOpen", "缺陷摘要": "【需求采编】新增商品后，商品的排列顺序随机，倒叙排列", "优先级": "中", "严重程度": "轻微", "处理人员": "陈珍桂", "缺陷修复周期(天)": 1.95}, {"缺陷编号": "NL-B-172948", "缺陷状态": "Closed", "缺陷摘要": "【产品需求列表】创建时间未显示", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "缺陷修复周期(天)": 0.64}, {"缺陷编号": "NL-B-172947", "缺陷状态": "Closed", "缺陷摘要": "【元数据视图】产品信息图、产商品类目树的查询重置按钮丢失", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "缺陷修复周期(天)": 1.63}, {"缺陷编号": "NL-B-172946", "缺陷状态": "Closed", "缺陷摘要": "【产品一码】商品线为空时，不展示“-”", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "缺陷修复周期(天)": 0.04}, {"缺陷编号": "NL-B-172945", "缺陷状态": "New", "缺陷摘要": "【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "缺陷修复周期(天)": ""}, {"缺陷编号": "NL-B-172944", "缺陷状态": "Closed", "缺陷摘要": "【浏览器缓存】不同环境登录相同账号，会触发“重新加载站点”提示", "优先级": "中", "严重程度": "轻微", "处理人员": "陈智伟A", "缺陷修复周期(天)": 0.97}, {"缺陷编号": "NL-B-172713", "缺陷状态": "Closed", "缺陷摘要": "【商品构成】产品线必填未生效", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "缺陷修复周期(天)": 0.52}, {"缺陷编号": "NL-B-172712", "缺陷状态": "Closed", "缺陷摘要": "【动作库】动作库，节点名称未必填", "优先级": "中", "严重程度": "轻微", "处理人员": "陈智伟A", "缺陷修复周期(天)": 1.82}, {"缺陷编号": "NL-B-172711", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品】商品线6个层级，导出数据多了个null", "优先级": "中", "严重程度": "一般", "处理人员": "戴海涛", "缺陷修复周期(天)": 2.76}, {"缺陷编号": "NL-B-172710", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx字体样式调整", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "缺陷修复周期(天)": 1.91}, {"缺陷编号": "NL-B-172709", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx改造类型样式没有", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "缺陷修复周期(天)": 1.59}, {"缺陷编号": "NL-B-172708", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_商品定价清单.xlsx内容错误", "优先级": "中", "严重程度": "一般", "处理人员": "王邦城", "缺陷修复周期(天)": 0.51}, {"缺陷编号": "NL-B-172700", "缺陷状态": "Closed", "缺陷摘要": "【导入】【规则库_销售规则】规则未与生产态数据做反向校验，不存在的规则不允许导入", "优先级": "高", "严重程度": "较高", "处理人员": "陈珍桂", "缺陷修复周期(天)": 2.13}, {"缺陷编号": "NL-B-172698", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品定价详情】某商品拥有多个定价时，定价详情导出数据不完整", "优先级": "高", "严重程度": "较高", "处理人员": "王邦城", "缺陷修复周期(天)": 1.6}],
+        allData: [{"缺陷编号": "NL-B-173312", "缺陷状态": "New", "缺陷摘要": "【导入】【属性库】非生产态属性组的名称也被导入", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "缺陷修复周期(天)": "", "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "5-数据丢失或错误"}, {"缺陷编号": "NL-B-173213", "缺陷状态": "ReOpen", "缺陷摘要": "【导出】导出超时", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "缺陷修复周期(天)": 0.27, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "2-性能问题"}, {"缺陷编号": "NL-B-172952", "缺陷状态": "New", "缺陷摘要": "【属性库】复用属性组性能优化", "优先级": "中", "严重程度": "一般", "处理人员": "王荣坡", "缺陷修复周期(天)": "", "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "2-性能问题"}, {"缺陷编号": "NL-B-172950", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】导出ppt失败", "优先级": "中", "严重程度": "较高", "处理人员": "陈珍桂", "缺陷修复周期(天)": 0.97, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "3-功能不可用"}, {"缺陷编号": "NL-B-172949", "缺陷状态": "ReOpen", "缺陷摘要": "【需求采编】新增商品后，商品的排列顺序随机，倒叙排列", "优先级": "中", "严重程度": "轻微", "处理人员": "陈珍桂", "缺陷修复周期(天)": 1.95, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "6-操作界面"}, {"缺陷编号": "NL-B-172948", "缺陷状态": "Closed", "缺陷摘要": "【产品需求列表】创建时间未显示", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "缺陷修复周期(天)": 0.64, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "6-操作界面"}, {"缺陷编号": "NL-B-172947", "缺陷状态": "Closed", "缺陷摘要": "【元数据视图】产品信息图、产商品类目树的查询重置按钮丢失", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "缺陷修复周期(天)": 1.63, "发现阶段": "4.1-回归测试【基本流】", "缺陷类型": "6-操作界面"}, {"缺陷编号": "NL-B-172946", "缺陷状态": "Closed", "缺陷摘要": "【产品一码】商品线为空时，不展示“-”", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "缺陷修复周期(天)": 0.04, "发现阶段": "4.1-回归测试【基本流】", "缺陷类型": "5-数据丢失或错误"}, {"缺陷编号": "NL-B-172945", "缺陷状态": "New", "缺陷摘要": "【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "缺陷修复周期(天)": "", "发现阶段": "4.1-回归测试【基本流】", "缺陷类型": "2-性能问题"}, {"缺陷编号": "NL-B-172944", "缺陷状态": "Closed", "缺陷摘要": "【浏览器缓存】不同环境登录相同账号，会触发“重新加载站点”提示", "优先级": "中", "严重程度": "轻微", "处理人员": "陈智伟A", "缺陷修复周期(天)": 0.97, "发现阶段": "4.2-回归测试【备选流】", "缺陷类型": "29-其它"}, {"缺陷编号": "NL-B-172713", "缺陷状态": "Closed", "缺陷摘要": "【商品构成】产品线必填未生效", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "缺陷修复周期(天)": 0.52, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "8-输入校验"}, {"缺陷编号": "NL-B-172712", "缺陷状态": "Closed", "缺陷摘要": "【动作库】动作库，节点名称未必填", "优先级": "中", "严重程度": "轻微", "处理人员": "陈智伟A", "缺陷修复周期(天)": 1.82, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "8-输入校验"}, {"缺陷编号": "NL-B-172711", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品】商品线6个层级，导出数据多了个null", "优先级": "中", "严重程度": "一般", "处理人员": "戴海涛", "缺陷修复周期(天)": 2.76, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "5-数据丢失或错误"}, {"缺陷编号": "NL-B-172710", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx字体样式调整", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "缺陷修复周期(天)": 1.91, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "6-操作界面"}, {"缺陷编号": "NL-B-172709", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx改造类型样式没有", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "缺陷修复周期(天)": 1.59, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "6-操作界面"}, {"缺陷编号": "NL-B-172708", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_商品定价清单.xlsx内容错误", "优先级": "中", "严重程度": "一般", "处理人员": "王邦城", "缺陷修复周期(天)": 0.51, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "5-数据丢失或错误"}, {"缺陷编号": "NL-B-172700", "缺陷状态": "Closed", "缺陷摘要": "【导入】【规则库_销售规则】规则未与生产态数据做反向校验，不存在的规则不允许导入", "优先级": "高", "严重程度": "较高", "处理人员": "陈珍桂", "缺陷修复周期(天)": 2.13, "发现阶段": "4.2-回归测试【备选流】", "缺陷类型": "8-输入校验"}, {"缺陷编号": "NL-B-172698", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品定价详情】某商品拥有多个定价时，定价详情导出数据不完整", "优先级": "高", "严重程度": "较高", "处理人员": "王邦城", "缺陷修复周期(天)": 1.6, "发现阶段": "4.2-回归测试【备选流】", "缺陷类型": "5-数据丢失或错误"}],
         allDetailData: [{"缺陷编号": "NL-B-173312", "缺陷状态": "New", "缺陷摘要": "【导入】【属性库】非生产态属性组的名称也被导入", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "", "引入原因": "", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-29 16:19:00", "修复时间": "NaT", "关闭时间": "NaT", "缺陷修复周期(天)": "", "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-173213", "缺陷状态": "ReOpen", "缺陷摘要": "【导出】导出超时", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C3-性能问题", "缺陷来源": "研发过程", "缺陷类型": "2-性能问题", "登记人": "邱钰洁", "登记时间.1": "2026-05-29 08:57:00", "修复时间": "2026-05-29 15:24:45", "关闭时间": "NaT", "缺陷修复周期(天)": 0.27, "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172952", "缺陷状态": "New", "缺陷摘要": "【属性库】复用属性组性能优化", "优先级": "中", "严重程度": "一般", "处理人员": "王荣坡", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "", "引入原因": "", "缺陷来源": "研发过程", "缺陷类型": "2-性能问题", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:45:00", "修复时间": "NaT", "关闭时间": "NaT", "缺陷修复周期(天)": "", "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172950", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】导出ppt失败", "优先级": "中", "严重程度": "较高", "处理人员": "陈珍桂", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "D-软件测试", "引入原因": "D5-测试环境错误", "缺陷来源": "研发过程", "缺陷类型": "3-功能不可用", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:22:00", "修复时间": "2026-05-28 17:41:00", "关闭时间": "2026-05-29 08:49:00", "缺陷修复周期(天)": 0.97, "缺陷关闭周期(天)": 1.6}, {"缺陷编号": "NL-B-172949", "缺陷状态": "ReOpen", "缺陷摘要": "【需求采编】新增商品后，商品的排列顺序随机，倒叙排列", "优先级": "中", "严重程度": "轻微", "处理人员": "陈珍桂", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C20-代码未拉平（新变更）", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:20:00", "修复时间": "2026-05-29 17:03:23", "关闭时间": "NaT", "缺陷修复周期(天)": 1.95, "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172948", "缺陷状态": "Closed", "缺陷摘要": "【产品需求列表】创建时间未显示", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:18:00", "修复时间": "2026-05-28 09:38:00", "关闭时间": "2026-05-29 08:50:00", "缺陷修复周期(天)": 0.64, "缺陷关闭周期(天)": 1.61}, {"缺陷编号": "NL-B-172947", "缺陷状态": "Closed", "缺陷摘要": "【元数据视图】产品信息图、产商品类目树的查询重置按钮丢失", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C6-资源获取和释放问题", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:12:00", "修复时间": "2026-05-29 09:21:00", "关闭时间": "2026-05-29 17:31:00", "缺陷修复周期(天)": 1.63, "缺陷关闭周期(天)": 1.97}, {"缺陷编号": "NL-B-172946", "缺陷状态": "Closed", "缺陷摘要": "【产品一码】商品线为空时，不展示“-”", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:07:00", "修复时间": "2026-05-27 19:01:00", "关闭时间": "2026-05-29 08:50:00", "缺陷修复周期(天)": 0.04, "缺陷关闭周期(天)": 1.61}, {"缺陷编号": "NL-B-172945", "缺陷状态": "New", "缺陷摘要": "【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "", "引入原因": "", "缺陷来源": "研发过程", "缺陷类型": "2-性能问题", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:01:00", "修复时间": "NaT", "关闭时间": "NaT", "缺陷修复周期(天)": "", "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172944", "缺陷状态": "Closed", "缺陷摘要": "【浏览器缓存】不同环境登录相同账号，会触发“重新加载站点”提示", "优先级": "中", "严重程度": "轻微", "处理人员": "陈智伟A", "发现阶段": "4.2-回归测试【备选流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "缺陷类型": "29-其它", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 17:58:00", "修复时间": "2026-05-28 17:08:00", "关闭时间": "2026-05-29 17:34:00", "缺陷修复周期(天)": 0.97, "缺陷关闭周期(天)": 1.98}, {"缺陷编号": "NL-B-172713", "缺陷状态": "Closed", "缺陷摘要": "【商品构成】产品线必填未生效", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "缺陷类型": "8-输入校验", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:29:00", "修复时间": "2026-05-26 09:51:00", "关闭时间": "2026-05-26 21:02:00", "缺陷修复周期(天)": 0.52, "缺陷关闭周期(天)": 0.98}, {"缺陷编号": "NL-B-172712", "缺陷状态": "Closed", "缺陷摘要": "【动作库】动作库，节点名称未必填", "优先级": "中", "严重程度": "轻微", "处理人员": "陈智伟A", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "8-输入校验", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:20:00", "修复时间": "2026-05-27 16:54:00", "关闭时间": "2026-05-27 17:25:00", "缺陷修复周期(天)": 1.82, "缺陷关闭周期(天)": 1.84}, {"缺陷编号": "NL-B-172711", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品】商品线6个层级，导出数据多了个null", "优先级": "中", "严重程度": "一般", "处理人员": "戴海涛", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:11:00", "修复时间": "2026-05-28 15:32:00", "关闭时间": "2026-05-29 17:34:00", "缺陷修复周期(天)": 2.76, "缺陷关闭周期(天)": 3.85}, {"缺陷编号": "NL-B-172710", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx字体样式调整", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:08:00", "修复时间": "2026-05-27 19:00:00", "关闭时间": "2026-05-29 08:59:00", "缺陷修复周期(天)": 1.91, "缺陷关闭周期(天)": 3.49}, {"缺陷编号": "NL-B-172709", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx改造类型样式没有", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:07:00", "修复时间": "2026-05-27 11:15:00", "关闭时间": "2026-05-27 18:29:00", "缺陷修复周期(天)": 1.59, "缺陷关闭周期(天)": 1.89}, {"缺陷编号": "NL-B-172708", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_商品定价清单.xlsx内容错误", "优先级": "中", "严重程度": "一般", "处理人员": "王邦城", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C6-资源获取和释放问题", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:06:00", "修复时间": "2026-05-26 09:23:00", "关闭时间": "2026-05-26 21:07:00", "缺陷修复周期(天)": 0.51, "缺陷关闭周期(天)": 1}, {"缺陷编号": "NL-B-172700", "缺陷状态": "Closed", "缺陷摘要": "【导入】【规则库_销售规则】规则未与生产态数据做反向校验，不存在的规则不允许导入", "优先级": "高", "严重程度": "较高", "处理人员": "陈珍桂", "发现阶段": "4.2-回归测试【备选流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "8-输入校验", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 18:54:00", "修复时间": "2026-05-27 21:58:00", "关闭时间": "2026-05-29 08:59:00", "缺陷修复周期(天)": 2.13, "缺陷关闭周期(天)": 3.59}, {"缺陷编号": "NL-B-172698", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品定价详情】某商品拥有多个定价时，定价详情导出数据不完整", "优先级": "高", "严重程度": "较高", "处理人员": "王邦城", "发现阶段": "4.2-回归测试【备选流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 18:38:00", "修复时间": "2026-05-27 09:09:00", "关闭时间": "2026-05-27 18:37:00", "缺陷修复周期(天)": 1.6, "缺陷关闭周期(天)": 2}],
         colKeys: ["缺陷编号", "缺陷状态", "缺陷摘要", "优先级", "严重程度", "处理人员", "缺陷修复周期(天)"],
         detailColNames: ["缺陷编号", "缺陷状态", "缺陷摘要", "优先级", "严重程度", "处理人员", "发现阶段", "引入阶段", "引入原因", "缺陷来源", "缺陷类型", "登记人", "登记时间", "修改时间", "关闭时间", "修复周期(天)", "关闭周期(天)"],

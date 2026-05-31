@@ -36,7 +36,7 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
         }}
         .container {{ max-width: 1400px; margin: 0 auto; }}
         .header {{ text-align: center; margin-bottom: 30px; color: #2c3e50; }}
-        .header h1 {{ font-size: 36px; font-weight: 700; margin-bottom: 10px; color: #2c3e50; }}
+        .header h1 {{ font-size: 36px; font-weight: 700; margin-bottom: 10px; margin-top: 20px; color: #103979; }}
         .header p {{ font-size: 16px; color: #5d6d7e; }}
         .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }}
         .card {{ background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); padding: 20px; transition: all 0.3s ease; position: relative; height: 420px; overflow: hidden; }}

@@ -56,8 +56,12 @@ def create_detail_view_html(df, total):
     # 按登记时间倒序排列
     df_sorted = df.sort_values(by=register_time_col, ascending=False)
 
-    # 生成表格行数据
-    table_data = df_sorted[list(display_cols.keys())].fillna('')
+    # 筛选需要的列：展示列 + 筛选器需要的额外列
+    filter_cols = ['发现阶段', '缺陷类型']
+    all_row_cols = list(display_cols.keys()) + [c for c in filter_cols if c not in display_cols]
+
+    # 生成表格行数据（包含筛选字段）
+    table_data = df_sorted[all_row_cols].fillna('')
     rows_json = table_data.to_dict(orient='records')
 
     # 生成三种日期列表（用于日期筛选）
@@ -149,7 +153,7 @@ def create_detail_view_html(df, total):
                     @change="onFilterChange"
                 ></el-date-picker>
             </div>
-            <el-button size="small" style="border-color: #AA96DA; color: #AA96DA; background: #fff;" @click="resetFilters">重置</el-button>
+            <el-button size="small" style="border-color: #1C91FD; color: #1C91FD; background: #fff;" @click="resetFilters">重置</el-button>
         </div>
         <div class="filter-row filter-row-extra">
             <span class="filter-stats">共 {{ filteredCount }} 条</span>
@@ -201,9 +205,9 @@ def create_detail_view_html(df, total):
     #detailVueApp .filter-row-extra { margin-top: 10px; justify-content: space-between; padding-top: 10px; border-top: 1px dashed #eee; }
     #detailVueApp .filter-group { display: flex; align-items: center; gap: 6px; }
     #detailVueApp .filter-label { font-family: \'Microsoft YaHei\'; font-size: 13px; color: #555; white-space: nowrap; }
-    #detailVueApp .filter-stats { font-family: \'Microsoft YaHei\'; font-size: 13px; color: #AA96DA; }
+    #detailVueApp .filter-stats { font-family: \'Microsoft YaHei\'; font-size: 13px; color: #1C91FD; }
     #detailVueApp .filter-toggle { font-family: \'Microsoft YaHei\'; font-size: 12px; color: #999; padding: 0; }
-    #detailVueApp .filter-toggle:hover { color: #AA96DA; }
+    #detailVueApp .filter-toggle:hover { color: #1C91FD; }
     #detailVueApp .arrow-up, #detailVueApp .arrow-down { display: inline-block; width: 0; height: 0; margin-left: 4px; vertical-align: middle; }
     #detailVueApp .arrow-up { border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 5px solid currentColor; }
     #detailVueApp .arrow-down { border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid currentColor; }
@@ -218,7 +222,7 @@ def create_detail_view_html(df, total):
     #detailVueApp .detail-table tbody tr:hover { background: #fafafa; transform: scale(1.01); }
     #detailVueApp .detail-table td { padding: 10px; border-bottom: 1px solid #f0f0f0; color: #444; }
     #detailVueApp .detail-table tbody tr:last-child td { border-bottom: none; }
-    #detailVueApp .detail-table .col-0 { width: 130px; color: #AA96DA; }
+    #detailVueApp .detail-table .col-0 { width: 130px; color: #1C91FD; }
     #detailVueApp .detail-table .col-1 { width: 80px; }
     #detailVueApp .detail-table .col-2 { min-width: 180px; }
     #detailVueApp .detail-table .col-3 { width: 60px; }
@@ -235,12 +239,12 @@ def create_detail_view_html(df, total):
     #detailVueApp .status-ReOpen { background: #FFEBEE; color: #EF5350; }
     #detailVueApp .priority-high { color: #EF5350; }
     #detailVueApp .priority-medium { color: #FFA726; }
-    #detailVueApp .priority-low { color: #AA96DA; }
+    #detailVueApp .priority-low { color: #1C91FD; }
     #detailVueApp .modal-body { padding: 10px 0; }
     #detailVueApp .detail-item { display: flex; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; background: #fff; transition: all 0.2s; }
     #detailVueApp .detail-item:hover { background: #fafafa; transform: translateX(6px); }
     #detailVueApp .detail-item:last-child { margin-bottom: 0; }
-    #detailVueApp .detail-label { width: 90px; flex-shrink: 0; font-family: \'Microsoft YaHei\'; font-size: 13px; color: #AA96DA; font-weight: bold; }
+    #detailVueApp .detail-label { width: 90px; flex-shrink: 0; font-family: \'Microsoft YaHei\'; font-size: 13px; color: #1C91FD; font-weight: bold; }
     #detailVueApp .detail-value { flex: 1; font-family: \'Microsoft YaHei\'; font-size: 13px; color: #333; word-break: break-all; }
     /* el-dialog 毛玻璃背景 */
     .el-overlay { background: rgba(170,150,218,0.15) !important; backdrop-filter: blur(8px) !important; }
@@ -248,14 +252,14 @@ def create_detail_view_html(df, total):
     .el-dialog { border-radius: 16px !important; box-shadow: 0 12px 40px rgba(170,150,218,0.25) !important; animation: dialogPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important; }
     @keyframes dialogPop { from { transform: scale(0.8) translateY(-30px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
     .el-dialog__header { background: #f8f9fa !important; border-radius: 16px 16px 0 0 !important; padding: 16px 20px !important; border-bottom: 1px solid #eee !important; display: flex !important; align-items: center !important; justify-content: space-between !important; }
-    .el-dialog__title { font-family: \'Microsoft YaHei\' !important; color: #AA96DA !important; font-size: 16px !important; }
+    .el-dialog__title { font-family: \'Microsoft YaHei\' !important; color: #1C91FD !important; font-size: 16px !important; }
     .el-dialog__headerbtn { position: relative !important; top: 0 !important; right: 0 !important; width: 32px !important; height: 32px !important; background: #fff !important; border: 1px solid #eee !important; border-radius: 50% !important; transition: all 0.3s !important; display: flex !important; align-items: center !important; justify-content: center !important; }
-    .el-dialog__headerbtn:hover { transform: rotate(90deg); background: #AA96DA !important; border-color: #AA96DA !important; }
-    .el-dialog__headerbtn .el-dialog__close { color: #AA96DA !important; font-size: 16px !important; }
+    .el-dialog__headerbtn:hover { transform: rotate(90deg); background: #1C91FD !important; border-color: #1C91FD !important; }
+    .el-dialog__headerbtn .el-dialog__close { color: #1C91FD !important; font-size: 16px !important; }
     .el-dialog__headerbtn:hover .el-dialog__close { color: #fff !important; }
     .el-dialog__body { padding: 20px !important; max-height: 60vh !important; overflow-y: auto !important; }
     .el-dialog__body::-webkit-scrollbar { width: 4px; }
-    .el-dialog__body::-webkit-scrollbar-thumb { background: #AA96DA; border-radius: 2px; }
+    .el-dialog__body::-webkit-scrollbar-thumb { background: #1C91FD; border-radius: 2px; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>

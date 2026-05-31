@@ -1259,14 +1259,14 @@ def get_home_view_css():
         margin-bottom: 12px;
         font-size: 18px;
         font-weight: 700;
-        color: #1c91fd;
+        color: #103979;
     }
     .panel-section-title::before {
         content: "";
         display: block;
         width: 4px;
         height: 24px;
-        background: #1c91fd;
+        background: #103979;
         border-radius: 2px;
     }
 
@@ -1417,7 +1417,7 @@ def get_home_view_css():
         font-weight: 700;
     }
     .bar-chart-body .bar-track {
-        height: 28px;
+        height: 20px;
         background: #f0f4f8;
         border-radius: 14px;
         overflow: hidden;
@@ -1469,7 +1469,7 @@ def get_home_view_css():
     .panel-card-title {
         font-size: 15px;
         font-weight: 600;
-        color: #1c91fd;
+        color: #103979;
         margin-bottom: 12px;
     }
 
@@ -1644,23 +1644,23 @@ def get_home_view_css():
         grid-template-columns: repeat(3, 1fr);
         gap: 30px;
     }
-    .metric-card {
+    .three-col .metric-card {
         background: #f0f4f8;
         border-radius: 8px;
         text-align: center;
         min-height: 160px;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .metric-card:hover {
+    .three-col .metric-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
-    .metric-card .metric-label {
+    .three-col .metric-card .metric-label {
         font-size: 12px;
         color: #6b7280;
         margin-top: 8px;
     }
-    .metric-card .metric-value {
+    .three-col .metric-card .metric-value {
         font-size: 22px;
         font-weight: 700;
         color: #50A5F4;
@@ -1813,14 +1813,15 @@ def get_home_view_css():
         flex-shrink: 0;
     }
 
-    /* 缺陷详情弹窗 */
+    /* 缺陷详情弹窗 - 与明细视图一致 */
     .warning-modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(170,150,218,0.15);
+        backdrop-filter: blur(8px);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1837,66 +1838,87 @@ def get_home_view_css():
         background: white;
         border-radius: 16px;
         width: 90%;
-        max-width: 700px;
+        max-width: 600px;
         max-height: 80vh;
         overflow: hidden;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-        transform: scale(0.9);
-        transition: transform 0.3s ease;
+        box-shadow: 0 12px 40px rgba(170,150,218,0.25);
+        transform: scale(0.8) translateY(-30px);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .warning-modal-overlay.active .warning-modal {
-        transform: scale(1);
+        transform: scale(1) translateY(0);
+        opacity: 1;
     }
     .warning-modal-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 16px 20px;
-        background: linear-gradient(135deg, #1c91fd 0%, #5DADE2 100%);
-        color: white;
+        background: #f8f9fa;
+        border-radius: 16px 16px 0 0;
+        border-bottom: 1px solid #eee;
     }
     .warning-modal-title {
+        font-family: 'Microsoft YaHei';
         font-size: 16px;
+        color: #1C91FD;
         font-weight: 600;
     }
     .warning-modal-close {
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        border: none;
-        color: white;
-        font-size: 20px;
+        background: #fff;
+        border: 1px solid #eee;
+        color: #1C91FD;
+        font-size: 16px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background 0.2s;
+        transition: all 0.3s;
     }
     .warning-modal-close:hover {
-        background: rgba(255, 255, 255, 0.3);
+        transform: rotate(90deg);
+        background: #1C91FD;
+        border-color: #1C91FD;
+        color: #fff;
     }
     .warning-modal-body {
         padding: 20px;
-        max-height: calc(80vh - 70px);
+        max-height: 60vh;
         overflow-y: auto;
     }
+    .warning-modal-body::-webkit-scrollbar { width: 4px; }
+    .warning-modal-body::-webkit-scrollbar-thumb { background: #1C91FD; border-radius: 2px; }
     .warning-detail-row {
         display: flex;
-        padding: 10px 0;
-        border-bottom: 1px solid #e5e7eb;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        background: #fff;
+        transition: all 0.2s;
+    }
+    .warning-detail-row:hover {
+        background: #fafafa;
+        transform: translateX(6px);
     }
     .warning-detail-row:last-child {
-        border-bottom: none;
+        margin-bottom: 0;
     }
     .warning-detail-label {
-        width: 120px;
-        font-weight: 600;
-        color: #6b7280;
+        width: 90px;
         flex-shrink: 0;
+        font-family: 'Microsoft YaHei';
+        font-size: 13px;
+        color: #1C91FD;
+        font-weight: bold;
     }
     .warning-detail-value {
         flex: 1;
+        font-family: 'Microsoft YaHei';
+        font-size: 13px;
         color: #333;
         word-break: break-all;
     }
