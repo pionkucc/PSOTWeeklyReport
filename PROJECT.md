@@ -4,10 +4,12 @@
 
 ## 在线访问
 
-- **访问地址**: https://pionkucc.github.io/PSOTWeeklyReport/PSOT_Weekly_Report_2026.05.18-2026.05.22.html
-- **仓库地址**: https://github.com/pionkucc/PSOTWeeklyReport
+- **GitHub Pages**: https://pionkucc.github.io/PSOTWeeklyReport/PSOT_Weekly_Report_2026.05.25-2026.05.29.html
+- **GitLab Pages**: https://psot-qc.pages.jihulab.com/weekly-report-project/PSOT_Weekly_Report_2026.05.25-2026.05.29.html
+- **GitHub 仓库**: https://github.com/pionkucc/PSOTWeeklyReport
+- **GitLab 仓库**: https://jihulab.com/psot-qc/weekly-report-project
 
-> 注：仓库为私有，但Pages公开可访问
+> 注：仓库均为私有，但 Pages 公开可访问
 
 ## 快速开始
 
@@ -25,7 +27,12 @@ python defect_quality_report.py
 python auto_push.py
 ```
 
-脚本自动执行：生成报告 → Git提交 → 推送到GitHub → Actions自动部署
+脚本自动执行：生成报告 → Git提交 → 选择推送平台 → CI/CD自动部署
+
+**推送选项**：
+- `1` - 仅推送到 GitHub
+- `2` - 仅推送到 GitLab（极狐）
+- `3` - 同时推送到 GitHub 和 GitLab
 
 ### 方式二：手动操作
 
@@ -33,29 +40,25 @@ python auto_push.py
 2. 修改 `config.py` 中的 `SUBTITLE`（日期范围）
 3. 运行 `python defect_quality_report.py`
 4. Git提交并推送
-5. 等待GitHub Actions部署完成
+5. 等待 CI/CD 部署完成
 
-## GitHub Actions 自动部署
+## CI/CD 自动部署
 
-### 工作流配置
+### GitHub Actions
 
 文件：`.github/workflows/deploy.yml`
 
-**触发条件**：
-- push到main/master分支
-- 修改Excel文件、Python文件、配置文件时触发
-- 支持手动触发（workflow_dispatch）
+**触发条件**：push 到 main/master 分支
 
-**部署流程**：
-1. 检出代码
-2. 安装Python依赖
-3. 运行脚本生成HTML
-4. 部署到GitHub Pages
+**查看运行状态**：https://github.com/pionkucc/PSOTWeeklyReport/actions
 
-**查看运行状态**：
-```
-https://github.com/pionkucc/PSOTWeeklyReport/actions
-```
+### GitLab CI/CD
+
+文件：`.gitlab-ci.yml`
+
+**触发条件**：push 到 main/master 分支
+
+**查看运行状态**：https://jihulab.com/psot-qc/weekly-report-project/-/pipelines
 
 ## 项目结构
 
@@ -70,6 +73,7 @@ F:\AI\Claude Code\Weekly_Report\
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml          # GitHub Actions工作流
+├── .gitlab-ci.yml              # GitLab CI/CD工作流
 ├── views/
 │   ├── __init__.py
 │   ├── chart_views.py          # 图表视图函数

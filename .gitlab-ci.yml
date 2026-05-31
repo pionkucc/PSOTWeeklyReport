@@ -1,0 +1,37 @@
+# GitLab CI/CD 配置
+# 自动生成报告并部署到 GitLab Pages
+
+stages:
+  - build
+  - deploy
+
+# 构建阶段：生成 HTML 报告
+build_report:
+  stage: build
+  image: python:3.11
+  before_script:
+    - pip install -r requirements.txt
+  script:
+    - python defect_quality_report.py
+  artifacts:
+    paths:
+      - "*.html"
+      - "缺陷明细.xlsx"
+    expire_in: 1 week
+  only:
+    - main
+    - master
+
+# 部署阶段：发布到 GitLab Pages
+pages:
+  stage: deploy
+  script:
+    - mkdir -p public
+    - cp *.html public/
+    - cp 缺陷明细.xlsx public/
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
+    - master
