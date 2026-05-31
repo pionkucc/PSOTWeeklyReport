@@ -1465,7 +1465,7 @@ def get_home_view_css():
     .bar-chart-title {
         font-size: 15px;
         font-weight: 600;
-        color: #1c91fd;
+        color: #103979;
         margin-bottom: 16px;
     }
     .bar-chart-body .bar-row {
