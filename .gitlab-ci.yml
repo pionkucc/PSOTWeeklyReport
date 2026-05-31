@@ -15,7 +15,7 @@ build_report:
     - python defect_quality_report.py
   artifacts:
     paths:
-      - "*.html"
+      - "PSOT_Weekly_Report.html"
       - "缺陷明细.xlsx"
     expire_in: 1 week
   only:
@@ -27,7 +27,7 @@ pages:
   stage: deploy
   script:
     - mkdir -p public
-    - cp *.html public/
+    - cp PSOT_Weekly_Report.html public/
     - cp 缺陷明细.xlsx public/
   artifacts:
     paths:

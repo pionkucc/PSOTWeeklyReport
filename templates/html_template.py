@@ -533,6 +533,27 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
 
 
 def save_report(html_content):
-    """保存HTML报告到文件"""
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+    """保存HTML报告到文件
+
+    保存两个版本：
+    1. history_reports/ 目录：带日期的历史版本
+    2. 根目录：固定名称版本用于 Pages（PSOT_Weekly_Report.html）
+    """
+    import os
+
+    # 创建 history_reports 目录（如果不存在）
+    history_dir = 'history_reports'
+    if not os.path.exists(history_dir):
+        os.makedirs(history_dir)
+
+    # 保存带日期的历史版本
+    history_file = os.path.join(history_dir, OUTPUT_FILE)
+    with open(history_file, 'w', encoding='utf-8') as f:
         f.write(html_content)
+    print(f"历史版本已保存: {history_file}")
+
+    # 保存固定名称版本（用于 Pages）
+    pages_file = 'PSOT_Weekly_Report.html'
+    with open(pages_file, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+    print(f"Pages版本已保存: {pages_file}")

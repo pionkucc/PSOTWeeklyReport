@@ -40,6 +40,9 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
+          include: |
+            PSOT_Weekly_Report.html
+            *.xlsx
 
   deploy:
     needs: build
