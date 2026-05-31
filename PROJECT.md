@@ -84,7 +84,8 @@ F:\AI\Claude Code\Weekly_Report\
 │   ├── v3.2_modular_backup.zip # v3.2备份
 │   ├── v3.3_modular_backup.zip # v3.3备份
 │   ├── v3.4_modular_backup.zip # v3.4备份
-│   └── v3.4.1_modular_backup.zip # v3.4.1备份
+│   ├── v3.4.1_modular_backup.zip # v3.4.1备份
+│   └── v3.4.2_modular_backup.zip # v3.4.2备份
 ├── 缺陷明细.xlsx                # 数据源
 └── PSOT_Weekly_Report_*.html   # 输出报告（动态命名）
 ```
@@ -238,6 +239,16 @@ F:\AI\Claude Code\Weekly_Report\
 #### `save_report(html_content)`
 - **功能**：保存HTML报告到文件
 
+**内置功能**：
+1. **截图功能**（v3.4.2新增）
+   - 使用 dom-to-image-more 库截取完整页面
+   - 完美保留 CSS 渐变背景（包括多层径向渐变）
+   - 截图成功弹窗：预览 + 保存 + 复制到剪贴板
+   - 保存功能：File System Access API 选择保存位置
+   - 复制功能：Clipboard API 图片粘贴支持
+2. **视图切换**：主页/图表/明细三视图切换
+3. **图表交互**：切换表格、放大弹窗
+
 ---
 
 ### 7. defect_quality_report.py - 主入口程序
@@ -338,12 +349,19 @@ F:\AI\Claude Code\Weekly_Report\
 
 ## 依赖库
 
+**Python依赖**：
 ```
 pandas
 pyecharts
 numpy
 openpyxl (Excel读取)
 beautifulsoup4 (富文本解析)
+```
+
+**前端CDN依赖**：
+```
+echarts@5 (图表渲染)
+dom-to-image-more@3.5 (截图功能，完美保留CSS渐变)
 ```
 
 ---

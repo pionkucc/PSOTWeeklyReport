@@ -16,6 +16,7 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{TITLE}</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.5/dist/dom-to-image-more.min.js"></script>
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         body {{
@@ -74,9 +75,9 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
         .icon-chart {{ width: 22px; height: 22px; position: relative; display: flex; align-items: flex-end; justify-content: space-between; }}
         .icon-chart::before {{ content: ''; position: absolute; bottom: 0; left: 0; width: 5px; height: 14px; background: #fff; border-radius: 2px 2px 0 0; }}
         .icon-chart::after {{ content: ''; position: absolute; bottom: 0; right: 0; width: 5px; height: 8px; background: #fff; border-radius: 2px 2px 0 0; }}
-        .icon-refresh {{ width: 20px; height: 20px; position: relative; }}
-        .icon-refresh::before {{ content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border: 2px solid #fff; border-radius: 50%; border-top-color: transparent; border-left-color: transparent; transform: rotate(-45deg); }}
-        .icon-refresh::after {{ content: ''; position: absolute; top: 0, right: 3px; width: 6px; height: 6px; border-top: 2px solid #fff; border-right: 2px solid #fff; transform: rotate(45deg); }}
+        .icon-screenshot {{ width: 20px; height: 20px; position: relative; }}
+        .icon-screenshot::before {{ content: ''; position: absolute; top: 3px; left: 3px; width: 14px; height: 12px; border: 2px solid #fff; border-radius: 3px; }}
+        .icon-screenshot::after {{ content: ''; position: absolute; top: 7px; left: 7px; width: 6px; height: 6px; border: 2px solid #fff; border-radius: 50%; }}
         .icon-clock {{ width: 20px; height: 20px; border: 2px solid #fff; border-radius: 50%; position: relative; }}
         .icon-clock::before {{ content: ''; position: absolute; top: 3px; left: 7px; width: 2px; height: 6px; background: #fff; border-radius: 1px; }}
         .icon-clock::after {{ content: ''; position: absolute; top: 7px; left: 7px; width: 5px; height: 2px; background: #fff; border-radius: 1px; }}
@@ -89,7 +90,7 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
         .view-btn.active {{ background: rgba(145, 202, 255, 0.5); color: #ffffff; font-weight: 600; box-shadow: 0 4px 20px rgba(22,119,255,0.2); border: 2px solid rgba(255,255,255,0.85); }}
         .view-btn.home-btn {{ padding: 10px 14px; border-radius: 50%; }}
         .view-btn.home-btn.active {{ background: rgba(145, 202, 255, 0.5); border: 2px solid rgba(255,255,255,0.85); }}
-        .view-btn.refresh-btn {{ padding: 10px 14px; border-radius: 50%; }}
+        .view-btn.screenshot-btn {{ padding: 10px 14px; border-radius: 50%; }}
         .view-btn svg {{ flex-shrink: 0; }}
         .modal-overlay {{ position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 1000; display: none; align-items: center; justify-content: center; }}
         .modal-overlay.active {{ display: flex; }}
@@ -98,7 +99,28 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
         .modal-close {{ position: absolute; top: 10px; right: 15px; width: 32px; height: 32px; border-radius: 50%; border: none; background: #f0f0f0; cursor: pointer; font-size: 18px; color: #666; transition: all 0.3s ease; }}
         .modal-close:hover {{ background: #e74c3c; color: white; transform: rotate(90deg); }}
         .modal-chart {{ width: 1000px; height: 650px; }}
-        @media (max-width: 768px) {{ .grid {{ grid-template-columns: 1fr; }} .header h1 {{ font-size: 28px; }} .modal-chart {{ width: 95vw; height: 400px; }} }}
+        .screenshot-modal {{ position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 2000; display: none; align-items: center; justify-content: center; }}
+        .screenshot-modal.active {{ display: flex; }}
+        .screenshot-dialog {{ background: white; border-radius: 16px; padding: 28px 32px; max-width: 520px; width: 90%; text-align: center; animation: modalIn 0.3s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }}
+        .screenshot-dialog .success-icon {{ width: 56px; height: 56px; margin: 0 auto 16px; background: linear-gradient(135deg, #82E0AA, #2ECC71); border-radius: 50%; display: flex; align-items: center; justify-content: center; }}
+        .screenshot-dialog .success-icon svg {{ width: 28px; height: 28px; }}
+        .screenshot-dialog h3 {{ font-size: 18px; color: #2c3e50; margin-bottom: 6px; }}
+        .screenshot-dialog p {{ font-size: 13px; color: #95a5a6; margin-bottom: 20px; }}
+        .screenshot-preview {{ max-height: 200px; overflow: hidden; border-radius: 8px; border: 1px solid #eee; margin-bottom: 20px; }}
+        .screenshot-preview img {{ width: 100%; display: block; }}
+        .screenshot-actions {{ display: flex; gap: 12px; justify-content: center; }}
+        .screenshot-actions button {{ padding: 10px 28px; border-radius: 25px; border: none; font-size: 14px; font-family: 'Microsoft YaHei'; font-weight: 500; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 6px; }}
+        .screenshot-actions .btn-save {{ background: linear-gradient(135deg, #1C91FD, #1677FF); color: white; box-shadow: 0 4px 15px rgba(22,119,255,0.3); }}
+        .screenshot-actions .btn-save:hover {{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(22,119,255,0.4); }}
+        .screenshot-actions .btn-clipboard {{ background: #f5f7fa; color: #5d6d7e; border: 1px solid #e0e0e0; }}
+        .screenshot-actions .btn-clipboard:hover {{ background: #e8ecf0; transform: translateY(-2px); }}
+        .screenshot-loading {{ display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 3000; align-items: center; justify-content: center; }}
+        .screenshot-loading.active {{ display: flex; }}
+        .screenshot-loading .loading-spinner {{ background: white; border-radius: 16px; padding: 28px 36px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }}
+        .screenshot-loading .spinner {{ width: 40px; height: 40px; border: 3px solid #e0e0e0; border-top: 3px solid #1C91FD; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }}
+        @keyframes spin {{ 0% {{ transform: rotate(0deg); }} 100% {{ transform: rotate(360deg); }} }}
+        .screenshot-loading p {{ font-size: 14px; color: #5d6d7e; font-family: 'Microsoft YaHei'; }}
+        @media (max-width: 768px) {{ .grid {{ grid-template-columns: 1fr; }} .header h1 {{ font-size: 28px; }} .modal-chart {{ width: 95vw; height: 400px; }} .screenshot-dialog {{ padding: 20px; }} .screenshot-actions {{ flex-direction: column; }} }}
     </style>
 </head>
 <body>
@@ -108,7 +130,7 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
                 <button class="view-btn home-btn active" data-view="home" onclick="switchView('home')"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
                 <button class="view-btn" data-view="chart" onclick="switchView('chart')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zm-2-2h-2v-6h2v6zm-4 0h-2v-4h2v4zm-4 0h-2v-8h2v8z"/></svg>图表</button>
                 <button class="view-btn" data-view="detail" onclick="switchView('detail')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px"><path d="M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h18v2H3v-2zm0 4h12v2H3v-2zm0 4h8v2H3v-2z"/></svg>明细</button>
-                <button class="view-btn refresh-btn" onclick="refreshData()"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
+                <button class="view-btn screenshot-btn" onclick="screenshotReport()" title="截图"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15.2A3.2 3.2 0 1 0 12 8.8a3.2 3.2 0 0 0 0 6.4z"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg></button>
             </div>
             <h1>{TITLE}</h1>
             <p>{SUBTITLE} | 共 {total} 条缺陷数据</p>
@@ -143,6 +165,36 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
         </div>
     </div>
 
+    <!-- 截图加载遮罩 -->
+    <div class="screenshot-loading" id="screenshotLoading">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>正在截取页面...</p>
+        </div>
+    </div>
+
+    <!-- 截图成功弹窗 -->
+    <div class="screenshot-modal" id="screenshotModal" onclick="closeScreenshotModal(event)">
+        <div class="screenshot-dialog" onclick="event.stopPropagation()">
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+            </div>
+            <h3>截图成功</h3>
+            <p>图片已生成，可选择下载或复制到剪贴板</p>
+            <div class="screenshot-preview"><img id="screenshotPreviewImg" src="" alt="截图预览" /></div>
+            <div class="screenshot-actions">
+                <button class="btn-save" onclick="saveScreenshot()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM15 3v2h3.59l-9.83 9.83 1.41 1.41L20 6.41V10h2V3h-7z"/></svg>
+                    保存
+                </button>
+                <button class="btn-clipboard" onclick="copyToClipboard()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                    复制到剪贴板
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         var chartConfigs = [
             {{ title: '处理人员缺陷统计', categoryCol: '处理人员', hasPercent: false }},
@@ -167,7 +219,7 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
             var wrapper = card.closest('.card') || card.closest('.card-wide');
             var toolbar = document.createElement('div');
             toolbar.className = 'chart-toolbar';
-            toolbar.innerHTML = '<button class="chart-btn" title="切换表格" onclick="toggleTable(\\'' + chartId + '\\', ' + idx + ')">📊</button><button class="chart-btn" title="放大" onclick="enlargeChart(\\'' + chartId + '\\')">⛶</button>';
+            toolbar.innerHTML = '<button class="chart-btn" title="切换表格" onclick="toggleTable(\\'' + chartId + '\\', ' + idx + ')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h4v4H7V7zm6 0h4v4h-4V7zm-6 6h4v4H7v-4zm6 0h4v4h-4v-4z"/></svg></button><button class="chart-btn" title="放大" onclick="enlargeChart(\\'' + chartId + '\\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zm.5-7H9v2H7v1h2v2h1v-2h2V9h-2V7z"/></svg></button>';
             wrapper.insertBefore(toolbar, wrapper.firstChild);
 
             var tableDiv = document.createElement('div');
@@ -356,9 +408,123 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
                 detailView.style.display = 'block';
             }}
         }}
-        function refreshData() {{
-            // TODO: 刷新数据功能待实现
-            console.log('刷新数据');
+        var _screenshotBlob = null;
+
+        function screenshotReport() {{
+            var loading = document.getElementById('screenshotLoading');
+            loading.classList.add('active');
+
+            // 使用 dom-to-image-more 截取整个 body，完美保留 CSS 渐变
+            domtoimage.toBlob(document.body, {{
+                scale: 2,
+                width: document.documentElement.offsetWidth,
+                height: document.documentElement.scrollHeight,
+                style: {{
+                    overflow: 'visible'
+                }},
+                filter: function(node) {{
+                    // 过滤掉遮罩层，不参与截图
+                    if (node.id === 'screenshotLoading' ||
+                        node.id === 'screenshotModal' ||
+                        node.id === 'modalOverlay') {{
+                        return false;
+                    }}
+                    return true;
+                }}
+            }}).then(function(blob) {{
+                loading.classList.remove('active');
+                _screenshotBlob = blob;
+                var url = URL.createObjectURL(blob);
+                document.getElementById('screenshotPreviewImg').src = url;
+                document.getElementById('screenshotModal').classList.add('active');
+            }}).catch(function(err) {{
+                loading.classList.remove('active');
+                console.error('截图失败:', err);
+                alert('截图失败，请重试');
+            }});
+        }}
+
+        function saveScreenshot() {{
+            if (!_screenshotBlob) return;
+            var now = new Date();
+            var ts = now.getFullYear() + '' + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '_' + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0');
+            var defaultName = 'report_screenshot_' + ts + '.png';
+
+            // 使用 File System Access API 选择保存位置
+            if ('showSaveFilePicker' in window) {{
+                var writableStream = null;
+                showSaveFilePicker({{
+                    suggestedName: defaultName,
+                    types: [ {{
+                        description: 'PNG 图片',
+                        accept: {{ 'image/png': ['.png'] }}
+                    }} ]
+                }}).then(function(handle) {{
+                    return handle.createWritable();
+                }}).then(function(writable) {{
+                    writableStream = writable;
+                    return writable.write(_screenshotBlob);
+                }}).then(function() {{
+                    return writableStream.close();
+                }}).then(function() {{
+                    var btn = document.querySelector('.btn-save');
+                    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="#2ECC71"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg> 已保存';
+                    btn.style.background = 'linear-gradient(135deg, #2ECC71, #27AE60)';
+                    setTimeout(function() {{
+                        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM15 3v2h3.59l-9.83 9.83 1.41 1.41L20 6.41V10h2V3h-7z"/></svg> 保存';
+                        btn.style.background = 'linear-gradient(135deg, #1C91FD, #1677FF)';
+                    }}, 2000);
+                }}).catch(function(err) {{
+                    if (err.name !== 'AbortError') {{
+                        console.error('保存失败:', err);
+                        alert('保存失败，请重试');
+                    }}
+                }});
+            }} else {{
+                // 降级为传统下载方式
+                var url = URL.createObjectURL(_screenshotBlob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = defaultName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }}
+        }}
+
+        function copyToClipboard() {{
+            if (!_screenshotBlob) return;
+            var btn = document.querySelector('.btn-clipboard');
+            if (navigator.clipboard && navigator.clipboard.write) {{
+                var item = new ClipboardItem({{ 'image/png': _screenshotBlob }});
+                navigator.clipboard.write([item]).then(function() {{
+                    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="#2ECC71"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg> 已复制';
+                    btn.style.color = '#2ECC71';
+                    btn.style.borderColor = '#2ECC71';
+                    setTimeout(function() {{
+                        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> 复制到剪贴板';
+                        btn.style.color = '';
+                        btn.style.borderColor = '';
+                    }}, 2000);
+                }}).catch(function(err) {{
+                    console.error('复制失败:', err);
+                    alert('复制失败，浏览器可能不支持此功能');
+                }});
+            }} else {{
+                alert('当前浏览器不支持复制图片到剪贴板，请使用下载功能');
+            }}
+        }}
+
+        function closeScreenshotModal(event) {{
+            if (event && event.target !== document.getElementById('screenshotModal')) return;
+            document.getElementById('screenshotModal').classList.remove('active');
+            var img = document.getElementById('screenshotPreviewImg');
+            if (img.src) {{
+                URL.revokeObjectURL(img.src);
+                img.src = '';
+            }}
+            _screenshotBlob = null;
         }}
         {get_home_view_js()}
     </script>

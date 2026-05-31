@@ -10,7 +10,6 @@
     缺陷质量分析报告.html
 """
 
-import re
 import pandas as pd
 from pyecharts.charts import Bar, Line
 from pyecharts import options as opts
@@ -224,29 +223,34 @@ charts_html.append(f'''
 </script>
 ''')
 
-# 5. 缺陷趋势分析
-date_range_match = re.search(r'(\d{4}-\d{2}-\d{2})\s*~\s*(\d{4}-\d{2}-\d{2})', SUBTITLE)
-if date_range_match:
-    start_date = pd.to_datetime(date_range_match.group(1))
-    end_date = pd.to_datetime(date_range_match.group(2))
-else:
-    start_date = pd.to_datetime('2026-05-18')
-    end_date = pd.to_datetime('2026-05-22')
-
-date_range = pd.date_range(start=start_date, end=end_date, freq='D')
-all_dates = [d.strftime('%m-%d') for d in date_range]
-
+# 5. 缺陷趋势分析 - 动态从数据中读取日期范围
 register_time_col = df.columns[11]
 close_time_col = df.columns[13]
 
-df['登记日期'] = pd.to_datetime(df[register_time_col]).dt.strftime('%m-%d')
-df['关闭日期'] = pd.to_datetime(df[close_time_col]).dt.strftime('%m-%d')
+# 提取登记时间列中的有效日期
+df['登记日期_full'] = pd.to_datetime(df[register_time_col], errors='coerce')
+valid_dates = df['登记日期_full'].dropna()
 
+if len(valid_dates) > 0:
+    # 从数据中获取实际日期范围
+    start_date = valid_dates.min()
+    end_date = valid_dates.max()
+    date_range = pd.date_range(start=start_date, end=end_date, freq='D')
+    all_dates = [d.strftime('%m-%d') for d in date_range]
+else:
+    # 如果数据中没有有效日期，使用默认值
+    all_dates = []
+
+df['登记日期'] = df['登记日期_full'].dt.strftime('%m-%d')
+df['关闭日期'] = pd.to_datetime(df[close_time_col], errors='coerce').dt.strftime('%m-%d')
+
+# 统计每个日期的缺陷数量
 new_counts = df[df['缺陷状态'] == 'New'].groupby('登记日期').size()
 closed_counts = df[df['缺陷状态'] == 'Closed'].groupby('关闭日期').size()
 legacy_df = df[df['缺陷状态'].isin(['New', 'ReOpen', 'Pending', 'Fixed'])]
 legacy_counts = legacy_df.groupby('登记日期').size()
 
+# 按实际日期生成数据序列
 new_data = [int(new_counts.get(d, 0)) for d in all_dates]
 closed_data = [int(closed_counts.get(d, 0)) for d in all_dates]
 legacy_data = [int(legacy_counts.get(d, 0)) for d in all_dates]
@@ -264,7 +268,7 @@ line_chart.set_global_opts(
     title_opts=opts.TitleOpts(title="缺陷趋势分析", pos_left="center",
         title_textstyle_opts=opts.TextStyleOpts(font_size=16, color="#2c3e50", font_family="Microsoft YaHei")),
     tooltip_opts=opts.TooltipOpts(trigger="axis", extra_css_text=TOOLTIP_CSS),
-    xaxis_opts=opts.AxisOpts(name="日期", axislabel_opts=opts.LabelOpts(font_family="Microsoft YaHei", font_size=11)),
+    xaxis_opts=opts.AxisOpts(name="日期", boundary_gap=False, axislabel_opts=opts.LabelOpts(font_family="Microsoft YaHei", font_size=11)),
     yaxis_opts=opts.AxisOpts(name="缺陷数量", splitline_opts=opts.SplitLineOpts(is_show=True, linestyle_opts=opts.LineStyleOpts(type_="dashed")),
         axislabel_opts=opts.LabelOpts(font_family="Microsoft YaHei")),
     legend_opts=opts.LegendOpts(is_show=True, orient="horizontal", pos_top="bottom", pos_left="center",

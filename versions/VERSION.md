@@ -1,5 +1,30 @@
 # 缺陷质量分析报告生成器 - 版本记录
 
+## v3.4.2 (2026-05-31)
+
+**更新内容**：
+- 截图功能实现
+  - 右上角刷新按钮改为截图按钮（相机图标）
+  - 点击截取当前页面完整内容（包含标题、视图切换按钮、两侧留白）
+  - 使用 dom-to-image-more 库替代 html2canvas，完美保留 CSS 渐变背景
+  - 截图成功弹窗：预览图片 + 保存按钮 + 复制到剪贴板按钮
+  - 保存功能：调用 File System Access API，用户可选择保存位置
+  - 复制到剪贴板：使用 Clipboard API，支持图片直接粘贴
+  - 加载遮罩：截图过程中显示加载动画
+- 按钮样式优化
+  - CSS类名：`.icon-refresh` → `.icon-screenshot`（相机图标）
+  - CSS类名：`.view-btn.refresh-btn` → `.view-btn.screenshot-btn`
+  - JS函数：`refreshData()` → `screenshotReport()`
+  - 保存按钮图标改为保存样式
+
+**更新文件**：
+- `templates/html_template.py` - 截图功能完整实现
+
+**备份文件**：
+- `versions/v3.4.2_modular_backup.zip`
+
+---
+
 ## v3.4.1 (2026-05-31)
 
 **更新内容**：
@@ -577,4 +602,5 @@
 | v2.2.1 | versions/defect_quality_report_v2.2.1.py | 明细视图+筛选导航+弹窗详情+淡紫色调 |
 | v2.3 | versions/defect_quality_report_v2.3.py | 模块化重构+关联任务项修复 |
 | v2.4.1 | versions/v2.4.1_modular_backup.zip | 主页视图+公共面板卡片+富文本支持 |
-| v3.1 | versions/v3.1_modular_backup.zip | GitHub Actions自动部署+动态文件名+本地推送脚本 |
+| v3.4.1 | versions/v3.4.1_modular_backup.zip | 明细视图样式优化 + 筛选修复 |
+| v3.4.2 | versions/v3.4.2_modular_backup.zip | 截图功能实现 + dom-to-image-more库 |
