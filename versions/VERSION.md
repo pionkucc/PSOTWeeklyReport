@@ -1,5 +1,31 @@
 # 缺陷质量分析报告生成器 - 版本记录
 
+## v3.4.3 (2026-05-31)
+
+**更新内容**：
+- 双平台推送支持
+  - 新增 GitLab（极狐）远程仓库配置
+  - `auto_push.py` 支持选择推送平台：GitHub / GitLab / 双平台
+  - SSH 密钥配置指南
+- 报告保存优化
+  - 历史版本归档：`history_reports/` 目录（带日期文件名）
+  - Pages 版本：固定名称 `PSOT_Weekly_Report.html`（便于访问）
+  - 保存时自动创建 `history_reports/` 目录
+- CI/CD 配置更新
+  - GitHub Actions：只部署固定名称文件
+  - GitLab CI：只部署固定名称文件
+
+**更新文件**：
+- `auto_push.py` - 双平台推送脚本
+- `templates/html_template.py` - 报告保存逻辑优化
+- `.gitlab-ci.yml` - GitLab CI 配置
+- `.github/workflows/deploy.yml` - GitHub Actions 配置
+
+**备份文件**：
+- `versions/v3.4.3_modular_backup.zip`
+
+---
+
 ## v3.4.2 (2026-05-31)
 
 **更新内容**：
@@ -604,3 +630,4 @@
 | v2.4.1 | versions/v2.4.1_modular_backup.zip | 主页视图+公共面板卡片+富文本支持 |
 | v3.4.1 | versions/v3.4.1_modular_backup.zip | 明细视图样式优化 + 筛选修复 |
 | v3.4.2 | versions/v3.4.2_modular_backup.zip | 截图功能实现 + dom-to-image-more库 |
+| v3.4.3 | versions/v3.4.3_modular_backup.zip | 双平台推送 + 历史版本归档 + 固定Pages文件名 |

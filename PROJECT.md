@@ -88,10 +88,12 @@ F:\AI\Claude Code\Weekly_Report\
 │   ├── v3.2_modular_backup.zip # v3.2备份
 │   ├── v3.3_modular_backup.zip # v3.3备份
 │   ├── v3.4_modular_backup.zip # v3.4备份
-│   ├── v3.4.1_modular_backup.zip # v3.4.1备份
-│   └── v3.4.2_modular_backup.zip # v3.4.2备份
+│   ├── v3.4.2_modular_backup.zip # v3.4.2备份
+│   └── v3.4.3_modular_backup.zip # v3.4.3备份
+├── history_reports/             # 历史报告归档目录
+│   └── PSOT_Weekly_Report_*.html # 带日期的历史版本
 ├── 缺陷明细.xlsx                # 数据源
-└── PSOT_Weekly_Report_*.html   # 输出报告（动态命名）
+└── PSOT_Weekly_Report.html      # 固定名称报告（Pages使用）
 ```
 
 ## 模块说明
