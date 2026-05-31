@@ -10,7 +10,7 @@ import sys
 # GitHub 远程仓库配置
 REMOTE = {
     'name': 'GitHub',
-    'key': 'github',
+    'key': 'origin',
     'url': 'https://github.com/pionkucc/PSOTWeeklyReport.git',
     'pipeline_url': 'https://github.com/pionkucc/PSOTWeeklyReport/actions',
     'pages_url': 'https://pionkucc.github.io/PSOTWeeklyReport/PSOT_Weekly_Report.html'
