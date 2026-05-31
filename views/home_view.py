@@ -5,10 +5,10 @@
 
 import json
 import pandas as pd
-from config import PANEL_HEADER_COLOR
+from config import PANEL_HEADER_COLOR, COLORS, SHOW_STATS_DATA
 
 
-def create_home_view_html(panels_data, sheet2_data=None, warning_data=None):
+def create_home_view_html(panels_data, sheet2_data=None, warning_data=None, df=None, total=0):
     """
     创建主页视图HTML
 
@@ -16,6 +16,8 @@ def create_home_view_html(panels_data, sheet2_data=None, warning_data=None):
         panels_data: 公共面板数据列表，每项包含 title 和 content_parts
         sheet2_data: Sheet2表格数据DataFrame（测试进度和缺陷统计）
         warning_data: 缺陷预警数据字典
+        df: 缺陷明细DataFrame，用于计算统计数据
+        total: 缺陷总数
 
     返回:
         主页视图HTML字符串
@@ -28,7 +30,7 @@ def create_home_view_html(panels_data, sheet2_data=None, warning_data=None):
     for idx, panel in enumerate(panels_data):
         is_first = (idx == 0)
         is_second = (idx == 1 and sheet2_data is not None)
-        panel_card = _create_panel_card(panel, is_first=is_first, is_second=is_second, sheet2_data=sheet2_data, warning_data=warning_data)
+        panel_card = _create_panel_card(panel, is_first=is_first, is_second=is_second, sheet2_data=sheet2_data, warning_data=warning_data, df=df, total=total)
         panels_html.append(panel_card)
 
     panels_html_str = '\n'.join(panels_html)
@@ -44,7 +46,7 @@ def create_home_view_html(panels_data, sheet2_data=None, warning_data=None):
     return html
 
 
-def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None, warning_data=None):
+def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None, warning_data=None, df=None, total=0):
     """创建单个面板卡片HTML"""
     title = panel['title']
     content_parts = panel['content_parts']
@@ -53,7 +55,7 @@ def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None,
         warning_data = {'overdue_rework': [], 'overdue': [], 'rework': [], 'total': 0}
 
     if is_first:
-        lines_html, stats_html = _render_first_panel_content(content_parts)
+        lines_html, stats_html, stats_data_html, defect_html = _render_first_panel_content(content_parts, df, total)
 
         warning_count = warning_data['total']
         warning_list_html = _render_warning_list(warning_data)
@@ -70,6 +72,8 @@ def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None,
                         {lines_html}
                     </div>
                     {stats_html}
+                    {stats_data_html}
+                    {defect_html}
                 </div>
                 <div class="panel-card panel-half warning-card">
                     <div class="panel-card-title-wrap">
@@ -280,9 +284,9 @@ def _render_table_content(df):
 def _get_progress_color(progress_val):
     """根据进度值返回颜色"""
     if progress_val < 30:
-        return '#ef4444'  # 红色
+        return COLORS['progress']['low']  # 红色
     else:
-        return '#1c91fd'  # 蓝色
+        return COLORS['progress']['normal']  # 蓝色
 
 
 def _render_warning_list(warning_data):
@@ -435,13 +439,17 @@ def _render_progress_bar_chart(df_full, df_display):
     return bars_html, chart_title
 
 
-def _render_first_panel_content(content_parts):
+def _render_first_panel_content(content_parts, df=None, total=0):
     """
     渲染第一个面板内容，将[xxx]转换为标签样式，提取进度指标和缺陷状态统计
-    返回: (内容HTML, 统计卡片HTML)
+    参数:
+        content_parts: 内容部分列表
+        df: 缺陷明细DataFrame（用于计算统计数据）
+        total: 缺陷总数
+    返回: (内容HTML, 进度统计HTML, 明细数据HTML, 缺陷统计HTML)
     """
     if not content_parts:
-        return '<p class="empty-content">暂无内容</p>', ''
+        return '<p class="empty-content">暂无内容</p>', '', '', ''
 
     import re
 
@@ -468,14 +476,7 @@ def _render_first_panel_content(content_parts):
 
         # 提取缺陷状态统计（只提取存在的标签）
         status_labels = ['已关闭', '待修复', '待验证', '延期', '重新打开', '被拒绝']
-        status_colors = {
-            '已关闭': '#22c55e',
-            '待修复': '#ef4444',
-            '待验证': '#f59e0b',
-            '延期': '#8b5cf6',
-            '重新打开': '#ec4899',
-            '被拒绝': '#6b7280'
-        }
+        status_colors = COLORS['status_home']
         defect_status = {}
         for label in status_labels:
             match = re.search(rf'{label}(\d+)个', clean_text)
@@ -511,9 +512,9 @@ def _render_first_panel_content(content_parts):
         def get_progress_color(value):
             try:
                 num = float(value.replace('%', ''))
-                return '#6b7280' if num == 0 else '#1c91fd'
+                return COLORS['theme']['muted'] if num == 0 else COLORS['theme']['primary']
             except:
-                return '#6b7280'
+                return COLORS['theme']['muted']
 
         stats_html = f'''
         <div class="stat-grid">
@@ -533,23 +534,67 @@ def _render_first_panel_content(content_parts):
         if defect_total:
             defect_items = ''
             for label, count in defect_status.items():
-                color = status_colors.get(label, '#6b7280')
+                color = status_colors.get(label, COLORS['theme']['muted'])
                 defect_items += f'<div class="defect-item"><div class="dot" style="background:{color};"></div><span class="label">{label}</span><span class="count">{count}</span></div>\n'
 
             defect_html = f'''
         <div class="defect-summary">
-            <p class="defect-total">本周新增缺陷总数：<span class="defect-count">{defect_total}</span>个</p>
+            <p class="defect-total">本周新增缺陷总数：<span class="defect-count">{defect_total}</span> 个</p>
             <div class="defect-list">
                 {defect_items}            </div>
         </div>'''
 
-        return content_html, stats_html + defect_html
+        # 计算明细统计数据（根据配置决定是否显示）
+        stats_data_html = ''
+        has_defect_summary = defect_total is not None  # 是否有缺陷统计区域
+
+        if SHOW_STATS_DATA and df is not None and total > 0:
+            # 遗留缺陷
+            legacy_count = len(df[df['缺陷状态'] != 'Closed'])
+
+            # 平均修复时间
+            fix_period = df['缺陷修复周期(天)'].dropna()
+            avg_fix_time = fix_period.mean()
+            avg_fix_time_str = f'{avg_fix_time:.1f}天' if avg_fix_time > 0 else '--'
+
+            # 基本流占比
+            df['发现阶段'] = df['发现阶段'].str.strip()
+            basic_flow = len(df[df['发现阶段'].str.contains('基本流', na=False)])
+            basic_flow_rate = basic_flow / total * 100 if total > 0 else 0
+            basic_flow_str = f'{basic_flow_rate:.1f}%'
+
+            # 返工次数（所有缺陷返工次数的总和）
+            rework_count = int(df['返工次数'].sum())
+
+            stats_data_html = f'''
+        <div class="stats-data-wrapper{' stats-data-top' if not has_defect_summary else ''}">
+            <div class="stats-data-grid">
+                <div class="mini-stat-box">
+                    <div class="mini-stat-label">遗留缺陷</div>
+                    <div class="mini-stat-value"><span class="value-num">{legacy_count}</span><span class="mini-stat-unit">个</span></div>
+                </div>
+                <div class="mini-stat-box">
+                    <div class="mini-stat-label">平均修复时间</div>
+                    <div class="mini-stat-value"><span class="value-num">{avg_fix_time_str}</span></div>
+                </div>
+                <div class="mini-stat-box">
+                    <div class="mini-stat-label">基本流占比</div>
+                    <div class="mini-stat-value"><span class="value-num">{basic_flow_str}</span></div>
+                </div>
+                <div class="mini-stat-box">
+                    <div class="mini-stat-label">返工次数</div>
+                    <div class="mini-stat-value"><span class="value-num">{rework_count}</span><span class="mini-stat-unit">次</span></div>
+                </div>
+            </div>
+        </div>'''
+
+        return content_html, stats_html, stats_data_html, defect_html
 
     except Exception as e:
         # 异常时返回原始内容
         lines = full_text.split('\n')
         lines_html = [f'<p>{line.strip()}</p>' for line in lines if line.strip()]
-        return '\n'.join(lines_html), ''
+        return '\n'.join(lines_html), '', '', ''
 
 
 def _process_rich_text_content(full_text, remove_first_line=False):
@@ -702,7 +747,7 @@ def _render_ui_automation(content_parts):
         next_plan = plan_match.group(1).strip()
 
     # SVG图标
-    svg_scenario = '''<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#50A5F4" stroke-width="2" style="margin:0 auto;display:block;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>'''
+    svg_scenario = '''<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1c91fd" stroke-width="2" style="margin:0 auto;display:block;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>'''
 
     # 自动化执行SVG根据状态变色：成功#1C91FD，失败#D93025
     rate_svg_color = '#D93025' if (not is_success or auto_rate.replace('%', '') != '100') else '#1C91FD'
@@ -1297,9 +1342,12 @@ def get_home_view_css():
     .panel-row {
         display: flex;
         gap: 20px;
+        align-items: flex-start;
     }
     .panel-half {
         flex: 1;
+        display: flex;
+        flex-direction: column;
     }
     .panel-placeholder {
         display: flex;
@@ -1322,6 +1370,7 @@ def get_home_view_css():
     /* 全宽卡片（表格用） */
     .panel-full-card {
         padding: 0;
+        overflow: hidden;
     }
 
     /* 表格容器 */
@@ -1334,21 +1383,40 @@ def get_home_view_css():
     /* 统计表格 */
     .stats-table {
         width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
+        border-collapse: collapse;
         font-size: 13px;
         min-width: 1000px;
     }
+    .stats-table thead { background: #1c91fd; }
     .stats-table th {
         background: #1c91fd;
         color: #fff;
         text-align: center;
         padding: 12px 16px;
-        font-weight: 600;
+        font-weight: bold;
         white-space: nowrap;
         position: sticky;
         top: 0;
     }
+    .stats-table th:first-child { padding-left: 24px; }
+    .stats-table th:last-child { padding-right: 24px; }
+    .stats-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+    .stats-table td:first-child { padding-left: 24px; }
+    .stats-table td:last-child { padding-right: 24px; }
+    .stats-table tr:hover td {
+        background: #f8fafc;
+        transition: background .2s;
+    }
+    .stats-table .summary-row {
+        background: #e8f0f8 !important;
+        font-weight: 600;
+    }
+    .stats-table tbody tr:last-child td:first-child { border-bottom-left-radius: 12px; }
+    .stats-table tbody tr:last-child td:last-child { border-bottom-right-radius: 12px; }
     .stats-table td {
         padding: 12px 16px;
         border-bottom: 1px solid #e5e7eb;
@@ -1491,8 +1559,8 @@ def get_home_view_css():
     .stat-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-top: 12px;
+        gap: 10px;
+        margin-top: 10px;
     }
     .stat-box {
         background: #f0f4f8;
@@ -1510,11 +1578,49 @@ def get_home_view_css():
         margin-top: 4px;
     }
 
+    /* 明细统计数据区域 */
+    .stats-data-wrapper {
+        margin-top: 10px;
+    }
+    .stats-data-grid {
+        display: flex;
+        gap: 10px;
+    }
+    .mini-stat-box {
+        flex: 1;
+        background: #f0f4f8;
+        border-radius: 6px;
+        padding: 6px 8px;
+        text-align: center;
+    }
+    .mini-stat-label {
+        font-size: 11px;
+        color: #6b7280;
+        margin-bottom: 2px;
+    }
+    .mini-stat-value {
+        font-size: 13px;
+        color: #1c91fd;
+        display: inline-flex;
+        align-items: baseline;
+    }
+    .mini-stat-value .value-num {
+        font-weight: normal;
+    }
+    .mini-stat-unit {
+        font-size: 11px;
+        color: #1c91fd;
+        font-weight: normal;
+    }
+    .stats-data-top {
+        margin-bottom: 12px;
+    }
+
     /* 缺陷统计区域 */
     .defect-summary {
         border-top: 1px solid #e5e7eb;
-        margin-top: 14px;
-        padding-top: 14px;
+        margin-top: 10px;
+        padding-top: 10px;
     }
     .defect-total {
         font-size: 13px;
@@ -1528,7 +1634,7 @@ def get_home_view_css():
     }
     .defect-list {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
         gap: 8px;
         margin-top: 12px;
     }
@@ -1663,7 +1769,7 @@ def get_home_view_css():
     .three-col .metric-card .metric-value {
         font-size: 22px;
         font-weight: 700;
-        color: #50A5F4;
+        color: #1c91fd;
         margin-top: 4px;
     }
     .ui-remaining.rich-text-content {
@@ -1749,8 +1855,17 @@ def get_home_view_css():
     .warning-list {
         flex: 1;
         overflow-y: auto;
-        max-height: 100%;
+        min-height: 0;
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
     }
+    .warning-list:hover {
+        scrollbar-color: #ccc transparent;
+    }
+    .warning-list::-webkit-scrollbar { width: 4px; }
+    .warning-list::-webkit-scrollbar-track { background: transparent; }
+    .warning-list::-webkit-scrollbar-thumb { background: transparent; border-radius: 2px; }
+    .warning-list:hover::-webkit-scrollbar-thumb { background: #ccc; }
     .warning-list .empty-content {
         color: #9ca3af;
         font-style: italic;
@@ -1765,7 +1880,6 @@ def get_home_view_css():
         border-radius: 8px;
         cursor: pointer;
         transition: background 0.2s;
-        margin-bottom: 6px;
     }
     .warning-dot {
         width: 8px;
@@ -1820,7 +1934,7 @@ def get_home_view_css():
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(170,150,218,0.15);
+        background: #1c91fd0d;
         backdrop-filter: blur(8px);
         display: flex;
         align-items: center;
@@ -1891,7 +2005,7 @@ def get_home_view_css():
         overflow-y: auto;
     }
     .warning-modal-body::-webkit-scrollbar { width: 4px; }
-    .warning-modal-body::-webkit-scrollbar-thumb { background: #1C91FD; border-radius: 2px; }
+    .warning-modal-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
     .warning-detail-row {
         display: flex;
         padding: 12px 16px;
@@ -1922,6 +2036,24 @@ def get_home_view_css():
         color: #333;
         word-break: break-all;
     }
+    /* 状态标签样式 */
+    .warning-detail-value .status-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+    .warning-detail-value .status-New { background: ''' + COLORS['status_detail']['New']['bg'] + '''; color: ''' + COLORS['status_detail']['New']['text'] + '''; }
+    .warning-detail-value .status-Closed { background: ''' + COLORS['status_detail']['Closed']['bg'] + '''; color: ''' + COLORS['status_detail']['Closed']['text'] + '''; }
+    .warning-detail-value .status-Fixed { background: ''' + COLORS['status_detail']['Fixed']['bg'] + '''; color: ''' + COLORS['status_detail']['Fixed']['text'] + '''; }
+    .warning-detail-value .status-Pending { background: ''' + COLORS['status_detail']['Pending']['bg'] + '''; color: ''' + COLORS['status_detail']['Pending']['text'] + '''; }
+    .warning-detail-value .status-ReOpen { background: ''' + COLORS['status_detail']['ReOpen']['bg'] + '''; color: ''' + COLORS['status_detail']['ReOpen']['text'] + '''; }
+    /* 优先级标签样式 */
+    .warning-detail-value .priority-tag { font-weight: bold; }
+    .warning-detail-value .priority-优先 { color: ''' + COLORS['priority_detail']['优先'] + '''; }
+    .warning-detail-value .priority-高 { color: ''' + COLORS['priority_detail']['高'] + '''; }
+    .warning-detail-value .priority-中 { color: ''' + COLORS['priority_detail']['中'] + '''; }
+    .warning-detail-value .priority-低 { color: ''' + COLORS['priority_detail']['低'] + '''; }
     '''
 
 def get_home_view_js():
@@ -1943,16 +2075,16 @@ def get_home_view_js():
         initWarningRowClick();
     });
 
-    // 同步缺陷预警列表高度与左侧卡片一致
+    // 同步缺陷预警卡片高度与左侧卡片一致
     function syncWarningListHeight() {
         var leftCard = document.getElementById('left-progress-card');
-        var warningList = document.getElementById('warning-list');
-        if (leftCard && warningList) {
+        var warningCard = document.querySelector('.warning-card');
+        if (leftCard && warningCard) {
+            // 取消stretch，改用动态设置固定高度
             var leftHeight = leftCard.offsetHeight;
-            var titleHeight = warningList.previousElementSibling ? warningList.previousElementSibling.offsetHeight : 0;
-            // 计算可用高度：左侧卡片高度 - 标题行高度 - padding
-            var availableHeight = leftHeight - 50; // 50px为标题行和padding预留
-            warningList.style.maxHeight = Math.max(availableHeight, 100) + 'px';
+            warningCard.style.height = leftHeight + 'px';
+            warningCard.style.maxHeight = leftHeight + 'px';
+            warningCard.style.overflow = 'hidden';
         }
     }
 
@@ -2016,9 +2148,18 @@ def get_home_view_js():
                 } else if (typeof value === 'object') {
                     value = JSON.stringify(value);
                 }
+                // 渲染值（支持状态标签和优先级标签）
+                var valueHtml;
+                if (key === '缺陷状态') {
+                    valueHtml = '<span class="status-tag status-' + value + '">' + value + '</span>';
+                } else if (key === '优先级') {
+                    valueHtml = '<span class="priority-tag priority-' + value + '">' + value + '</span>';
+                } else {
+                    valueHtml = value;
+                }
                 detailHtml += '<div class="warning-detail-row">' +
                     '<div class="warning-detail-label">' + label + '</div>' +
-                    '<div class="warning-detail-value">' + value + '</div>' +
+                    '<div class="warning-detail-value">' + valueHtml + '</div>' +
                     '</div>';
             }
         }

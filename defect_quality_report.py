@@ -337,7 +337,7 @@ sheet2_data = load_sheet2_data()
 warning_data = load_warning_data()
 
 # 生成主页视图
-home_view_html = create_home_view_html(panels_data, sheet2_data, warning_data)
+home_view_html = create_home_view_html(panels_data, sheet2_data, warning_data, df, total)
 
 # 组装HTML并保存
 html_content = build_html_template(total, metrics_html, charts_html, trend_chart_html, detail_view_html, home_view_html)

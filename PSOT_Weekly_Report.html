@@ -36,8 +36,8 @@
         .chart-card { height: 100%; }
         .chart-toolbar { position: absolute; top: 10px; right: 15px; display: flex; gap: 6px; z-index: 10; }
         .chart-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf0 100%); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #7c8a9a; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
-        .chart-btn:hover { background: linear-gradient(135deg, #e0e4e8 0%, #d4d8dc 100%); color: #667eea; transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.12); }
-        .chart-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 3px 8px rgba(102,126,234,0.3); }
+        .chart-btn:hover { background: linear-gradient(135deg, #e0e4e8 0%, #d4d8dc 100%); color: #1C91FD; transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.12); }
+        .chart-btn.active { background: #1c91fd40; color: white; border: 1.5px solid #ffffff; box-shadow: 0 3px 8px #1c91fd3d; }
         .chart-container { min-height: 350px; }
         .table-container { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 20px; background: white; z-index: 5; overflow: hidden; }
         .table-container.active { display: flex; flex-direction: column; }
@@ -48,7 +48,7 @@
         .data-table td { padding: 6px 10px; border-bottom: 1px solid #eee; color: #555; white-space: nowrap; }
         .data-table tr:hover td { background: #f9f9f9; }
         .metrics-container { width: 100%; }
-        .metrics-title { text-align: center; font-size: 16px; color: #2c3e50; font-weight: bold; margin-bottom: 20px; font-family: 'Microsoft YaHei'; }
+        .metrics-title { text-align: center; font-size: 16px; color: #103979; font-weight: bold; margin-bottom: 20px; font-family: 'Microsoft YaHei'; }
         .metrics-row { display: flex; gap: 20px; justify-content: stretch; width: 100%; }
         .metric-card { flex: 1; height: 120px; border-radius: 12px; display: flex; flex-direction: column; align-items: stretch; justify-content: center; transition: all 0.3s ease; cursor: default; padding: 15px 18px; position: relative; }
         .metric-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
@@ -143,9 +143,12 @@
     .panel-row {
         display: flex;
         gap: 20px;
+        align-items: flex-start;
     }
     .panel-half {
         flex: 1;
+        display: flex;
+        flex-direction: column;
     }
     .panel-placeholder {
         display: flex;
@@ -168,6 +171,7 @@
     /* 全宽卡片（表格用） */
     .panel-full-card {
         padding: 0;
+        overflow: hidden;
     }
 
     /* 表格容器 */
@@ -180,21 +184,40 @@
     /* 统计表格 */
     .stats-table {
         width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
+        border-collapse: collapse;
         font-size: 13px;
         min-width: 1000px;
     }
+    .stats-table thead { background: #1c91fd; }
     .stats-table th {
         background: #1c91fd;
         color: #fff;
         text-align: center;
         padding: 12px 16px;
-        font-weight: 600;
+        font-weight: bold;
         white-space: nowrap;
         position: sticky;
         top: 0;
     }
+    .stats-table th:first-child { padding-left: 24px; }
+    .stats-table th:last-child { padding-right: 24px; }
+    .stats-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+    .stats-table td:first-child { padding-left: 24px; }
+    .stats-table td:last-child { padding-right: 24px; }
+    .stats-table tr:hover td {
+        background: #f8fafc;
+        transition: background .2s;
+    }
+    .stats-table .summary-row {
+        background: #e8f0f8 !important;
+        font-weight: 600;
+    }
+    .stats-table tbody tr:last-child td:first-child { border-bottom-left-radius: 12px; }
+    .stats-table tbody tr:last-child td:last-child { border-bottom-right-radius: 12px; }
     .stats-table td {
         padding: 12px 16px;
         border-bottom: 1px solid #e5e7eb;
@@ -337,8 +360,8 @@
     .stat-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-top: 12px;
+        gap: 10px;
+        margin-top: 10px;
     }
     .stat-box {
         background: #f0f4f8;
@@ -356,11 +379,49 @@
         margin-top: 4px;
     }
 
+    /* 明细统计数据区域 */
+    .stats-data-wrapper {
+        margin-top: 10px;
+    }
+    .stats-data-grid {
+        display: flex;
+        gap: 10px;
+    }
+    .mini-stat-box {
+        flex: 1;
+        background: #f0f4f8;
+        border-radius: 6px;
+        padding: 6px 8px;
+        text-align: center;
+    }
+    .mini-stat-label {
+        font-size: 11px;
+        color: #6b7280;
+        margin-bottom: 2px;
+    }
+    .mini-stat-value {
+        font-size: 13px;
+        color: #1c91fd;
+        display: inline-flex;
+        align-items: baseline;
+    }
+    .mini-stat-value .value-num {
+        font-weight: normal;
+    }
+    .mini-stat-unit {
+        font-size: 11px;
+        color: #1c91fd;
+        font-weight: normal;
+    }
+    .stats-data-top {
+        margin-bottom: 12px;
+    }
+
     /* 缺陷统计区域 */
     .defect-summary {
         border-top: 1px solid #e5e7eb;
-        margin-top: 14px;
-        padding-top: 14px;
+        margin-top: 10px;
+        padding-top: 10px;
     }
     .defect-total {
         font-size: 13px;
@@ -374,7 +435,7 @@
     }
     .defect-list {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
         gap: 8px;
         margin-top: 12px;
     }
@@ -509,7 +570,7 @@
     .three-col .metric-card .metric-value {
         font-size: 22px;
         font-weight: 700;
-        color: #50A5F4;
+        color: #1c91fd;
         margin-top: 4px;
     }
     .ui-remaining.rich-text-content {
@@ -595,8 +656,17 @@
     .warning-list {
         flex: 1;
         overflow-y: auto;
-        max-height: 100%;
+        min-height: 0;
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
     }
+    .warning-list:hover {
+        scrollbar-color: #ccc transparent;
+    }
+    .warning-list::-webkit-scrollbar { width: 4px; }
+    .warning-list::-webkit-scrollbar-track { background: transparent; }
+    .warning-list::-webkit-scrollbar-thumb { background: transparent; border-radius: 2px; }
+    .warning-list:hover::-webkit-scrollbar-thumb { background: #ccc; }
     .warning-list .empty-content {
         color: #9ca3af;
         font-style: italic;
@@ -611,7 +681,6 @@
         border-radius: 8px;
         cursor: pointer;
         transition: background 0.2s;
-        margin-bottom: 6px;
     }
     .warning-dot {
         width: 8px;
@@ -666,7 +735,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(170,150,218,0.15);
+        background: #1c91fd0d;
         backdrop-filter: blur(8px);
         display: flex;
         align-items: center;
@@ -737,7 +806,7 @@
         overflow-y: auto;
     }
     .warning-modal-body::-webkit-scrollbar { width: 4px; }
-    .warning-modal-body::-webkit-scrollbar-thumb { background: #1C91FD; border-radius: 2px; }
+    .warning-modal-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
     .warning-detail-row {
         display: flex;
         padding: 12px 16px;
@@ -768,21 +837,39 @@
         color: #333;
         word-break: break-all;
     }
+    /* 状态标签样式 */
+    .warning-detail-value .status-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+    .warning-detail-value .status-New { background: #FFF9C4; color: #F9A825; }
+    .warning-detail-value .status-Closed { background: #E8F5E9; color: #66BB6A; }
+    .warning-detail-value .status-Fixed { background: #E0F7FA; color: #4DD0E1; }
+    .warning-detail-value .status-Pending { background: #F3E5F5; color: #AB47BC; }
+    .warning-detail-value .status-ReOpen { background: #FFEBEE; color: #EF5350; }
+    /* 优先级标签样式 */
+    .warning-detail-value .priority-tag { font-weight: bold; }
+    .warning-detail-value .priority-优先 { color: #EF5350; }
+    .warning-detail-value .priority-高 { color: #EF5350; }
+    .warning-detail-value .priority-中 { color: #FFA726; }
+    .warning-detail-value .priority-低 { color: #1C91FD; }
     
         .view-switch { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; }
         .view-btn { padding: 10px 20px; border-radius: 25px; border: 2px solid transparent; background: rgba(145, 202, 255, 0.5); color: #ffffff; font-family: 'Microsoft YaHei'; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(22,119,255,0.1); display: inline-flex; align-items: center; }
         .view-btn:hover { background: rgba(186, 224, 255, 0.7); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(22,119,255,0.2); }
         .view-btn.active { background: rgba(145, 202, 255, 0.5); color: #ffffff; font-weight: 600; box-shadow: 0 4px 20px rgba(22,119,255,0.2); border: 2px solid rgba(255,255,255,0.85); }
-        .view-btn.home-btn { padding: 10px 14px; border-radius: 50%; }
+        .view-btn.home-btn { padding: 10px; border-radius: 50%; }
         .view-btn.home-btn.active { background: rgba(145, 202, 255, 0.5); border: 2px solid rgba(255,255,255,0.85); }
-        .view-btn.screenshot-btn { padding: 10px 14px; border-radius: 50%; }
+        .view-btn.screenshot-btn { padding: 10px; border-radius: 50%; }
         .view-btn svg { flex-shrink: 0; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 1000; display: none; align-items: center; justify-content: center; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: white; border-radius: 16px; padding: 20px; max-width: 95vw; max-height: 95vh; overflow: auto; position: relative; animation: modalIn 0.3s ease; }
         @keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal-close { position: absolute; top: 10px; right: 15px; width: 32px; height: 32px; border-radius: 50%; border: none; background: #f0f0f0; cursor: pointer; font-size: 18px; color: #666; transition: all 0.3s ease; }
-        .modal-close:hover { background: #e74c3c; color: white; transform: rotate(90deg); }
+        .modal-close { position: absolute; top: 10px; right: 15px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid #eee; background: #fff; cursor: pointer; font-size: 18px; color: #1C91FD; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; z-index: 10; pointer-events: auto; }
+        .modal-close:hover { background: #1C91FD; border-color: #1C91FD; color: white; transform: rotate(90deg); }
         .modal-chart { width: 1000px; height: 650px; }
         .screenshot-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 2000; display: none; align-items: center; justify-content: center; }
         .screenshot-modal.active { display: flex; }
@@ -813,8 +900,8 @@
         <div class="header" style="position: relative;">
             <div class="view-switch">
                 <button class="view-btn home-btn active" data-view="home" onclick="switchView('home')"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
-                <button class="view-btn" data-view="chart" onclick="switchView('chart')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zm-2-2h-2v-6h2v6zm-4 0h-2v-4h2v4zm-4 0h-2v-8h2v8z"/></svg>图表</button>
-                <button class="view-btn" data-view="detail" onclick="switchView('detail')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px"><path d="M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h18v2H3v-2zm0 4h12v2H3v-2zm0 4h8v2H3v-2z"/></svg>明细</button>
+                <button class="view-btn home-btn" data-view="chart" onclick="switchView('chart')" title="图表"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zm-2-2h-2v-6h2v6zm-4 0h-2v-4h2v4zm-4 0h-2v-8h2v8z"/></svg></button>
+                <button class="view-btn home-btn" data-view="detail" onclick="switchView('detail')" title="明细"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h18v2H3v-2zm0 4h12v2H3v-2zm0 4h8v2H3v-2z"/></svg></button>
                 <button class="view-btn screenshot-btn" onclick="screenshotReport()" title="截图"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15.2A3.2 3.2 0 1 0 12 8.8a3.2 3.2 0 0 0 0 6.4z"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg></button>
             </div>
             <h1>POST-产品标准化运营工具-质量周报</h1>
@@ -842,16 +929,38 @@
         <div class="stat-grid">
             <div class="stat-box">
                 <div class="stat-label">测试总进度</div>
-                <div class="stat-value" style="color: #1c91fd">100%</div>
+                <div class="stat-value" style="color: #1C91FD">100%</div>
             </div>
             <div class="stat-box">
                 <div class="stat-label">回归总进度</div>
-                <div class="stat-value" style="color: #1c91fd">95%</div>
+                <div class="stat-value" style="color: #1C91FD">90%</div>
             </div>
         </div>
         
+                    
+        <div class="stats-data-wrapper">
+            <div class="stats-data-grid">
+                <div class="mini-stat-box">
+                    <div class="mini-stat-label">遗留缺陷</div>
+                    <div class="mini-stat-value"><span class="value-num">5</span><span class="mini-stat-unit">个</span></div>
+                </div>
+                <div class="mini-stat-box">
+                    <div class="mini-stat-label">平均修复时间</div>
+                    <div class="mini-stat-value"><span class="value-num">1.3天</span></div>
+                </div>
+                <div class="mini-stat-box">
+                    <div class="mini-stat-label">基本流占比</div>
+                    <div class="mini-stat-value"><span class="value-num">83.3%</span></div>
+                </div>
+                <div class="mini-stat-box">
+                    <div class="mini-stat-label">返工次数</div>
+                    <div class="mini-stat-value"><span class="value-num">5</span><span class="mini-stat-unit">次</span></div>
+                </div>
+            </div>
+        </div>
+                    
         <div class="defect-summary">
-            <p class="defect-total">本周新增缺陷总数：<span class="defect-count">18</span>个</p>
+            <p class="defect-total">本周新增缺陷总数：<span class="defect-count">18</span> 个</p>
             <div class="defect-list">
                 <div class="defect-item"><div class="dot" style="background:#22c55e;"></div><span class="label">已关闭</span><span class="count">13</span></div>
 <div class="defect-item"><div class="dot" style="background:#ef4444;"></div><span class="label">待修复</span><span class="count">3</span></div>
@@ -864,24 +973,10 @@
                 <div class="panel-card panel-half warning-card">
                     <div class="panel-card-title-wrap">
                         <span class="panel-card-title">缺陷预警</span>
-                        <span class="count-badge">5</span>
+                        <span class="count-badge">2</span>
                     </div>
                     <div class="warning-list" id="warning-list">
                         
-        <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "导入导出", "缺陷编号": "NL-B-173213", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "ReOpen", "缺陷摘要": "【导出】导出超时", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-29 08:57:00", "修复时间": "2026-05-29 15:24:45", "关闭时间": "-", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C3-性能问题", "缺陷来源": "研发过程", "返工次数": 1, "严重程度": "一般", "缺陷类型": "2-性能问题", "缺陷修复周期(天)": 0.27, "缺陷关闭周期(天)": "/"}'>
-            <span class="warning-dot"></span>
-            <span class="warning-text">NL-B-173213 <span class="handler-tag">刘陈明</span> 【导出】导出超时</span>
-            <span class="warning-tag">超期2天|返工1次</span>
-        </div>
-        
-
-        <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "历史问题/关联影响", "缺陷编号": "NL-B-172949", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "ReOpen", "缺陷摘要": "【需求采编】新增商品后，商品的排列顺序随机，倒叙排列", "优先级": "中", "登记人": "邱钰洁", "处理人员": "陈珍桂", "登记时间.1": "2026-05-27 18:20:00", "修复时间": "2026-05-29 17:03:23", "关闭时间": "-", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C20-代码未拉平（新变更）", "缺陷来源": "研发过程", "返工次数": 1, "严重程度": "轻微", "缺陷类型": "6-操作界面", "缺陷修复周期(天)": 1.95, "缺陷关闭周期(天)": "/"}'>
-            <span class="warning-dot"></span>
-            <span class="warning-text">NL-B-172949 <span class="handler-tag">陈珍桂</span> 【需求采编】新增商品后，商品的排列顺序随机，倒叙排列</span>
-            <span class="warning-tag">超期2天|返工1次</span>
-        </div>
-        
-
         <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "导入导出", "缺陷编号": "NL-B-172945", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "New", "缺陷摘要": "【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-27 18:01:00", "修复时间": "-", "关闭时间": "-", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "-", "引入原因": "-", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "2-性能问题", "缺陷修复周期(天)": "/", "缺陷关闭周期(天)": "/"}'>
             <span class="warning-dot"></span>
             <span class="warning-text">NL-B-172945 <span class="handler-tag">刘陈明</span> 【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包</span>
@@ -892,14 +987,7 @@
         <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "历史问题/关联影响", "缺陷编号": "NL-B-172952", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "New", "缺陷摘要": "【属性库】复用属性组性能优化", "优先级": "中", "登记人": "邱钰洁", "处理人员": "王荣坡", "登记时间.1": "2026-05-27 18:45:00", "修复时间": "-", "关闭时间": "-", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "-", "引入原因": "-", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "2-性能问题", "缺陷修复周期(天)": "/", "缺陷关闭周期(天)": "/"}'>
             <span class="warning-dot"></span>
             <span class="warning-text">NL-B-172952 <span class="handler-tag">王荣坡</span> 【属性库】复用属性组性能优化</span>
-            <span class="warning-tag">超期3天</span>
-        </div>
-        
-
-        <div class="warning-row" data-detail='{"登记时间": "2026-05-25 ~ 2026-05-29", "任务分类": "迭代十三", "关联任务项": "导入导出", "缺陷编号": "NL-B-173312", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "New", "缺陷摘要": "【导入】【属性库】非生产态属性组的名称也被导入", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-29 16:19:00", "修复时间": "-", "关闭时间": "-", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "-", "引入原因": "-", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "5-数据丢失或错误", "缺陷修复周期(天)": "/", "缺陷关闭周期(天)": "/"}'>
-            <span class="warning-dot"></span>
-            <span class="warning-text">NL-B-173312 <span class="handler-tag">刘陈明</span> 【导入】【属性库】非生产态属性组的名称也被导入</span>
-            <span class="warning-tag">超期2天</span>
+            <span class="warning-tag">超期4天</span>
         </div>
         
                     </div>
@@ -917,7 +1005,7 @@
     <div class="table-wrap">
         <table class="stats-table">
             <thead><tr><th>序号</th><th>周期</th><th>任务分类</th><th>任务项名称</th><th>子任务项</th><th>测试进度</th><th>回归进度</th><th>缺陷总数</th><th>New</th><th>Fixed</th><th>Pending</th><th>Closed</th><th>ReOpen</th></tr></thead>
-            <tbody><tr><td>1</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="ppt在线编辑">ppt在线编辑</span></td><td style="text-align:center;">35</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:20.0%;background:#ef4444"></div></div><span class="progress-text">20%</span></div></td><td style="text-align:center;">4</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">4</td><td style="text-align:center;">0</td></tr><tr><td>2</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="导入导出">导入导出</span></td><td style="text-align:center;">4</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:80.0%;background:#1c91fd"></div></div><span class="progress-text">80%</span></div></td><td style="text-align:center;">6</td><td style="text-align:center;">2</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">3</td><td style="text-align:center;">1</td></tr><tr><td>3</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="AI反向数据剔除">AI反向数据剔除</span></td><td style="text-align:center;">2</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:95.0%;background:#1c91fd"></div></div><span class="progress-text">95%</span></div></td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td></tr><tr><td>4</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="迭代优化">迭代优化</span></td><td style="text-align:center;">18</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td style="text-align:center;">2</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">2</td><td style="text-align:center;">0</td></tr><tr><td>5</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="历史问题/关联影响">历史问题/关联影响</span></td><td style="text-align:center;">/</td><td><span style="color:#9ca3af;">/</span></td><td><span style="color:#9ca3af;">/</span></td><td style="text-align:center;">6</td><td style="text-align:center;">1</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">4</td><td style="text-align:center;">1</td></tr><tr class="summary-row"><td style="font-weight:600;">合计</td><td style="font-weight:600;">2026-05-25 ~ 2026-05-29</td><td style="font-weight:600;">迭代十三</td><td style="text-align:center;font-weight:600;"><span class="task-name-cell" title="/">/</span></td><td style="text-align:center;font-weight:600;">59</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:95.0%;background:#1c91fd"></div></div><span class="progress-text">95%</span></div></td><td style="text-align:center;font-weight:600;">18</td><td style="text-align:center;font-weight:600;">3</td><td style="text-align:center;font-weight:600;">0</td><td style="text-align:center;font-weight:600;">0</td><td style="text-align:center;font-weight:600;">13</td><td style="text-align:center;font-weight:600;">2</td></tr></tbody>
+            <tbody><tr><td>1</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="ppt在线编辑">ppt在线编辑</span></td><td style="text-align:center;">35</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:80.0%;background:#1c91fd"></div></div><span class="progress-text">80%</span></div></td><td style="text-align:center;">4</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">4</td><td style="text-align:center;">0</td></tr><tr><td>2</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="导入导出">导入导出</span></td><td style="text-align:center;">4</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:80.0%;background:#1c91fd"></div></div><span class="progress-text">80%</span></div></td><td style="text-align:center;">6</td><td style="text-align:center;">2</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">3</td><td style="text-align:center;">1</td></tr><tr><td>3</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="AI反向数据剔除">AI反向数据剔除</span></td><td style="text-align:center;">2</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td></tr><tr><td>4</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="迭代优化">迭代优化</span></td><td style="text-align:center;">18</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td style="text-align:center;">2</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">2</td><td style="text-align:center;">0</td></tr><tr><td>5</td><td>2026-05-25 ~ 2026-05-29</td><td>迭代十三</td><td style="text-align:center;"><span class="task-name-cell" title="历史问题/关联影响">历史问题/关联影响</span></td><td style="text-align:center;">/</td><td><span style="color:#9ca3af;">/</span></td><td><span style="color:#9ca3af;">/</span></td><td style="text-align:center;">6</td><td style="text-align:center;">1</td><td style="text-align:center;">0</td><td style="text-align:center;">0</td><td style="text-align:center;">4</td><td style="text-align:center;">1</td></tr><tr class="summary-row"><td style="font-weight:600;">合计</td><td style="font-weight:600;">2026-05-25 ~ 2026-05-29</td><td style="font-weight:600;">迭代十三</td><td style="text-align:center;font-weight:600;"><span class="task-name-cell" title="/">/</span></td><td style="text-align:center;font-weight:600;">59</td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:100.0%;background:#1c91fd"></div></div><span class="progress-text">100%</span></div></td><td><div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:90.0%;background:#1c91fd"></div></div><span class="progress-text">90%</span></div></td><td style="text-align:center;font-weight:600;">18</td><td style="text-align:center;font-weight:600;">3</td><td style="text-align:center;font-weight:600;">0</td><td style="text-align:center;font-weight:600;">0</td><td style="text-align:center;font-weight:600;">13</td><td style="text-align:center;font-weight:600;">2</td></tr></tbody>
         </table>
     </div>
     
@@ -927,8 +1015,8 @@
                 <div class="bar-chart-body">
                     
         <div class="bar-row">
-            <div class="bar-info"><span class="bar-label">ppt在线编辑</span><span class="bar-value" style="color:#ef4444">20%</span></div>
-            <div class="bar-track"><div class="bar-fill" style="width:20.0%;background:#ef4444">35 个子任务</div></div>
+            <div class="bar-info"><span class="bar-label">ppt在线编辑</span><span class="bar-value" style="color:#1c91fd">80%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:80.0%;background:#1c91fd">35 个子任务</div></div>
         </div>
         
         <div class="bar-row">
@@ -937,8 +1025,8 @@
         </div>
         
         <div class="bar-row">
-            <div class="bar-info"><span class="bar-label">AI反向数据剔除</span><span class="bar-value" style="color:#1c91fd">95%</span></div>
-            <div class="bar-track"><div class="bar-fill" style="width:95.0%;background:#1c91fd">2 个子任务</div></div>
+            <div class="bar-info"><span class="bar-label">AI反向数据剔除</span><span class="bar-value" style="color:#1c91fd">100%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#1c91fd">2 个子任务</div></div>
         </div>
         
         <div class="bar-row">
@@ -962,7 +1050,7 @@
             <div class="coord-num">1</div>
             
         <div class="coord-text">
-            遗留缺陷 <span style="color: #fd4f4f;"><strong>5 个</strong></span>，其中 3 个超期 3 天未处理，2 个超期 7 天未处理，<span style="color: #fd4f4f; background-color: #f8cac6;"><strong>开发修复效率较低。</strong></span>
+            遗留缺陷 <span style="color: #fd4f4f;"><strong>5 个</strong></span>，其中 2 个超期 3 天以上未处理<span style="color: #fd4f4f; background-color: #f8cac6;"><strong>开发修复效率较低。</strong></span>
             
             <div class="coord-assignee">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M11 16h2"></path></svg>
@@ -1049,7 +1137,7 @@
                 <div class="three-col">
                     
     <div class="metric-card">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#50A5F4" stroke-width="2" style="margin:0 auto;display:block;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1c91fd" stroke-width="2" style="margin:0 auto;display:block;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
         <div class="metric-label">完成场景数</div>
         <div class="metric-value">15/70</div>
     </div>
@@ -1124,7 +1212,7 @@
         <!-- 图表视图 -->
         <div class="view-container" id="chartView">
             <div class="grid">
-                <div class="card-full"><div class="metrics-container"><div class="metrics-title">质量指标概览</div><div class="metrics-row"><div class="metric-card" style="background:linear-gradient(135deg, rgba(168, 216, 234, 0.7) 0%, rgba(184, 224, 210, 0.7) 100%)"><div class="metric-header"><span class="metric-name">任务项</span><div class="metric-icon icon-task"></div></div><div class="metric-value">5个</div><div class="metric-subtitle">子任务项59个</div></div><div class="metric-card" style="background:linear-gradient(135deg, rgba(247, 220, 111, 0.7) 0%, rgba(249, 213, 167, 0.7) 100%)"><div class="metric-header"><span class="metric-name">平均修复时长</span><div class="metric-icon icon-clock"></div></div><div class="metric-value">1.29天</div><div class="metric-subtitle">最大3天<br>最小0天</div></div><div class="metric-card" style="background:linear-gradient(135deg, rgba(130, 224, 170, 0.7) 0%, rgba(168, 232, 234, 0.7) 100%)"><div class="metric-header"><span class="metric-name">遗留缺陷</span><div class="metric-icon icon-bug"></div></div><div class="metric-value">5个</div><div class="metric-subtitle">关闭率72.2%</div></div><div class="metric-card" style="background:linear-gradient(135deg, rgba(240, 178, 122, 0.7) 0%, rgba(252, 186, 211, 0.7) 100%)"><div class="metric-header"><span class="metric-name">基本流占比</span><div class="metric-icon icon-chart"></div></div><div class="metric-value">83.3%</div><div class="metric-subtitle">15/18个</div></div><div class="metric-card" style="background:linear-gradient(135deg, rgba(170, 150, 218, 0.7) 0%, rgba(214, 234, 223, 0.7) 100%)"><div class="metric-header"><span class="metric-name">返工率</span><div class="metric-icon icon-refresh"></div></div><div class="metric-value">27.8%</div><div class="metric-subtitle">5/18个</div></div></div></div></div>
+                <div class="card-full"><div class="metrics-container"><div class="metrics-title">质量指标概览</div><div class="metrics-row"><div class="metric-card" style="background:linear-gradient(135deg, rgb(150, 226, 255, 0.7) 0%, rgb(200, 246, 230, 0.7) 100%)"><div class="metric-header"><span class="metric-name">任务项</span><div class="metric-icon icon-task"></div></div><div class="metric-value" style="color:#103979">5个</div><div class="metric-subtitle">子任务项59个</div></div><div class="metric-card" style="background:linear-gradient(135deg, #FCFEC4 0%, #FFD9B5 100%)"><div class="metric-header"><span class="metric-name">平均修复时长</span><div class="metric-icon icon-clock"></div></div><div class="metric-value" style="color:#103979">1.29天</div><div class="metric-subtitle">最大3天<br>最小0天</div></div><div class="metric-card" style="background:linear-gradient(135deg, rgb(114 235 165 / 70%) 0%, #C4F7FE 100%)"><div class="metric-header"><span class="metric-name">遗留缺陷</span><div class="metric-icon icon-bug"></div></div><div class="metric-value" style="color:#103979">5个</div><div class="metric-subtitle">关闭率72.2%</div></div><div class="metric-card" style="background:linear-gradient(135deg, #FFD9B5 0%, rgba(252, 186, 211, 0.7) 100%)"><div class="metric-header"><span class="metric-name">基本流占比</span><div class="metric-icon icon-chart"></div></div><div class="metric-value" style="color:#103979">83.3%</div><div class="metric-subtitle">15/18个</div></div><div class="metric-card" style="background:linear-gradient(135deg, rgb(197, 172, 255, 0.7) 0%, rgb(213, 247, 229, 0.7) 100%)"><div class="metric-header"><span class="metric-name">返工率</span><div class="metric-icon icon-screenshot"></div></div><div class="metric-value" style="color:#103979">27.8%</div><div class="metric-subtitle">5/18个</div></div></div></div></div>
                 <div class="card-wide chart-card">
 <div id="chart_handler" style="width:100%;height:400px"></div>
 <script>
@@ -1573,11 +1661,11 @@ echarts.init(document.getElementById('chart_handler')).setOption({
         }
     ],
     "color": [
-        "#B8E0D2",
-        "#D6EADF",
-        "#A8D8EA",
-        "#AA96DA",
-        "#F9D5A7",
+        "#B2EBD5",
+        "#FCFEC4",
+        "#B7E3FF",
+        "#C4C5FF",
+        "#FFD9B5",
         "#F5C4D0"
     ],
     "title": [
@@ -1668,7 +1756,7 @@ echarts.init(document.getElementById('chart_status')).setOption({
             ],
             "label": {
                 "show": true,
-                "color": "#34495e",
+                "color": "#333",
                 "margin": 8,
                 "fontSize": 14,
                 "fontFamily": "Microsoft YaHei",
@@ -2404,9 +2492,11 @@ echarts.init(document.getElementById('chart_histogram')).setOption({
             "name": "\u6570\u91cf",
             "legendHoverLink": true,
             "data": [
-                null,
-                null,
-                null
+                2,
+                5,
+                6,
+                1,
+                1
             ],
             "realtimeSort": false,
             "showBackground": false,
@@ -2432,7 +2522,7 @@ echarts.init(document.getElementById('chart_histogram')).setOption({
                 "valueAnimation": false
             },
             "itemStyle": {
-                "color": "#7FB3D5",
+                "color": "#7BC0F7",
                 "borderColor": "white",
                 "borderWidth": 2,
                 "opacity": 0.85
@@ -2500,7 +2590,7 @@ echarts.init(document.getElementById('chart_histogram')).setOption({
     },
     "xAxis": [
         {
-            "name": "\u4fee\u590d\u5468\u671f(\u5929)",
+            "name": "\u4fee\u590d\u5468\u671f",
             "show": true,
             "scale": false,
             "nameLocation": "end",
@@ -2536,9 +2626,11 @@ echarts.init(document.getElementById('chart_histogram')).setOption({
             "animationEasingUpdate": "cubicOut",
             "animationDelayUpdate": 0,
             "data": [
-                "0-1",
-                "1-2",
-                "2-3"
+                "0-0.5\u5929",
+                "0.5-1\u5929",
+                "1.5-2\u5929",
+                "2-2.5\u5929",
+                "2.5-3\u5929"
             ]
         }
     ],
@@ -2601,7 +2693,7 @@ echarts.init(document.getElementById('chart_histogram')).setOption({
                 "richInheritPlainLabel": true
             },
             "subtextStyle": {
-                "color": "#E74C3C",
+                "color": "#EF4444",
                 "fontFamily": "Microsoft YaHei",
                 "fontSize": 12,
                 "richInheritPlainLabel": true
@@ -2783,7 +2875,7 @@ echarts.init(document.getElementById('chart_rework')).setOption({
 </script>
 </div><div class="card chart-card">
 <div id="chart_stage" style="width:100%;height:350px"></div>
-<div class="custom-legend" style="text-align:center;margin-top:5px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#A8D8EA;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">2.1-系统测试【基本流】</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#AA96DA;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">2.2-系统测试【备选流】</span></span><span class="legend-item" data-index="2" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FCBAD3;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">4.1-回归测试【基本流】</span></span><span class="legend-item" data-index="3" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FFFFD2;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">4.2-回归测试【备选流】</span></span></div>
+<div class="custom-legend" style="text-align:center;margin-top:5px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#A8D8EA;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">2.1-系统测试【基本流】</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#AA96DA;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">2.2-系统测试【备选流】</span></span><span class="legend-item" data-index="2" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FCBAD3;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">4.1-回归测试【基本流】</span></span><span class="legend-item" data-index="3" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FFFFD2;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">4.2-回归测试【备选流】</span></span></div>
 <script>
 (function() {
     var categories = ['2.1-系统测试【基本流】', '2.2-系统测试【备选流】', '4.1-回归测试【基本流】', '4.2-回归测试【备选流】'];
@@ -3119,7 +3211,7 @@ echarts.init(document.getElementById('chart_type')).setOption({
             ],
             "label": {
                 "show": true,
-                "color": "#34495e",
+                "color": "#333",
                 "margin": 8,
                 "fontSize": 14,
                 "fontFamily": "Microsoft YaHei",
@@ -3237,7 +3329,7 @@ echarts.init(document.getElementById('chart_type')).setOption({
 </script>
 </div><div class="card chart-card">
 <div id="chart_cause" style="width:100%;height:350px"></div>
-<div class="custom-legend" style="text-align:center;margin-top:5px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#A8D8EA;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">C7-旧有程序问题</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#AA96DA;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">C4-逻辑错误</span></span><span class="legend-item" data-index="2" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FCBAD3;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">C6-资源获取和释放问题</span></span><span class="legend-item" data-index="3" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FFFFD2;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">C3-性能问题</span></span><span class="legend-item" data-index="4" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#C4E1C1;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">D5-测试环境错误</span></span><span class="legend-item" data-index="5" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#F9D5A7;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">C20-代码未拉平（新变更）</span></span></div>
+<div class="custom-legend" style="text-align:center;margin-top:5px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#A8D8EA;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">C7-旧有程序问题</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#AA96DA;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">C4-逻辑错误</span></span><span class="legend-item" data-index="2" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FCBAD3;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">C6-资源获取和释放问题</span></span><span class="legend-item" data-index="3" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FFFFD2;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">C3-性能问题</span></span><span class="legend-item" data-index="4" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#C4E1C1;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">D5-测试环境错误</span></span><span class="legend-item" data-index="5" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#F9D5A7;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">C20-代码未拉平（新变更）</span></span></div>
 <script>
 (function() {
     var categories = ['C7-旧有程序问题', 'C4-逻辑错误', 'C6-资源获取和释放问题', 'C3-性能问题', 'D5-测试环境错误', 'C20-代码未拉平（新变更）'];
@@ -3502,7 +3594,7 @@ echarts.init(document.getElementById('chart_type')).setOption({
 </script>
 </div><div class="card chart-card">
 <div id="chart_priority" style="width:100%;height:350px"></div>
-<div class="custom-legend" style="text-align:center;margin-top:-20px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#E57373;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">优先</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FFB74D;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">高</span></span><span class="legend-item" data-index="2" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#64B5F6;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">中</span></span><span class="legend-item" data-index="3" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#81C784;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">低</span></span></div>
+<div class="custom-legend" style="text-align:center;margin-top:-20px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#E57373;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">优先</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FFB74D;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">高</span></span><span class="legend-item" data-index="2" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#64B5F6;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">中</span></span><span class="legend-item" data-index="3" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#81C784;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">低</span></span></div>
 <script>
 (function() {
     var categories = ['优先', '高', '中', '低'];
@@ -3762,7 +3854,7 @@ echarts.init(document.getElementById('chart_type')).setOption({
 </script>
 </div><div class="card chart-card">
 <div id="chart_severity" style="width:100%;height:350px"></div>
-<div class="custom-legend" style="text-align:center;margin-top:5px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#E57373;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">严重</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FFB74D;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">一般</span></span><span class="legend-item" data-index="2" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#64B5F6;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">轻微</span></span><span class="legend-item" data-index="3" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#81C784;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">建议</span></span></div>
+<div class="custom-legend" style="text-align:center;margin-top:5px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#E57373;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">严重</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#FFB74D;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">一般</span></span><span class="legend-item" data-index="2" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#64B5F6;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">轻微</span></span><span class="legend-item" data-index="3" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#81C784;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">建议</span></span></div>
 <script>
 (function() {
     var categories = ['严重', '一般', '轻微', '建议'];
@@ -4023,7 +4115,7 @@ echarts.init(document.getElementById('chart_type')).setOption({
 </script>
 </div><div class="card chart-card">
 <div id="chart_intro" style="width:100%;height:350px"></div>
-<div class="custom-legend" style="text-align:center;margin-top:5px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#7FB3D5;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">C-软件编码</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#76D7C4;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">D-软件测试</span></span></div>
+<div class="custom-legend" style="text-align:center;margin-top:5px;"><span class="legend-item" data-index="0" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#7FB3D5;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">C-软件编码</span></span><span class="legend-item" data-index="1" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:#76D7C4;border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#555;">D-软件测试</span></span></div>
 <script>
 (function() {
     var categories = ['C-软件编码', 'D-软件测试'];
@@ -4364,7 +4456,7 @@ echarts.init(document.getElementById('chart_type')).setOption({
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(row, idx) in filteredData" :key="idx" @dblclick="showDetail(filteredIndices[idx])">
+                <tr v-for="(row, idx) in filteredData" :key="idx" @click="showDetail(filteredIndices[idx])">
                     <td v-for="(key, colIdx) in colKeys" :key="colIdx" :class="key === '缺陷摘要' ? 'summary-cell' : ''">
                         <span v-if="key === '缺陷状态'" :class="'status-tag status-' + row[key]">{{ row[key] }}</span>
                         <span v-else-if="key === '优先级'" :class="getPriorityClass(row[key])">{{ row[key] }}</span>
@@ -4375,18 +4467,24 @@ echarts.init(document.getElementById('chart_type')).setOption({
         </table>
     </div>
 
-    <el-dialog v-model="modalVisible" title="缺陷明细" width="600px" :close-on-click-modal="true" destroy-on-close>
-        <div class="modal-body">
-            <div v-for="(key, i) in detailKeys" :key="i" class="detail-item">
-                <div class="detail-label">{{ detailColNames[i] }}</div>
-                <div class="detail-value">
-                    <span v-if="key === '缺陷状态'" :class="'status-tag status-' + detailData[key]">{{ detailData[key] || '--' }}</span>
-                    <span v-else-if="key === '优先级'" :class="getPriorityClass(detailData[key])">{{ detailData[key] || '--' }}</span>
-                    <span v-else>{{ detailData[key] || '--' }}</span>
+    <div v-if="modalVisible" class="detail-modal-overlay active" @click.self="closeModal">
+        <div class="detail-modal">
+            <div class="detail-modal-header">
+                <span class="detail-modal-title">缺陷详情 - {{ detailData['缺陷编号'] || '' }}</span>
+                <button class="detail-modal-close" @click="closeModal">&times;</button>
+            </div>
+            <div class="detail-modal-body">
+                <div v-for="(key, i) in detailKeys" :key="i" class="detail-item">
+                    <div class="detail-label">{{ detailColNames[i] }}</div>
+                    <div class="detail-value">
+                        <span v-if="key === '缺陷状态'" :class="'status-tag status-' + detailData[key]">{{ detailData[key] || '--' }}</span>
+                        <span v-else-if="key === '优先级'" :class="getPriorityClass(detailData[key])">{{ detailData[key] || '--' }}</span>
+                        <span v-else>{{ detailData[key] || '--' }}</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </el-dialog>
+    </div>
 </div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus/dist/index.css">
@@ -4405,16 +4503,22 @@ echarts.init(document.getElementById('chart_type')).setOption({
     #detailVueApp .arrow-down { border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid currentColor; }
     #detailVueApp .filter-collapsed .filter-row:not(.filter-row-extra) { max-height: 0; overflow: hidden; margin: 0; padding: 0; }
     #detailVueApp .filter-collapsed .filter-row-extra { margin-top: 0; padding-top: 0; border-top: none; }
-    #detailVueApp .detail-table-container { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow-x: auto; }
+    #detailVueApp .detail-table-container { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
     #detailVueApp .detail-table { width: 100%; border-collapse: collapse; font-family: 'Microsoft YaHei'; font-size: 13px; }
-    #detailVueApp .detail-table th { background: #f5f5f5; color: #666; padding: 12px 10px; text-align: left; font-weight: normal; white-space: nowrap; border-bottom: 1px solid #eee; }
-    #detailVueApp .detail-table th:first-child { border-radius: 8px 0 0 0; }
-    #detailVueApp .detail-table th:last-child { border-radius: 0 8px 0 0; }
+    #detailVueApp .detail-table thead { background: #1C91FD; }
+    #detailVueApp .detail-table th { background: #1C91FD; color: #fff; padding: 12px 10px; text-align: left; font-weight: bold; white-space: nowrap; border-bottom: none; }
+    #detailVueApp .detail-table th:first-child { padding-left: 16px; }
+    #detailVueApp .detail-table th:last-child { padding-right: 16px; }
     #detailVueApp .detail-table tbody tr { transition: all 0.15s; cursor: pointer; }
-    #detailVueApp .detail-table tbody tr:hover { background: #fafafa; transform: scale(1.01); }
+    #detailVueApp .detail-table tbody tr:hover { background: #fafafa; }
     #detailVueApp .detail-table td { padding: 10px; border-bottom: 1px solid #f0f0f0; color: #444; }
+    #detailVueApp .detail-table td:first-child { padding-left: 16px; }
+    #detailVueApp .detail-table td:last-child { padding-right: 16px; }
     #detailVueApp .detail-table tbody tr:last-child td { border-bottom: none; }
-    #detailVueApp .detail-table .col-0 { width: 130px; color: #1C91FD; }
+    #detailVueApp .detail-table tbody tr:last-child td:first-child { border-bottom-left-radius: 12px; }
+    #detailVueApp .detail-table tbody tr:last-child td:last-child { border-bottom-right-radius: 12px; }
+    #detailVueApp .detail-table .col-0 { width: 130px; }
+    #detailVueApp .detail-table td.col-0 { color: #1C91FD; }
     #detailVueApp .detail-table .col-1 { width: 80px; }
     #detailVueApp .detail-table .col-2 { min-width: 180px; }
     #detailVueApp .detail-table .col-3 { width: 60px; }
@@ -4438,20 +4542,85 @@ echarts.init(document.getElementById('chart_type')).setOption({
     #detailVueApp .detail-item:last-child { margin-bottom: 0; }
     #detailVueApp .detail-label { width: 90px; flex-shrink: 0; font-family: 'Microsoft YaHei'; font-size: 13px; color: #1C91FD; font-weight: bold; }
     #detailVueApp .detail-value { flex: 1; font-family: 'Microsoft YaHei'; font-size: 13px; color: #333; word-break: break-all; }
-    /* el-dialog 毛玻璃背景 */
-    .el-overlay { background: rgba(170,150,218,0.15) !important; backdrop-filter: blur(8px) !important; }
-    /* el-dialog 弹窗样式 */
-    .el-dialog { border-radius: 16px !important; box-shadow: 0 12px 40px rgba(170,150,218,0.25) !important; animation: dialogPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important; }
-    @keyframes dialogPop { from { transform: scale(0.8) translateY(-30px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-    .el-dialog__header { background: #f8f9fa !important; border-radius: 16px 16px 0 0 !important; padding: 16px 20px !important; border-bottom: 1px solid #eee !important; display: flex !important; align-items: center !important; justify-content: space-between !important; }
-    .el-dialog__title { font-family: 'Microsoft YaHei' !important; color: #1C91FD !important; font-size: 16px !important; }
-    .el-dialog__headerbtn { position: relative !important; top: 0 !important; right: 0 !important; width: 32px !important; height: 32px !important; background: #fff !important; border: 1px solid #eee !important; border-radius: 50% !important; transition: all 0.3s !important; display: flex !important; align-items: center !important; justify-content: center !important; }
-    .el-dialog__headerbtn:hover { transform: rotate(90deg); background: #1C91FD !important; border-color: #1C91FD !important; }
-    .el-dialog__headerbtn .el-dialog__close { color: #1C91FD !important; font-size: 16px !important; }
-    .el-dialog__headerbtn:hover .el-dialog__close { color: #fff !important; }
-    .el-dialog__body { padding: 20px !important; max-height: 60vh !important; overflow-y: auto !important; }
-    .el-dialog__body::-webkit-scrollbar { width: 4px; }
-    .el-dialog__body::-webkit-scrollbar-thumb { background: #1C91FD; border-radius: 2px; }
+    /* 自定义弹窗样式（与主视图一致） */
+    .detail-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #1c91fd0d;
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    .detail-modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    .detail-modal {
+        background: white;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow: hidden;
+        box-shadow: 0 12px 40px rgba(170,150,218,0.25);
+        transform: scale(0.8) translateY(-30px);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .detail-modal-overlay.active .detail-modal {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+    .detail-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        background: #f8f9fa;
+        border-radius: 16px 16px 0 0;
+        border-bottom: 1px solid #eee;
+    }
+    .detail-modal-title {
+        font-family: 'Microsoft YaHei';
+        font-size: 16px;
+        color: #1C91FD;
+        font-weight: 600;
+    }
+    .detail-modal-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #fff;
+        border: 1px solid #eee;
+        color: #1C91FD;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+    .detail-modal-close:hover {
+        transform: rotate(90deg);
+        background: #1C91FD;
+        border-color: #1C91FD;
+        color: #fff;
+    }
+    .detail-modal-body {
+        padding: 20px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    .detail-modal-body::-webkit-scrollbar { width: 4px; }
+    .detail-modal-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
@@ -4460,9 +4629,9 @@ echarts.init(document.getElementById('chart_type')).setOption({
 (function() {
     var appData = {
         allData: [{"缺陷编号": "NL-B-173312", "缺陷状态": "New", "缺陷摘要": "【导入】【属性库】非生产态属性组的名称也被导入", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "缺陷修复周期(天)": "", "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "5-数据丢失或错误"}, {"缺陷编号": "NL-B-173213", "缺陷状态": "ReOpen", "缺陷摘要": "【导出】导出超时", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "缺陷修复周期(天)": 0.27, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "2-性能问题"}, {"缺陷编号": "NL-B-172952", "缺陷状态": "New", "缺陷摘要": "【属性库】复用属性组性能优化", "优先级": "中", "严重程度": "一般", "处理人员": "王荣坡", "缺陷修复周期(天)": "", "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "2-性能问题"}, {"缺陷编号": "NL-B-172950", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】导出ppt失败", "优先级": "中", "严重程度": "较高", "处理人员": "陈珍桂", "缺陷修复周期(天)": 0.97, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "3-功能不可用"}, {"缺陷编号": "NL-B-172949", "缺陷状态": "ReOpen", "缺陷摘要": "【需求采编】新增商品后，商品的排列顺序随机，倒叙排列", "优先级": "中", "严重程度": "轻微", "处理人员": "陈珍桂", "缺陷修复周期(天)": 1.95, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "6-操作界面"}, {"缺陷编号": "NL-B-172948", "缺陷状态": "Closed", "缺陷摘要": "【产品需求列表】创建时间未显示", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "缺陷修复周期(天)": 0.64, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "6-操作界面"}, {"缺陷编号": "NL-B-172947", "缺陷状态": "Closed", "缺陷摘要": "【元数据视图】产品信息图、产商品类目树的查询重置按钮丢失", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "缺陷修复周期(天)": 1.63, "发现阶段": "4.1-回归测试【基本流】", "缺陷类型": "6-操作界面"}, {"缺陷编号": "NL-B-172946", "缺陷状态": "Closed", "缺陷摘要": "【产品一码】商品线为空时，不展示“-”", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "缺陷修复周期(天)": 0.04, "发现阶段": "4.1-回归测试【基本流】", "缺陷类型": "5-数据丢失或错误"}, {"缺陷编号": "NL-B-172945", "缺陷状态": "New", "缺陷摘要": "【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "缺陷修复周期(天)": "", "发现阶段": "4.1-回归测试【基本流】", "缺陷类型": "2-性能问题"}, {"缺陷编号": "NL-B-172944", "缺陷状态": "Closed", "缺陷摘要": "【浏览器缓存】不同环境登录相同账号，会触发“重新加载站点”提示", "优先级": "中", "严重程度": "轻微", "处理人员": "陈智伟A", "缺陷修复周期(天)": 0.97, "发现阶段": "4.2-回归测试【备选流】", "缺陷类型": "29-其它"}, {"缺陷编号": "NL-B-172713", "缺陷状态": "Closed", "缺陷摘要": "【商品构成】产品线必填未生效", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "缺陷修复周期(天)": 0.52, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "8-输入校验"}, {"缺陷编号": "NL-B-172712", "缺陷状态": "Closed", "缺陷摘要": "【动作库】动作库，节点名称未必填", "优先级": "中", "严重程度": "轻微", "处理人员": "陈智伟A", "缺陷修复周期(天)": 1.82, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "8-输入校验"}, {"缺陷编号": "NL-B-172711", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品】商品线6个层级，导出数据多了个null", "优先级": "中", "严重程度": "一般", "处理人员": "戴海涛", "缺陷修复周期(天)": 2.76, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "5-数据丢失或错误"}, {"缺陷编号": "NL-B-172710", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx字体样式调整", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "缺陷修复周期(天)": 1.91, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "6-操作界面"}, {"缺陷编号": "NL-B-172709", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx改造类型样式没有", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "缺陷修复周期(天)": 1.59, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "6-操作界面"}, {"缺陷编号": "NL-B-172708", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_商品定价清单.xlsx内容错误", "优先级": "中", "严重程度": "一般", "处理人员": "王邦城", "缺陷修复周期(天)": 0.51, "发现阶段": "2.1-系统测试【基本流】", "缺陷类型": "5-数据丢失或错误"}, {"缺陷编号": "NL-B-172700", "缺陷状态": "Closed", "缺陷摘要": "【导入】【规则库_销售规则】规则未与生产态数据做反向校验，不存在的规则不允许导入", "优先级": "高", "严重程度": "较高", "处理人员": "陈珍桂", "缺陷修复周期(天)": 2.13, "发现阶段": "4.2-回归测试【备选流】", "缺陷类型": "8-输入校验"}, {"缺陷编号": "NL-B-172698", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品定价详情】某商品拥有多个定价时，定价详情导出数据不完整", "优先级": "高", "严重程度": "较高", "处理人员": "王邦城", "缺陷修复周期(天)": 1.6, "发现阶段": "4.2-回归测试【备选流】", "缺陷类型": "5-数据丢失或错误"}],
-        allDetailData: [{"缺陷编号": "NL-B-173312", "缺陷状态": "New", "缺陷摘要": "【导入】【属性库】非生产态属性组的名称也被导入", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "", "引入原因": "", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-29 16:19:00", "修复时间": "NaT", "关闭时间": "NaT", "缺陷修复周期(天)": "", "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-173213", "缺陷状态": "ReOpen", "缺陷摘要": "【导出】导出超时", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C3-性能问题", "缺陷来源": "研发过程", "缺陷类型": "2-性能问题", "登记人": "邱钰洁", "登记时间.1": "2026-05-29 08:57:00", "修复时间": "2026-05-29 15:24:45", "关闭时间": "NaT", "缺陷修复周期(天)": 0.27, "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172952", "缺陷状态": "New", "缺陷摘要": "【属性库】复用属性组性能优化", "优先级": "中", "严重程度": "一般", "处理人员": "王荣坡", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "", "引入原因": "", "缺陷来源": "研发过程", "缺陷类型": "2-性能问题", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:45:00", "修复时间": "NaT", "关闭时间": "NaT", "缺陷修复周期(天)": "", "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172950", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】导出ppt失败", "优先级": "中", "严重程度": "较高", "处理人员": "陈珍桂", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "D-软件测试", "引入原因": "D5-测试环境错误", "缺陷来源": "研发过程", "缺陷类型": "3-功能不可用", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:22:00", "修复时间": "2026-05-28 17:41:00", "关闭时间": "2026-05-29 08:49:00", "缺陷修复周期(天)": 0.97, "缺陷关闭周期(天)": 1.6}, {"缺陷编号": "NL-B-172949", "缺陷状态": "ReOpen", "缺陷摘要": "【需求采编】新增商品后，商品的排列顺序随机，倒叙排列", "优先级": "中", "严重程度": "轻微", "处理人员": "陈珍桂", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C20-代码未拉平（新变更）", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:20:00", "修复时间": "2026-05-29 17:03:23", "关闭时间": "NaT", "缺陷修复周期(天)": 1.95, "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172948", "缺陷状态": "Closed", "缺陷摘要": "【产品需求列表】创建时间未显示", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:18:00", "修复时间": "2026-05-28 09:38:00", "关闭时间": "2026-05-29 08:50:00", "缺陷修复周期(天)": 0.64, "缺陷关闭周期(天)": 1.61}, {"缺陷编号": "NL-B-172947", "缺陷状态": "Closed", "缺陷摘要": "【元数据视图】产品信息图、产商品类目树的查询重置按钮丢失", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C6-资源获取和释放问题", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:12:00", "修复时间": "2026-05-29 09:21:00", "关闭时间": "2026-05-29 17:31:00", "缺陷修复周期(天)": 1.63, "缺陷关闭周期(天)": 1.97}, {"缺陷编号": "NL-B-172946", "缺陷状态": "Closed", "缺陷摘要": "【产品一码】商品线为空时，不展示“-”", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:07:00", "修复时间": "2026-05-27 19:01:00", "关闭时间": "2026-05-29 08:50:00", "缺陷修复周期(天)": 0.04, "缺陷关闭周期(天)": 1.61}, {"缺陷编号": "NL-B-172945", "缺陷状态": "New", "缺陷摘要": "【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包", "优先级": "中", "严重程度": "一般", "处理人员": "刘陈明", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "", "引入原因": "", "缺陷来源": "研发过程", "缺陷类型": "2-性能问题", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 18:01:00", "修复时间": "NaT", "关闭时间": "NaT", "缺陷修复周期(天)": "", "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172944", "缺陷状态": "Closed", "缺陷摘要": "【浏览器缓存】不同环境登录相同账号，会触发“重新加载站点”提示", "优先级": "中", "严重程度": "轻微", "处理人员": "陈智伟A", "发现阶段": "4.2-回归测试【备选流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "缺陷类型": "29-其它", "登记人": "邱钰洁", "登记时间.1": "2026-05-27 17:58:00", "修复时间": "2026-05-28 17:08:00", "关闭时间": "2026-05-29 17:34:00", "缺陷修复周期(天)": 0.97, "缺陷关闭周期(天)": 1.98}, {"缺陷编号": "NL-B-172713", "缺陷状态": "Closed", "缺陷摘要": "【商品构成】产品线必填未生效", "优先级": "中", "严重程度": "轻微", "处理人员": "王邦城", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "缺陷类型": "8-输入校验", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:29:00", "修复时间": "2026-05-26 09:51:00", "关闭时间": "2026-05-26 21:02:00", "缺陷修复周期(天)": 0.52, "缺陷关闭周期(天)": 0.98}, {"缺陷编号": "NL-B-172712", "缺陷状态": "Closed", "缺陷摘要": "【动作库】动作库，节点名称未必填", "优先级": "中", "严重程度": "轻微", "处理人员": "陈智伟A", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "8-输入校验", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:20:00", "修复时间": "2026-05-27 16:54:00", "关闭时间": "2026-05-27 17:25:00", "缺陷修复周期(天)": 1.82, "缺陷关闭周期(天)": 1.84}, {"缺陷编号": "NL-B-172711", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品】商品线6个层级，导出数据多了个null", "优先级": "中", "严重程度": "一般", "处理人员": "戴海涛", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:11:00", "修复时间": "2026-05-28 15:32:00", "关闭时间": "2026-05-29 17:34:00", "缺陷修复周期(天)": 2.76, "缺陷关闭周期(天)": 3.85}, {"缺陷编号": "NL-B-172710", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx字体样式调整", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:08:00", "修复时间": "2026-05-27 19:00:00", "关闭时间": "2026-05-29 08:59:00", "缺陷修复周期(天)": 1.91, "缺陷关闭周期(天)": 3.49}, {"缺陷编号": "NL-B-172709", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx改造类型样式没有", "优先级": "中", "严重程度": "轻微", "处理人员": "刘陈明", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "6-操作界面", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:07:00", "修复时间": "2026-05-27 11:15:00", "关闭时间": "2026-05-27 18:29:00", "缺陷修复周期(天)": 1.59, "缺陷关闭周期(天)": 1.89}, {"缺陷编号": "NL-B-172708", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_商品定价清单.xlsx内容错误", "优先级": "中", "严重程度": "一般", "处理人员": "王邦城", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C6-资源获取和释放问题", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 21:06:00", "修复时间": "2026-05-26 09:23:00", "关闭时间": "2026-05-26 21:07:00", "缺陷修复周期(天)": 0.51, "缺陷关闭周期(天)": 1}, {"缺陷编号": "NL-B-172700", "缺陷状态": "Closed", "缺陷摘要": "【导入】【规则库_销售规则】规则未与生产态数据做反向校验，不存在的规则不允许导入", "优先级": "高", "严重程度": "较高", "处理人员": "陈珍桂", "发现阶段": "4.2-回归测试【备选流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "缺陷类型": "8-输入校验", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 18:54:00", "修复时间": "2026-05-27 21:58:00", "关闭时间": "2026-05-29 08:59:00", "缺陷修复周期(天)": 2.13, "缺陷关闭周期(天)": 3.59}, {"缺陷编号": "NL-B-172698", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品定价详情】某商品拥有多个定价时，定价详情导出数据不完整", "优先级": "高", "严重程度": "较高", "处理人员": "王邦城", "发现阶段": "4.2-回归测试【备选流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "缺陷类型": "5-数据丢失或错误", "登记人": "邱钰洁", "登记时间.1": "2026-05-25 18:38:00", "修复时间": "2026-05-27 09:09:00", "关闭时间": "2026-05-27 18:37:00", "缺陷修复周期(天)": 1.6, "缺陷关闭周期(天)": 2}],
+        allDetailData: [{"缺陷编号": "NL-B-173312", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "New", "缺陷摘要": "【导入】【属性库】非生产态属性组的名称也被导入", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-29 16:19:00", "修复时间": "NaT", "关闭时间": "NaT", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "", "引入原因": "", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "5-数据丢失或错误", "缺陷修复周期(天)": "", "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-173213", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "ReOpen", "缺陷摘要": "【导出】导出超时", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-29 08:57:00", "修复时间": "2026-05-29 15:24:45", "关闭时间": "NaT", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C3-性能问题", "缺陷来源": "研发过程", "返工次数": 1, "严重程度": "一般", "缺陷类型": "2-性能问题", "缺陷修复周期(天)": 0.27, "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172952", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "New", "缺陷摘要": "【属性库】复用属性组性能优化", "优先级": "中", "登记人": "邱钰洁", "处理人员": "王荣坡", "登记时间.1": "2026-05-27 18:45:00", "修复时间": "NaT", "关闭时间": "NaT", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "", "引入原因": "", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "2-性能问题", "缺陷修复周期(天)": "", "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172950", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】导出ppt失败", "优先级": "中", "登记人": "邱钰洁", "处理人员": "陈珍桂", "登记时间.1": "2026-05-27 18:22:00", "修复时间": "2026-05-28 17:41:00", "关闭时间": "2026-05-29 08:49:00", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "D-软件测试", "引入原因": "D5-测试环境错误", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "较高", "缺陷类型": "3-功能不可用", "缺陷修复周期(天)": 0.97, "缺陷关闭周期(天)": 1.6}, {"缺陷编号": "NL-B-172949", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "ReOpen", "缺陷摘要": "【需求采编】新增商品后，商品的排列顺序随机，倒叙排列", "优先级": "中", "登记人": "邱钰洁", "处理人员": "陈珍桂", "登记时间.1": "2026-05-27 18:20:00", "修复时间": "2026-05-29 17:03:23", "关闭时间": "NaT", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C20-代码未拉平（新变更）", "缺陷来源": "研发过程", "返工次数": 1, "严重程度": "轻微", "缺陷类型": "6-操作界面", "缺陷修复周期(天)": 1.95, "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172948", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "Closed", "缺陷摘要": "【产品需求列表】创建时间未显示", "优先级": "中", "登记人": "邱钰洁", "处理人员": "王邦城", "登记时间.1": "2026-05-27 18:18:00", "修复时间": "2026-05-28 09:38:00", "关闭时间": "2026-05-29 08:50:00", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "轻微", "缺陷类型": "6-操作界面", "缺陷修复周期(天)": 0.64, "缺陷关闭周期(天)": 1.61}, {"缺陷编号": "NL-B-172947", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "元数据视图/产商品类目树", "缺陷状态": "Closed", "缺陷摘要": "【元数据视图】产品信息图、产商品类目树的查询重置按钮丢失", "优先级": "中", "登记人": "邱钰洁", "处理人员": "王邦城", "登记时间.1": "2026-05-27 18:12:00", "修复时间": "2026-05-29 09:21:00", "关闭时间": "2026-05-29 17:31:00", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C6-资源获取和释放问题", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "轻微", "缺陷类型": "6-操作界面", "缺陷修复周期(天)": 1.63, "缺陷关闭周期(天)": 1.97}, {"缺陷编号": "NL-B-172946", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "Closed", "缺陷摘要": "【产品一码】商品线为空时，不展示“-”", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-27 18:07:00", "修复时间": "2026-05-27 19:01:00", "关闭时间": "2026-05-29 08:50:00", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "轻微", "缺陷类型": "5-数据丢失或错误", "缺陷修复周期(天)": 0.04, "缺陷关闭周期(天)": 1.61}, {"缺陷编号": "NL-B-172945", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "New", "缺陷摘要": "【导出】导出下载特别慢，性能慢，exportRequirementDocument耗时34.76s，一个商品泉州-网络运维服务包", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-27 18:01:00", "修复时间": "NaT", "关闭时间": "NaT", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "", "引入原因": "", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "2-性能问题", "缺陷修复周期(天)": "", "缺陷关闭周期(天)": "/"}, {"缺陷编号": "NL-B-172944", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "Closed", "缺陷摘要": "【浏览器缓存】不同环境登录相同账号，会触发“重新加载站点”提示", "优先级": "中", "登记人": "邱钰洁", "处理人员": "陈智伟A", "登记时间.1": "2026-05-27 17:58:00", "修复时间": "2026-05-28 17:08:00", "关闭时间": "2026-05-29 17:34:00", "发现阶段": "4.2-回归测试【备选流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "轻微", "缺陷类型": "29-其它", "缺陷修复周期(天)": 0.97, "缺陷关闭周期(天)": 1.98}, {"缺陷编号": "NL-B-172713", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "Closed", "缺陷摘要": "【商品构成】产品线必填未生效", "优先级": "中", "登记人": "邱钰洁", "处理人员": "王邦城", "登记时间.1": "2026-05-25 21:29:00", "修复时间": "2026-05-26 09:51:00", "关闭时间": "2026-05-26 21:02:00", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "轻微", "缺陷类型": "8-输入校验", "缺陷修复周期(天)": 0.52, "缺陷关闭周期(天)": 0.98}, {"缺陷编号": "NL-B-172712", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "Closed", "缺陷摘要": "【动作库】动作库，节点名称未必填", "优先级": "中", "登记人": "邱钰洁", "处理人员": "陈智伟A", "登记时间.1": "2026-05-25 21:20:00", "修复时间": "2026-05-27 16:54:00", "关闭时间": "2026-05-27 17:25:00", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "轻微", "缺陷类型": "8-输入校验", "缺陷修复周期(天)": 1.82, "缺陷关闭周期(天)": 1.84}, {"缺陷编号": "NL-B-172711", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品】商品线6个层级，导出数据多了个null", "优先级": "中", "登记人": "邱钰洁", "处理人员": "戴海涛", "登记时间.1": "2026-05-25 21:11:00", "修复时间": "2026-05-28 15:32:00", "关闭时间": "2026-05-29 17:34:00", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "返工次数": 1, "严重程度": "一般", "缺陷类型": "5-数据丢失或错误", "缺陷修复周期(天)": 2.76, "缺陷关闭周期(天)": 3.85}, {"缺陷编号": "NL-B-172710", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx字体样式调整", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-25 21:08:00", "修复时间": "2026-05-27 19:00:00", "关闭时间": "2026-05-29 08:59:00", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "返工次数": 1, "严重程度": "轻微", "缺陷类型": "6-操作界面", "缺陷修复周期(天)": 1.91, "缺陷关闭周期(天)": 3.49}, {"缺陷编号": "NL-B-172709", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_产品分类.xlsx改造类型样式没有", "优先级": "中", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-05-25 21:07:00", "修复时间": "2026-05-27 11:15:00", "关闭时间": "2026-05-27 18:29:00", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "轻微", "缺陷类型": "6-操作界面", "缺陷修复周期(天)": 1.59, "缺陷关闭周期(天)": 1.89}, {"缺陷编号": "NL-B-172708", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "Closed", "缺陷摘要": "【在线PPT】一码_商品定价清单.xlsx内容错误", "优先级": "中", "登记人": "邱钰洁", "处理人员": "王邦城", "登记时间.1": "2026-05-25 21:06:00", "修复时间": "2026-05-26 09:23:00", "关闭时间": "2026-05-26 21:07:00", "发现阶段": "2.1-系统测试【基本流】", "引入阶段": "C-软件编码", "引入原因": "C6-资源获取和释放问题", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "5-数据丢失或错误", "缺陷修复周期(天)": 0.51, "缺陷关闭周期(天)": 1}, {"缺陷编号": "NL-B-172700", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "Closed", "缺陷摘要": "【导入】【规则库_销售规则】规则未与生产态数据做反向校验，不存在的规则不允许导入", "优先级": "高", "登记人": "邱钰洁", "处理人员": "陈珍桂", "登记时间.1": "2026-05-25 18:54:00", "修复时间": "2026-05-27 21:58:00", "关闭时间": "2026-05-29 08:59:00", "发现阶段": "4.2-回归测试【备选流】", "引入阶段": "C-软件编码", "引入原因": "C7-旧有程序问题", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "较高", "缺陷类型": "8-输入校验", "缺陷修复周期(天)": 2.13, "缺陷关闭周期(天)": 3.59}, {"缺陷编号": "NL-B-172698", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "Closed", "缺陷摘要": "【导出】【一码_商品定价详情】某商品拥有多个定价时，定价详情导出数据不完整", "优先级": "高", "登记人": "邱钰洁", "处理人员": "王邦城", "登记时间.1": "2026-05-25 18:38:00", "修复时间": "2026-05-27 09:09:00", "关闭时间": "2026-05-27 18:37:00", "发现阶段": "4.2-回归测试【备选流】", "引入阶段": "C-软件编码", "引入原因": "C4-逻辑错误", "缺陷来源": "研发过程", "返工次数": 1, "严重程度": "较高", "缺陷类型": "5-数据丢失或错误", "缺陷修复周期(天)": 1.6, "缺陷关闭周期(天)": 2}],
         colKeys: ["缺陷编号", "缺陷状态", "缺陷摘要", "优先级", "严重程度", "处理人员", "缺陷修复周期(天)"],
-        detailColNames: ["缺陷编号", "缺陷状态", "缺陷摘要", "优先级", "严重程度", "处理人员", "发现阶段", "引入阶段", "引入原因", "缺陷来源", "缺陷类型", "登记人", "登记时间", "修改时间", "关闭时间", "修复周期(天)", "关闭周期(天)"],
+        detailColNames: ["缺陷编号", "产品线", "产品模块", "缺陷状态", "缺陷摘要", "优先级", "登记人", "处理人员", "登记时间", "修复时间", "关闭时间", "发现阶段", "引入阶段", "引入原因", "缺陷来源", "返工次数", "严重程度", "缺陷类型", "缺陷修复周期(天)", "缺陷关闭周期(天)"],
         registerDates: ["2026-05-29", "2026-05-29", "2026-05-27", "2026-05-27", "2026-05-27", "2026-05-27", "2026-05-27", "2026-05-27", "2026-05-27", "2026-05-27", "2026-05-25", "2026-05-25", "2026-05-25", "2026-05-25", "2026-05-25", "2026-05-25", "2026-05-25", "2026-05-25"],
         modifyDates: ["", "2026-05-29", "", "2026-05-28", "2026-05-29", "2026-05-28", "2026-05-29", "2026-05-27", "", "2026-05-28", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-27", "2026-05-27", "2026-05-26", "2026-05-27", "2026-05-27"],
         closeDates: ["", "", "", "2026-05-29", "", "2026-05-29", "2026-05-29", "2026-05-29", "", "2026-05-29", "2026-05-26", "2026-05-27", "2026-05-29", "2026-05-29", "2026-05-27", "2026-05-26", "2026-05-29", "2026-05-27"],
@@ -4573,6 +4742,9 @@ echarts.init(document.getElementById('chart_type')).setOption({
             showDetail(idx) {
                 this.detailData = appData.allDetailData[idx] || {};
                 this.modalVisible = true;
+            },
+            closeModal() {
+                this.modalVisible = false;
             }
         }
     });
@@ -4585,9 +4757,9 @@ echarts.init(document.getElementById('chart_type')).setOption({
         </div>
     </div>
 
-    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal-overlay" id="modalOverlay">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <button class="modal-close" onclick="closeEnlargeModal()">&times;</button>
             <div id="modalChart" class="modal-chart"></div>
         </div>
     </div>
@@ -4665,15 +4837,19 @@ echarts.init(document.getElementById('chart_type')).setOption({
 
             if (tableDiv.classList.contains('active')) {
                 tableDiv.classList.remove('active');
-                chartDiv.style.display = 'block';
+                chartDiv.style.visibility = 'visible';
                 var customLegend = wrapper.querySelector('.custom-legend');
                 if (customLegend) customLegend.style.display = 'block';
                 toggleBtn.classList.remove('active');
-                var chart = echarts.getInstanceByDom(document.getElementById(chartId));
-                if (chart) chart.resize();
+                setTimeout(function() {
+                    var chart = echarts.getInstanceByDom(document.getElementById(chartId));
+                    if (chart) {
+                        chart.resize();
+                    }
+                }, 100);
             } else {
                 tableDiv.classList.add('active');
-                chartDiv.style.display = 'none';
+                chartDiv.style.visibility = 'hidden';
                 var customLegend = wrapper.querySelector('.custom-legend');
                 if (customLegend) customLegend.style.display = 'none';
                 toggleBtn.classList.add('active');
@@ -4798,13 +4974,19 @@ echarts.init(document.getElementById('chart_type')).setOption({
             modalChart.setOption(option);
         }
 
-        function closeModal(event) {
-            if (event && event.target !== document.getElementById('modalOverlay')) return;
+        function closeEnlargeModal() {
             var modal = document.getElementById('modalOverlay');
             modal.classList.remove('active');
             var modalChart = echarts.getInstanceByDom(document.getElementById('modalChart'));
             if (modalChart) modalChart.dispose();
         }
+
+        // 点击遮罩层关闭放大弹窗
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEnlargeModal();
+            }
+        });
 
         function switchView(view) {
             var homeView = document.getElementById('homeView');
@@ -4970,16 +5152,16 @@ echarts.init(document.getElementById('chart_type')).setOption({
         initWarningRowClick();
     });
 
-    // 同步缺陷预警列表高度与左侧卡片一致
+    // 同步缺陷预警卡片高度与左侧卡片一致
     function syncWarningListHeight() {
         var leftCard = document.getElementById('left-progress-card');
-        var warningList = document.getElementById('warning-list');
-        if (leftCard && warningList) {
+        var warningCard = document.querySelector('.warning-card');
+        if (leftCard && warningCard) {
+            // 取消stretch，改用动态设置固定高度
             var leftHeight = leftCard.offsetHeight;
-            var titleHeight = warningList.previousElementSibling ? warningList.previousElementSibling.offsetHeight : 0;
-            // 计算可用高度：左侧卡片高度 - 标题行高度 - padding
-            var availableHeight = leftHeight - 50; // 50px为标题行和padding预留
-            warningList.style.maxHeight = Math.max(availableHeight, 100) + 'px';
+            warningCard.style.height = leftHeight + 'px';
+            warningCard.style.maxHeight = leftHeight + 'px';
+            warningCard.style.overflow = 'hidden';
         }
     }
 
@@ -5043,9 +5225,18 @@ echarts.init(document.getElementById('chart_type')).setOption({
                 } else if (typeof value === 'object') {
                     value = JSON.stringify(value);
                 }
+                // 渲染值（支持状态标签和优先级标签）
+                var valueHtml;
+                if (key === '缺陷状态') {
+                    valueHtml = '<span class="status-tag status-' + value + '">' + value + '</span>';
+                } else if (key === '优先级') {
+                    valueHtml = '<span class="priority-tag priority-' + value + '">' + value + '</span>';
+                } else {
+                    valueHtml = value;
+                }
                 detailHtml += '<div class="warning-detail-row">' +
                     '<div class="warning-detail-label">' + label + '</div>' +
-                    '<div class="warning-detail-value">' + value + '</div>' +
+                    '<div class="warning-detail-value">' + valueHtml + '</div>' +
                     '</div>';
             }
         }

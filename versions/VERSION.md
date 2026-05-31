@@ -1,5 +1,119 @@
 # 缺陷质量分析报告生成器 - 版本记录
 
+## v3.5 (2026-05-31)
+
+**更新内容**：
+- 主视图测试进度概览新增明细统计数据
+  - 配置开关 `SHOW_STATS_DATA`（config.py），默认开启
+  - 展示四项数据：遗留缺陷、平均修复时间、基本流占比、返工次数
+  - 一行四列布局，背景色 #f0f4f8，数值颜色 #1c91fd
+  - 位于测试总进度/回归总进度下方、缺陷统计上方
+  - 数据来源：从 DataFrame 实时计算
+  - 无 .defect-summary 时自动放在内容区域顶部
+- 明细视图缺陷详情弹窗样式统一
+  - 替换 el-dialog 为自定义弹窗，与主视图缺陷预警弹窗样式一致
+  - 统一展示字段（新增产品线、产品模块、返工次数等）
+  - 状态标签和优先级标签样式保留并同步到主视图弹窗
+- 主视图缺陷预警弹窗增强
+  - 新增状态标签（彩色背景）和优先级标签（彩色文字）渲染
+  - 弹窗毛玻璃背景色统一为 #1c91fd0d
+- 图表视图按钮样式更新
+  - active 状态：背景 #1c91fd40，白色边框，蓝色阴影
+  - hover 状态：图标颜色 #1C91FD
+- 图表切换表格修复
+  - 使用 visibility 替代 display，保留容器尺寸
+  - 切换回图表时延迟 resize 确保正确渲染
+- 放大弹窗关闭按钮修复
+  - 按钮样式与明细视图弹窗一致（蓝色圆形，hover 旋转变色）
+  - 添加 z-index 和 pointer-events 确保可点击
+  - 重构关闭逻辑，使用事件监听器替代内联 onclick
+- 表格样式优化
+  - 明细视图表格：表头整行蓝色 #1C91FD，文字白色加粗
+  - 主视图测试进度表格：表头整行蓝色 #1C91FD，文字白色加粗
+  - 表格内容左右留白16px，最后一行圆角处理
+  - 缺陷编号列：表头白色，数据行蓝色 #1C91FD
+- 明细视图缺陷行改为单击展示弹窗
+- 缺陷预警列表滚动条：默认透明，hover 时显示灰色
+- 所有弹窗滚动条颜色统一为灰色 #ccc
+- UI自动化建设第一个卡片 SVG 颜色改为 #1c91fd，metric-value 颜色改为 #1c91fd
+- 缺陷预警行去掉 margin-bottom
+- 测试进度概览各区域间距统一调整为 10px
+- .defect-list 列宽调整为 minmax(100px, 1fr)
+- 本周新增缺陷总数数值和单位之间添加空格
+
+**新增配置**：
+- `config.py` `SHOW_STATS_DATA = True` - 明细数据开关
+- `colors.py` `priority_detail['优先']` - 优先级颜色
+
+**更新文件**：
+- `config.py` - 新增 SHOW_STATS_DATA 配置
+- `colors.py` - 新增"优先"优先级颜色
+- `defect_quality_report.py` - 传递 df, total 到主页视图
+- `views/home_view.py` - 明细统计、弹窗增强、表格样式调整
+- `views/detail_view.py` - 弹窗重构、单击触发、表格样式、滚动条颜色
+- `templates/html_template.py` - 图表按钮样式、切换修复、放大弹窗修复
+
+**备份文件**：
+- `versions/v3.5_modular_backup.zip`
+
+---
+
+## v3.4.5 (2026-05-31)
+
+**更新内容**：
+- 主视图缺陷预警卡片高度同步
+  - JS动态设置缺陷预警卡片高度等于左侧测试进度概览卡片
+  - CSS改为 `align-items: flex-start`，去除强制等高
+  - `.warning-list` 添加 `min-height: 0` 确保flex收缩正确
+  - 超出高度显示滚动条
+
+**更新文件**：
+- `views/home_view.py` - CSS + JS高度同步逻辑
+
+**备份文件**：
+- `versions/v3.4.5_modular_backup.zip`
+
+---
+
+## v3.4.4 (2026-05-31)
+
+**更新内容**：
+- 颜色配置独立与优化
+  - 新建 `colors.py` 模块，颜色配置独立管理
+  - 简化 `config.py`，从 colors 导入 COLORS
+  - 颜色按功能分类：theme、text、background、border、progress、status、metric_cards 等
+- 视图颜色配置化
+  - `chart_views.py`：图表颜色、标题颜色、文字颜色替换为 COLORS 引用
+  - `detail_view.py`：状态标签、优先级、弹窗颜色替换为 COLORS 引用
+  - `home_view.py`：进度条、状态颜色替换为 COLORS 引用
+- 质量指标卡片配色
+  - 新增 `metric_cards` 配置，5个卡片渐变背景独立配置
+  - 数值颜色 `#103979`
+- 视图按钮优化
+  - 去除"图表""明细"文字，只保留图标
+  - 所有按钮统一为正圆形（padding 相等）
+- 标题颜色修改
+  - `.metrics-title` 颜色改为 `#103979`
+- 修复周期分布图表修复
+  - 修复 numpy.int64 序列化问题（数据显示为 null）
+  - 优化分组逻辑：按 0.5 天分段（0-0.5天、0.5-1天...）
+  - 图表颜色改为 `#7BC0F7`
+
+**新增文件**：
+- `colors.py` - 颜色配置模块
+
+**更新文件**：
+- `config.py` - 简化，导入 COLORS
+- `views/chart_views.py` - 颜色配置化 + 修复周期图表修复
+- `views/detail_view.py` - 颜色配置化
+- `views/home_view.py` - 颜色配置化
+- `templates/html_template.py` - 视图按钮优化 + 标题颜色
+
+**备份文件**：
+- `versions/v3.4.4_modular_backup.zip`
+
+---
+
 ## v3.4.3 (2026-05-31)
 
 **更新内容**：
@@ -631,3 +745,5 @@
 | v3.4.1 | versions/v3.4.1_modular_backup.zip | 明细视图样式优化 + 筛选修复 |
 | v3.4.2 | versions/v3.4.2_modular_backup.zip | 截图功能实现 + dom-to-image-more库 |
 | v3.4.3 | versions/v3.4.3_modular_backup.zip | 双平台推送 + 历史版本归档 + 固定Pages文件名 |
+| v3.4.4 | versions/v3.4.4_modular_backup.zip | 颜色配置独立 + 视图按钮优化 + 修复周期图表修复 |
+| v3.4.5 | versions/v3.4.5_modular_backup.zip | 缺陷预警卡片高度同步修复 |

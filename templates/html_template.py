@@ -3,7 +3,7 @@ HTML模板模块
 负责组装完整的HTML报告页面
 """
 
-from config import TITLE, SUBTITLE, OUTPUT_FILE
+from config import TITLE, SUBTITLE, OUTPUT_FILE, COLORS
 from views.home_view import get_home_view_css, get_home_view_js
 
 
@@ -47,8 +47,8 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
         .chart-card {{ height: 100%; }}
         .chart-toolbar {{ position: absolute; top: 10px; right: 15px; display: flex; gap: 6px; z-index: 10; }}
         .chart-btn {{ width: 32px; height: 32px; border-radius: 8px; border: none; background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf0 100%); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #7c8a9a; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }}
-        .chart-btn:hover {{ background: linear-gradient(135deg, #e0e4e8 0%, #d4d8dc 100%); color: #667eea; transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.12); }}
-        .chart-btn.active {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 3px 8px rgba(102,126,234,0.3); }}
+        .chart-btn:hover {{ background: linear-gradient(135deg, #e0e4e8 0%, #d4d8dc 100%); color: #1C91FD; transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.12); }}
+        .chart-btn.active {{ background: #1c91fd40; color: white; border: 1.5px solid #ffffff; box-shadow: 0 3px 8px #1c91fd3d; }}
         .chart-container {{ min-height: 350px; }}
         .table-container {{ display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 20px; background: white; z-index: 5; overflow: hidden; }}
         .table-container.active {{ display: flex; flex-direction: column; }}
@@ -59,7 +59,7 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
         .data-table td {{ padding: 6px 10px; border-bottom: 1px solid #eee; color: #555; white-space: nowrap; }}
         .data-table tr:hover td {{ background: #f9f9f9; }}
         .metrics-container {{ width: 100%; }}
-        .metrics-title {{ text-align: center; font-size: 16px; color: #2c3e50; font-weight: bold; margin-bottom: 20px; font-family: 'Microsoft YaHei'; }}
+        .metrics-title {{ text-align: center; font-size: 16px; color: #103979; font-weight: bold; margin-bottom: 20px; font-family: 'Microsoft YaHei'; }}
         .metrics-row {{ display: flex; gap: 20px; justify-content: stretch; width: 100%; }}
         .metric-card {{ flex: 1; height: 120px; border-radius: 12px; display: flex; flex-direction: column; align-items: stretch; justify-content: center; transition: all 0.3s ease; cursor: default; padding: 15px 18px; position: relative; }}
         .metric-card:hover {{ transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }}
@@ -88,16 +88,16 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
         .view-btn {{ padding: 10px 20px; border-radius: 25px; border: 2px solid transparent; background: rgba(145, 202, 255, 0.5); color: #ffffff; font-family: 'Microsoft YaHei'; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(22,119,255,0.1); display: inline-flex; align-items: center; }}
         .view-btn:hover {{ background: rgba(186, 224, 255, 0.7); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(22,119,255,0.2); }}
         .view-btn.active {{ background: rgba(145, 202, 255, 0.5); color: #ffffff; font-weight: 600; box-shadow: 0 4px 20px rgba(22,119,255,0.2); border: 2px solid rgba(255,255,255,0.85); }}
-        .view-btn.home-btn {{ padding: 10px 14px; border-radius: 50%; }}
+        .view-btn.home-btn {{ padding: 10px; border-radius: 50%; }}
         .view-btn.home-btn.active {{ background: rgba(145, 202, 255, 0.5); border: 2px solid rgba(255,255,255,0.85); }}
-        .view-btn.screenshot-btn {{ padding: 10px 14px; border-radius: 50%; }}
+        .view-btn.screenshot-btn {{ padding: 10px; border-radius: 50%; }}
         .view-btn svg {{ flex-shrink: 0; }}
         .modal-overlay {{ position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 1000; display: none; align-items: center; justify-content: center; }}
         .modal-overlay.active {{ display: flex; }}
         .modal-content {{ background: white; border-radius: 16px; padding: 20px; max-width: 95vw; max-height: 95vh; overflow: auto; position: relative; animation: modalIn 0.3s ease; }}
         @keyframes modalIn {{ from {{ transform: scale(0.9); opacity: 0; }} to {{ transform: scale(1); opacity: 1; }} }}
-        .modal-close {{ position: absolute; top: 10px; right: 15px; width: 32px; height: 32px; border-radius: 50%; border: none; background: #f0f0f0; cursor: pointer; font-size: 18px; color: #666; transition: all 0.3s ease; }}
-        .modal-close:hover {{ background: #e74c3c; color: white; transform: rotate(90deg); }}
+        .modal-close {{ position: absolute; top: 10px; right: 15px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid #eee; background: #fff; cursor: pointer; font-size: 18px; color: #1C91FD; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; z-index: 10; pointer-events: auto; }}
+        .modal-close:hover {{ background: #1C91FD; border-color: #1C91FD; color: white; transform: rotate(90deg); }}
         .modal-chart {{ width: 1000px; height: 650px; }}
         .screenshot-modal {{ position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 2000; display: none; align-items: center; justify-content: center; }}
         .screenshot-modal.active {{ display: flex; }}
@@ -128,8 +128,8 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
         <div class="header" style="position: relative;">
             <div class="view-switch">
                 <button class="view-btn home-btn active" data-view="home" onclick="switchView('home')"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
-                <button class="view-btn" data-view="chart" onclick="switchView('chart')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zm-2-2h-2v-6h2v6zm-4 0h-2v-4h2v4zm-4 0h-2v-8h2v8z"/></svg>图表</button>
-                <button class="view-btn" data-view="detail" onclick="switchView('detail')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px"><path d="M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h18v2H3v-2zm0 4h12v2H3v-2zm0 4h8v2H3v-2z"/></svg>明细</button>
+                <button class="view-btn home-btn" data-view="chart" onclick="switchView('chart')" title="图表"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zm-2-2h-2v-6h2v6zm-4 0h-2v-4h2v4zm-4 0h-2v-8h2v8z"/></svg></button>
+                <button class="view-btn home-btn" data-view="detail" onclick="switchView('detail')" title="明细"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h18v2H3v-2zm0 4h12v2H3v-2zm0 4h8v2H3v-2z"/></svg></button>
                 <button class="view-btn screenshot-btn" onclick="screenshotReport()" title="截图"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15.2A3.2 3.2 0 1 0 12 8.8a3.2 3.2 0 0 0 0 6.4z"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg></button>
             </div>
             <h1>{TITLE}</h1>
@@ -158,9 +158,9 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
         </div>
     </div>
 
-    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal-overlay" id="modalOverlay">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <button class="modal-close" onclick="closeEnlargeModal()">&times;</button>
             <div id="modalChart" class="modal-chart"></div>
         </div>
     </div>
@@ -238,15 +238,19 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
 
             if (tableDiv.classList.contains('active')) {{
                 tableDiv.classList.remove('active');
-                chartDiv.style.display = 'block';
+                chartDiv.style.visibility = 'visible';
                 var customLegend = wrapper.querySelector('.custom-legend');
                 if (customLegend) customLegend.style.display = 'block';
                 toggleBtn.classList.remove('active');
-                var chart = echarts.getInstanceByDom(document.getElementById(chartId));
-                if (chart) chart.resize();
+                setTimeout(function() {{
+                    var chart = echarts.getInstanceByDom(document.getElementById(chartId));
+                    if (chart) {{
+                        chart.resize();
+                    }}
+                }}, 100);
             }} else {{
                 tableDiv.classList.add('active');
-                chartDiv.style.display = 'none';
+                chartDiv.style.visibility = 'hidden';
                 var customLegend = wrapper.querySelector('.custom-legend');
                 if (customLegend) customLegend.style.display = 'none';
                 toggleBtn.classList.add('active');
@@ -371,13 +375,19 @@ def build_html_template(total, metrics_html, charts_html, trend_chart_html, deta
             modalChart.setOption(option);
         }}
 
-        function closeModal(event) {{
-            if (event && event.target !== document.getElementById('modalOverlay')) return;
+        function closeEnlargeModal() {{
             var modal = document.getElementById('modalOverlay');
             modal.classList.remove('active');
             var modalChart = echarts.getInstanceByDom(document.getElementById('modalChart'));
             if (modalChart) modalChart.dispose();
         }}
+
+        // 点击遮罩层关闭放大弹窗
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {{
+            if (e.target === this) {{
+                closeEnlargeModal();
+            }}
+        }});
 
         function switchView(view) {{
             var homeView = document.getElementById('homeView');

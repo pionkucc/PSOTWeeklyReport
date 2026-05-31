@@ -5,6 +5,7 @@
 
 import json
 import pandas as pd
+from config import COLORS
 
 
 def create_detail_view_html(df, total):
@@ -20,25 +21,28 @@ def create_detail_view_html(df, total):
         '缺陷修复周期(天)': '修复周期(天)'
     }
 
-    # 定义弹窗明细列及中文名
+    # 定义弹窗明细列及中文名（与主视图缺陷预警一致）
     detail_cols = {
         '缺陷编号': '缺陷编号',
+        '产品线': '产品线',
+        '产品模块': '产品模块',
         '缺陷状态': '缺陷状态',
         '缺陷摘要': '缺陷摘要',
         '优先级': '优先级',
-        '严重程度': '严重程度',
+        df.columns[9]: '登记人',
         '处理人员': '处理人员',
+        df.columns[11]: '登记时间',
+        df.columns[12]: '修复时间',
+        df.columns[13]: '关闭时间',
         '发现阶段': '发现阶段',
         '引入阶段': '引入阶段',
         '引入原因': '引入原因',
         '缺陷来源': '缺陷来源',
+        '返工次数': '返工次数',
+        '严重程度': '严重程度',
         '缺陷类型': '缺陷类型',
-        df.columns[9]: '登记人',
-        df.columns[11]: '登记时间',
-        df.columns[12]: '修改时间',
-        df.columns[13]: '关闭时间',
-        '缺陷修复周期(天)': '修复周期(天)',
-        '缺陷关闭周期(天)': '关闭周期(天)'
+        '缺陷修复周期(天)': '缺陷修复周期(天)',
+        '缺陷关闭周期(天)': '缺陷关闭周期(天)'
     }
 
     # 时间列名
@@ -153,7 +157,7 @@ def create_detail_view_html(df, total):
                     @change="onFilterChange"
                 ></el-date-picker>
             </div>
-            <el-button size="small" style="border-color: #1C91FD; color: #1C91FD; background: #fff;" @click="resetFilters">重置</el-button>
+            <el-button size="small" style="border-color: ''' + COLORS['theme']['primary'] + '''; color: ''' + COLORS['theme']['primary'] + '''; background: #fff;" @click="resetFilters">重置</el-button>
         </div>
         <div class="filter-row filter-row-extra">
             <span class="filter-stats">共 {{ filteredCount }} 条</span>
@@ -172,7 +176,7 @@ def create_detail_view_html(df, total):
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(row, idx) in filteredData" :key="idx" @dblclick="showDetail(filteredIndices[idx])">
+                <tr v-for="(row, idx) in filteredData" :key="idx" @click="showDetail(filteredIndices[idx])">
                     <td v-for="(key, colIdx) in colKeys" :key="colIdx" :class="key === \'缺陷摘要\' ? \'summary-cell\' : \'\'">
                         <span v-if="key === \'缺陷状态\'" :class="\'status-tag status-\' + row[key]">{{ row[key] }}</span>
                         <span v-else-if="key === \'优先级\'" :class="getPriorityClass(row[key])">{{ row[key] }}</span>
@@ -183,18 +187,24 @@ def create_detail_view_html(df, total):
         </table>
     </div>
 
-    <el-dialog v-model="modalVisible" title="缺陷明细" width="600px" :close-on-click-modal="true" destroy-on-close>
-        <div class="modal-body">
-            <div v-for="(key, i) in detailKeys" :key="i" class="detail-item">
-                <div class="detail-label">{{ detailColNames[i] }}</div>
-                <div class="detail-value">
-                    <span v-if="key === \'缺陷状态\'" :class="\'status-tag status-\' + detailData[key]">{{ detailData[key] || \'--\' }}</span>
-                    <span v-else-if="key === \'优先级\'" :class="getPriorityClass(detailData[key])">{{ detailData[key] || \'--\' }}</span>
-                    <span v-else>{{ detailData[key] || \'--\' }}</span>
+    <div v-if="modalVisible" class="detail-modal-overlay active" @click.self="closeModal">
+        <div class="detail-modal">
+            <div class="detail-modal-header">
+                <span class="detail-modal-title">缺陷详情 - {{ detailData['缺陷编号'] || '' }}</span>
+                <button class="detail-modal-close" @click="closeModal">&times;</button>
+            </div>
+            <div class="detail-modal-body">
+                <div v-for="(key, i) in detailKeys" :key="i" class="detail-item">
+                    <div class="detail-label">{{ detailColNames[i] }}</div>
+                    <div class="detail-value">
+                        <span v-if="key === \'缺陷状态\'" :class="\'status-tag status-\' + detailData[key]">{{ detailData[key] || \'--\' }}</span>
+                        <span v-else-if="key === \'优先级\'" :class="getPriorityClass(detailData[key])">{{ detailData[key] || \'--\' }}</span>
+                        <span v-else>{{ detailData[key] || \'--\' }}</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </el-dialog>
+    </div>
 </div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus/dist/index.css">
@@ -205,24 +215,30 @@ def create_detail_view_html(df, total):
     #detailVueApp .filter-row-extra { margin-top: 10px; justify-content: space-between; padding-top: 10px; border-top: 1px dashed #eee; }
     #detailVueApp .filter-group { display: flex; align-items: center; gap: 6px; }
     #detailVueApp .filter-label { font-family: \'Microsoft YaHei\'; font-size: 13px; color: #555; white-space: nowrap; }
-    #detailVueApp .filter-stats { font-family: \'Microsoft YaHei\'; font-size: 13px; color: #1C91FD; }
+    #detailVueApp .filter-stats { font-family: \'Microsoft YaHei\'; font-size: 13px; color: ''' + COLORS['theme']['primary'] + '''; }
     #detailVueApp .filter-toggle { font-family: \'Microsoft YaHei\'; font-size: 12px; color: #999; padding: 0; }
-    #detailVueApp .filter-toggle:hover { color: #1C91FD; }
+    #detailVueApp .filter-toggle:hover { color: ''' + COLORS['theme']['primary'] + '''; }
     #detailVueApp .arrow-up, #detailVueApp .arrow-down { display: inline-block; width: 0; height: 0; margin-left: 4px; vertical-align: middle; }
     #detailVueApp .arrow-up { border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 5px solid currentColor; }
     #detailVueApp .arrow-down { border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid currentColor; }
     #detailVueApp .filter-collapsed .filter-row:not(.filter-row-extra) { max-height: 0; overflow: hidden; margin: 0; padding: 0; }
     #detailVueApp .filter-collapsed .filter-row-extra { margin-top: 0; padding-top: 0; border-top: none; }
-    #detailVueApp .detail-table-container { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow-x: auto; }
+    #detailVueApp .detail-table-container { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
     #detailVueApp .detail-table { width: 100%; border-collapse: collapse; font-family: \'Microsoft YaHei\'; font-size: 13px; }
-    #detailVueApp .detail-table th { background: #f5f5f5; color: #666; padding: 12px 10px; text-align: left; font-weight: normal; white-space: nowrap; border-bottom: 1px solid #eee; }
-    #detailVueApp .detail-table th:first-child { border-radius: 8px 0 0 0; }
-    #detailVueApp .detail-table th:last-child { border-radius: 0 8px 0 0; }
+    #detailVueApp .detail-table thead { background: #1C91FD; }
+    #detailVueApp .detail-table th { background: #1C91FD; color: #fff; padding: 12px 10px; text-align: left; font-weight: bold; white-space: nowrap; border-bottom: none; }
+    #detailVueApp .detail-table th:first-child { padding-left: 16px; }
+    #detailVueApp .detail-table th:last-child { padding-right: 16px; }
     #detailVueApp .detail-table tbody tr { transition: all 0.15s; cursor: pointer; }
-    #detailVueApp .detail-table tbody tr:hover { background: #fafafa; transform: scale(1.01); }
+    #detailVueApp .detail-table tbody tr:hover { background: #fafafa; }
     #detailVueApp .detail-table td { padding: 10px; border-bottom: 1px solid #f0f0f0; color: #444; }
+    #detailVueApp .detail-table td:first-child { padding-left: 16px; }
+    #detailVueApp .detail-table td:last-child { padding-right: 16px; }
     #detailVueApp .detail-table tbody tr:last-child td { border-bottom: none; }
-    #detailVueApp .detail-table .col-0 { width: 130px; color: #1C91FD; }
+    #detailVueApp .detail-table tbody tr:last-child td:first-child { border-bottom-left-radius: 12px; }
+    #detailVueApp .detail-table tbody tr:last-child td:last-child { border-bottom-right-radius: 12px; }
+    #detailVueApp .detail-table .col-0 { width: 130px; }
+    #detailVueApp .detail-table td.col-0 { color: #1C91FD; }
     #detailVueApp .detail-table .col-1 { width: 80px; }
     #detailVueApp .detail-table .col-2 { min-width: 180px; }
     #detailVueApp .detail-table .col-3 { width: 60px; }
@@ -232,34 +248,99 @@ def create_detail_view_html(df, total):
     #detailVueApp .detail-table td.summary-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 250px; }
     #detailVueApp .detail-table td.summary-cell:hover { white-space: normal; word-break: break-all; background: #fff; box-shadow: 0 2px 8px rgba(170,150,218,0.2); z-index: 10; position: relative; border-radius: 4px; padding: 10px; }
     #detailVueApp .status-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
-    #detailVueApp .status-New { background: #FFF9C4; color: #F9A825; }
-    #detailVueApp .status-Closed { background: #E8F5E9; color: #66BB6A; }
-    #detailVueApp .status-Fixed { background: #E0F7FA; color: #4DD0E1; }
-    #detailVueApp .status-Pending { background: #F3E5F5; color: #AB47BC; }
-    #detailVueApp .status-ReOpen { background: #FFEBEE; color: #EF5350; }
-    #detailVueApp .priority-high { color: #EF5350; }
-    #detailVueApp .priority-medium { color: #FFA726; }
-    #detailVueApp .priority-low { color: #1C91FD; }
+    #detailVueApp .status-New { background: ''' + COLORS['status_detail']['New']['bg'] + '''; color: ''' + COLORS['status_detail']['New']['text'] + '''; }
+    #detailVueApp .status-Closed { background: ''' + COLORS['status_detail']['Closed']['bg'] + '''; color: ''' + COLORS['status_detail']['Closed']['text'] + '''; }
+    #detailVueApp .status-Fixed { background: ''' + COLORS['status_detail']['Fixed']['bg'] + '''; color: ''' + COLORS['status_detail']['Fixed']['text'] + '''; }
+    #detailVueApp .status-Pending { background: ''' + COLORS['status_detail']['Pending']['bg'] + '''; color: ''' + COLORS['status_detail']['Pending']['text'] + '''; }
+    #detailVueApp .status-ReOpen { background: ''' + COLORS['status_detail']['ReOpen']['bg'] + '''; color: ''' + COLORS['status_detail']['ReOpen']['text'] + '''; }
+    #detailVueApp .priority-high { color: ''' + COLORS['priority_detail']['高'] + '''; }
+    #detailVueApp .priority-medium { color: ''' + COLORS['priority_detail']['中'] + '''; }
+    #detailVueApp .priority-low { color: ''' + COLORS['priority_detail']['低'] + '''; }
     #detailVueApp .modal-body { padding: 10px 0; }
     #detailVueApp .detail-item { display: flex; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; background: #fff; transition: all 0.2s; }
     #detailVueApp .detail-item:hover { background: #fafafa; transform: translateX(6px); }
     #detailVueApp .detail-item:last-child { margin-bottom: 0; }
-    #detailVueApp .detail-label { width: 90px; flex-shrink: 0; font-family: \'Microsoft YaHei\'; font-size: 13px; color: #1C91FD; font-weight: bold; }
+    #detailVueApp .detail-label { width: 90px; flex-shrink: 0; font-family: \'Microsoft YaHei\'; font-size: 13px; color: ''' + COLORS['theme']['primary'] + '''; font-weight: bold; }
     #detailVueApp .detail-value { flex: 1; font-family: \'Microsoft YaHei\'; font-size: 13px; color: #333; word-break: break-all; }
-    /* el-dialog 毛玻璃背景 */
-    .el-overlay { background: rgba(170,150,218,0.15) !important; backdrop-filter: blur(8px) !important; }
-    /* el-dialog 弹窗样式 */
-    .el-dialog { border-radius: 16px !important; box-shadow: 0 12px 40px rgba(170,150,218,0.25) !important; animation: dialogPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important; }
-    @keyframes dialogPop { from { transform: scale(0.8) translateY(-30px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-    .el-dialog__header { background: #f8f9fa !important; border-radius: 16px 16px 0 0 !important; padding: 16px 20px !important; border-bottom: 1px solid #eee !important; display: flex !important; align-items: center !important; justify-content: space-between !important; }
-    .el-dialog__title { font-family: \'Microsoft YaHei\' !important; color: #1C91FD !important; font-size: 16px !important; }
-    .el-dialog__headerbtn { position: relative !important; top: 0 !important; right: 0 !important; width: 32px !important; height: 32px !important; background: #fff !important; border: 1px solid #eee !important; border-radius: 50% !important; transition: all 0.3s !important; display: flex !important; align-items: center !important; justify-content: center !important; }
-    .el-dialog__headerbtn:hover { transform: rotate(90deg); background: #1C91FD !important; border-color: #1C91FD !important; }
-    .el-dialog__headerbtn .el-dialog__close { color: #1C91FD !important; font-size: 16px !important; }
-    .el-dialog__headerbtn:hover .el-dialog__close { color: #fff !important; }
-    .el-dialog__body { padding: 20px !important; max-height: 60vh !important; overflow-y: auto !important; }
-    .el-dialog__body::-webkit-scrollbar { width: 4px; }
-    .el-dialog__body::-webkit-scrollbar-thumb { background: #1C91FD; border-radius: 2px; }
+    /* 自定义弹窗样式（与主视图一致） */
+    .detail-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #1c91fd0d;
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    .detail-modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    .detail-modal {
+        background: white;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow: hidden;
+        box-shadow: 0 12px 40px rgba(170,150,218,0.25);
+        transform: scale(0.8) translateY(-30px);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .detail-modal-overlay.active .detail-modal {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+    .detail-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        background: #f8f9fa;
+        border-radius: 16px 16px 0 0;
+        border-bottom: 1px solid #eee;
+    }
+    .detail-modal-title {
+        font-family: \'Microsoft YaHei\';
+        font-size: 16px;
+        color: ''' + COLORS['theme']['primary'] + ''';
+        font-weight: 600;
+    }
+    .detail-modal-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #fff;
+        border: 1px solid #eee;
+        color: ''' + COLORS['theme']['primary'] + ''';
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+    .detail-modal-close:hover {
+        transform: rotate(90deg);
+        background: ''' + COLORS['theme']['primary'] + ''';
+        border-color: ''' + COLORS['theme']['primary'] + ''';
+        color: #fff;
+    }
+    .detail-modal-body {
+        padding: 20px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    .detail-modal-body::-webkit-scrollbar { width: 4px; }
+    .detail-modal-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
@@ -381,6 +462,9 @@ def create_detail_view_html(df, total):
             showDetail(idx) {
                 this.detailData = appData.allDetailData[idx] || {};
                 this.modalVisible = true;
+            },
+            closeModal() {
+                this.modalVisible = false;
             }
         }
     });

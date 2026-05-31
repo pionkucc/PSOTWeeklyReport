@@ -49,7 +49,7 @@ def create_pie_chart(data, title, hole=0.4, colors=None, height="350px", outer_r
         label_opts=opts.LabelOpts(
             formatter="{d}%",
             font_size=14,
-            color="#34495e",
+            color=COLORS['text']['body'],
             font_family="Microsoft YaHei"
         )
     )
@@ -138,7 +138,7 @@ def create_horizontal_bar_with_legend(data, title, colors=None, chart_id="chart"
         title_opts=opts.TitleOpts(
             title=title,
             pos_left="center",
-            title_textstyle_opts=opts.TextStyleOpts(font_size=16, color="#2c3e50", font_family="Microsoft YaHei")
+            title_textstyle_opts=opts.TextStyleOpts(font_size=16, color=COLORS['text']['primary'], font_family="Microsoft YaHei")
         ),
         tooltip_opts=opts.TooltipOpts(
             trigger="axis",
@@ -159,7 +159,7 @@ def create_horizontal_bar_with_legend(data, title, colors=None, chart_id="chart"
 
     options = bar.dump_options()
     legend_items = ''.join([
-        f'<span class="legend-item" data-index="{i}" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:{colors[i]};border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">{cat}</span></span>'
+        f'<span class="legend-item" data-index="{i}" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:{colors[i]};border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:{COLORS["text"]["light"]};">{cat}</span></span>'
         for i, cat in enumerate(categories)
     ])
 
@@ -261,7 +261,7 @@ def create_vertical_bar_with_legend(data, title, colors=None, chart_id="chart", 
         title_opts=opts.TitleOpts(
             title=title,
             pos_left="center",
-            title_textstyle_opts=opts.TextStyleOpts(font_size=16, color="#2c3e50", font_family="Microsoft YaHei")
+            title_textstyle_opts=opts.TextStyleOpts(font_size=16, color=COLORS['text']['primary'], font_family="Microsoft YaHei")
         ),
         tooltip_opts=opts.TooltipOpts(
             trigger="axis",
@@ -281,7 +281,7 @@ def create_vertical_bar_with_legend(data, title, colors=None, chart_id="chart", 
 
     options = bar.dump_options()
     legend_items = ''.join([
-        f'<span class="legend-item" data-index="{i}" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:{colors[i]};border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:#333;">{cat}</span></span>'
+        f'<span class="legend-item" data-index="{i}" style="cursor:pointer;display:inline-block;margin:0 8px;"><span style="display:inline-block;width:14px;height:14px;background:{colors[i]};border-radius:2px;margin-right:4px;"></span><span style="font-family:Microsoft YaHei;font-size:11px;color:{COLORS["text"]["light"]};">{cat}</span></span>'
         for i, cat in enumerate(categories)
     ])
 
@@ -344,18 +344,20 @@ def create_histogram(data, title, height="300px"):
         bar.set_global_opts(title_opts=opts.TitleOpts(title=title, pos_left="center"))
         return bar
 
-    max_val = int(data.max())
-    bins = list(range(0, max_val + 2))
+    # 按数值范围分组：0-0.5, 0.5-1, 1-1.5, 1.5-2, 2-2.5, 2.5-3, 3+
+    bins = [0, 0.5, 1, 1.5, 2, 2.5, 3, float('inf')]
+    x_labels = ['0-0.5天', '0.5-1天', '1-1.5天', '1.5-2天', '2-2.5天', '2.5-3天', '3天以上']
+
     hist, bin_edges = np.histogram(data, bins=bins)
 
-    x_labels = [f"{int(bin_edges[i])}-{int(bin_edges[i+1])}" for i in range(len(hist))]
-    non_empty = [(x, h) for x, h in zip(x_labels, hist) if h > 0]
+    # 过滤掉空分组
+    non_empty = [(x, int(h)) for x, h in zip(x_labels, hist) if h > 0]
     if non_empty:
         x_labels, hist = zip(*non_empty)
         x_labels = list(x_labels)
         hist = list(hist)
     else:
-        x_labels = ["0"]
+        x_labels = ["暂无数据"]
         hist = [0]
 
     mean_val = data.mean()
@@ -375,7 +377,7 @@ def create_histogram(data, title, height="300px"):
 
     bar.set_series_opts(
         itemstyle_opts=opts.ItemStyleOpts(
-            color="#7FB3D5",
+            color="#7BC0F7",
             border_color="white",
             border_width=2,
             opacity=0.85
@@ -388,10 +390,10 @@ def create_histogram(data, title, height="300px"):
             pos_left="center",
             subtitle=f"平均 {mean_val:.1f}天",
             title_textstyle_opts=opts.TextStyleOpts(
-                font_size=16, color="#2c3e50", font_family="Microsoft YaHei"
+                font_size=16, color=COLORS['text']['primary'], font_family="Microsoft YaHei"
             ),
             subtitle_textstyle_opts=opts.TextStyleOpts(
-                font_size=12, color="#E74C3C", font_family="Microsoft YaHei"
+                font_size=12, color=COLORS['theme']['danger'], font_family="Microsoft YaHei"
             )
         ),
         tooltip_opts=opts.TooltipOpts(
@@ -400,7 +402,7 @@ def create_histogram(data, title, height="300px"):
             extra_css_text=TOOLTIP_CSS
         ),
         xaxis_opts=opts.AxisOpts(
-            name="修复周期(天)",
+            name="修复周期",
             axislabel_opts=opts.LabelOpts(font_family="Microsoft YaHei", font_size=10)
         ),
         yaxis_opts=opts.AxisOpts(
@@ -439,12 +441,14 @@ def create_metrics_cards_html(df, total, task_count, subtask_count):
     min_fix_time_str = f'{min_fix_time:.0f}天' if min_fix_time > 0 else '--'
 
     cards = [
-        ('任务项', f'{task_count}个', 'linear-gradient(135deg, rgba(168, 216, 234, 0.7) 0%, rgba(184, 224, 210, 0.7) 100%)', 'icon-task', f'子任务项{subtask_count}个'),
-        ('平均修复时长', avg_fix_time_str, 'linear-gradient(135deg, rgba(247, 220, 111, 0.7) 0%, rgba(249, 213, 167, 0.7) 100%)', 'icon-clock', f'最大{max_fix_time_str}<br>最小{min_fix_time_str}'),
-        ('遗留缺陷', f'{legacy_count}个', 'linear-gradient(135deg, rgba(130, 224, 170, 0.7) 0%, rgba(168, 232, 234, 0.7) 100%)', 'icon-bug', f'关闭率{close_rate:.1f}%'),
-        ('基本流占比', f'{basic_flow_rate:.1f}%', 'linear-gradient(135deg, rgba(240, 178, 122, 0.7) 0%, rgba(252, 186, 211, 0.7) 100%)', 'icon-chart', f'{basic_flow}/{total}个'),
-        ('返工率', f'{rework_rate:.1f}%', 'linear-gradient(135deg, rgba(170, 150, 218, 0.7) 0%, rgba(214, 234, 223, 0.7) 100%)', 'icon-refresh', f'{rework}/{total}个')
+        ('任务项', f'{task_count}个', COLORS['metric_cards']['任务项'], 'icon-task', f'子任务项{subtask_count}个'),
+        ('平均修复时长', avg_fix_time_str, COLORS['metric_cards']['平均修复时长'], 'icon-clock', f'最大{max_fix_time_str}<br>最小{min_fix_time_str}'),
+        ('遗留缺陷', f'{legacy_count}个', COLORS['metric_cards']['遗留缺陷'], 'icon-bug', f'关闭率{close_rate:.1f}%'),
+        ('基本流占比', f'{basic_flow_rate:.1f}%', COLORS['metric_cards']['基本流占比'], 'icon-chart', f'{basic_flow}/{total}个'),
+        ('返工率', f'{rework_rate:.1f}%', COLORS['metric_cards']['返工率'], 'icon-screenshot', f'{rework}/{total}个')
     ]
+
+    value_color = COLORS['metric_cards']['value_color']
 
     cards_html = ''.join([
         f'<div class="metric-card" style="background:{c[2]}">'
@@ -452,7 +456,7 @@ def create_metrics_cards_html(df, total, task_count, subtask_count):
         f'<span class="metric-name">{c[0]}</span>'
         f'<div class="metric-icon {c[3]}"></div>'
         f'</div>'
-        f'<div class="metric-value">{c[1]}</div>'
+        f'<div class="metric-value" style="color:{value_color}">{c[1]}</div>'
         f'<div class="metric-subtitle">{c[4]}</div>'
         f'</div>'
         for c in cards

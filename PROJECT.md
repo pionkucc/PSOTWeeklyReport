@@ -66,6 +66,7 @@ python auto_push.py
 F:\AI\Claude Code\Weekly_Report\
 ├── defect_quality_report.py    # 主入口程序
 ├── config.py                   # 配置常量模块（动态文件名生成）
+├── colors.py                   # 颜色配置模块（独立管理）
 ├── data_processor.py           # 数据处理模块
 ├── auto_push.py                # 本地自动推送脚本（不提交到仓库）
 ├── requirements.txt            # Python依赖清单
@@ -89,7 +90,10 @@ F:\AI\Claude Code\Weekly_Report\
 │   ├── v3.3_modular_backup.zip # v3.3备份
 │   ├── v3.4_modular_backup.zip # v3.4备份
 │   ├── v3.4.2_modular_backup.zip # v3.4.2备份
-│   └── v3.4.3_modular_backup.zip # v3.4.3备份
+│   ├── v3.4.3_modular_backup.zip # v3.4.3备份
+│   ├── v3.4.4_modular_backup.zip # v3.4.4备份
+│   ├── v3.4.5_modular_backup.zip # v3.4.5备份
+│   └── v3.5_modular_backup.zip # v3.5备份
 ├── history_reports/             # 历史报告归档目录
 │   └── PSOT_Weekly_Report_*.html # 带日期的历史版本
 ├── 缺陷明细.xlsx                # 数据源
@@ -113,6 +117,7 @@ F:\AI\Claude Code\Weekly_Report\
 | `TOOLTIP_CSS` | str | Tooltip样式常量 |
 | `OVERDUE_DAYS` | int | 缺陷超期天数阈值，默认3 |
 | `REWORK_THRESHOLD` | int | 返工次数阈值，默认3 |
+| `SHOW_STATS_DATA` | bool | 是否显示明细统计数据，默认True |
 
 **SUBTITLE支持格式**：
 - `"2026-05-18 ~ 2026-05-22"`
