@@ -4,12 +4,10 @@
 
 ## 在线访问
 
-- **GitHub Pages**: https://pionkucc.github.io/PSOTWeeklyReport/PSOT_Weekly_Report_2026.05.25-2026.05.29.html
-- **GitLab Pages**: https://psot-qc.pages.jihulab.com/weekly-report-project/PSOT_Weekly_Report_2026.05.25-2026.05.29.html
+- **GitHub Pages**: https://pionkucc.github.io/PSOTWeeklyReport/PSOT_Weekly_Report.html
 - **GitHub 仓库**: https://github.com/pionkucc/PSOTWeeklyReport
-- **GitLab 仓库**: https://jihulab.com/psot-qc/weekly-report-project
 
-> 注：仓库均为私有，但 Pages 公开可访问
+> 注：仓库为私有，但 Pages 公开可访问
 
 ## 快速开始
 
