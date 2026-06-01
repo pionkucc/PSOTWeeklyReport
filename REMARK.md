@@ -436,4 +436,80 @@ if SHOW_STATS_DATA and df is not None and total > 0:
 
 ---
 
-*文档版本：v3.5 (2026-05-31)*
+## 十、v3.5.1 新增功能
+
+### 10.1 HTML文件引用
+
+待协调事项内容支持引用外部HTML文件，解决Excel单元格字符限制：
+
+```python
+# data_processor.py
+# 检测是否是HTML文件路径
+if text_stripped.endswith('.html') or text_stripped.endswith('.htm'):
+    # 读取HTML文件内容
+    with open(file_path, 'r', encoding='utf-8') as f:
+        file_content = f.read()
+        full_text += file_content
+```
+
+**使用方法**：
+- Excel待协调事项内容填写HTML文件路径（如 `/待协调事项文档.html`）
+- 支持相对路径（基于Excel文件目录）和绝对路径
+
+### 10.2 面板图片功能
+
+每个面板支持在内容下方显示图片缩略图：
+
+```python
+# data_processor.py - 读取图片列
+for col_idx in range(3, ws.max_column + 1):
+    image_cell = ws.cell(row=row_idx, column=col_idx)
+    if image_cell.value and not cell_val.startswith('='):
+        # 添加到images列表
+        images.append(full_path)
+
+# views/home_view.py - 渲染缩略图
+def _render_image_thumbnail(image_path):
+    # 图片转base64嵌入
+    image_base64 = base64.b64encode(image_data).decode('utf-8')
+    # 生成缩略图HTML
+    html = f'''
+    <div class="panel-image-section">
+        <div class="image-thumbnail" onclick="showImageModal(...)">
+            <img src="data:{mime_type};base64,{image_base64}" />
+        </div>
+    </div>
+    '''
+```
+
+**使用方法**：
+- Sheet3第3列及后续列填写图片文件路径
+- 图片显示在对应面板内容最下方
+- 点击缩略图弹出放大查看
+
+### 10.3 图片相关CSS
+
+```css
+.panel-image-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+.image-thumbnail {
+    max-width: 200px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.thumbnail-img {
+    max-height: 150px;
+    object-fit: cover;
+}
+.image-modal-overlay {
+    background: rgba(0,0,0,0.85);
+    /* 点击遮罩关闭 */
+}
+```
+
+---
+
+*文档版本：v3.5.1 (2026-06-01)*

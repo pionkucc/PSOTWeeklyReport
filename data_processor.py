@@ -87,9 +87,31 @@ def load_panels_data():
                     'color': cell_color
                 })
 
+        # 读取所有图片路径（从第3列开始的所有列）
+        import os
+        base_dir = os.path.dirname(os.path.abspath(INPUT_FILE))
+        images = []  # 图片列表，按列顺序存储
+
+        for col_idx in range(3, ws.max_column + 1):
+            image_cell = ws.cell(row=row_idx, column=col_idx)
+            if image_cell.value:
+                cell_val = str(image_cell.value).strip()
+                # 跳过Excel公式（如 =DISPIMG(...)）
+                if not cell_val.startswith('='):
+                    # 处理路径
+                    if os.path.isabs(cell_val):
+                        full_path = cell_val
+                    else:
+                        if cell_val.startswith('/'):
+                            cell_val = cell_val[1:]
+                        full_path = os.path.join(base_dir, cell_val)
+                    if os.path.isfile(full_path):
+                        images.append(full_path)
+
         panels.append({
             'title': str(title),
-            'content_parts': content_parts
+            'content_parts': content_parts,
+            'images': images  # 图片列表
         })
 
     wb.close()

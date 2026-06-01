@@ -30,7 +30,20 @@ def create_home_view_html(panels_data, sheet2_data=None, warning_data=None, df=N
     for idx, panel in enumerate(panels_data):
         is_first = (idx == 0)
         is_second = (idx == 1 and sheet2_data is not None)
-        panel_card = _create_panel_card(panel, is_first=is_first, is_second=is_second, sheet2_data=sheet2_data, warning_data=warning_data, df=df, total=total)
+
+        # 每个面板传递自己的图片列表
+        images_to_show = panel.get('images', [])
+
+        panel_card = _create_panel_card(
+            panel,
+            is_first=is_first,
+            is_second=is_second,
+            sheet2_data=sheet2_data,
+            warning_data=warning_data,
+            df=df,
+            total=total,
+            images=images_to_show
+        )
         panels_html.append(panel_card)
 
     panels_html_str = '\n'.join(panels_html)
@@ -46,13 +59,19 @@ def create_home_view_html(panels_data, sheet2_data=None, warning_data=None, df=N
     return html
 
 
-def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None, warning_data=None, df=None, total=0):
+def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None, warning_data=None, df=None, total=0, images=None):
     """创建单个面板卡片HTML"""
     title = panel['title']
     content_parts = panel['content_parts']
 
     if warning_data is None:
         warning_data = {'overdue_rework': [], 'overdue': [], 'rework': [], 'total': 0}
+
+    # 生成所有图片缩略图HTML（如果有）
+    images_html = ''
+    if images and len(images) > 0:
+        for image_path in images:
+            images_html += _render_image_thumbnail(image_path)
 
     if is_first:
         lines_html, stats_html, stats_data_html, defect_html = _render_first_panel_content(content_parts, df, total)
@@ -85,6 +104,7 @@ def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None,
                     </div>
                 </div>
             </div>
+            {images_html}
         </div>
         '''
     elif is_second:
@@ -105,6 +125,7 @@ def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None,
                     {bar_chart_html}
                 </div>
             </div>
+            {images_html}
         </div>
         '''
     elif title == '下周测试计划':
@@ -121,6 +142,7 @@ def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None,
                     {plan_html}
                 </div>
             </div>
+            {images_html}
         </div>
         '''
     elif title == '待协调事项':
@@ -137,6 +159,7 @@ def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None,
                     {coord_html}
                 </div>
             </div>
+            {images_html}
         </div>
         '''
     elif 'UI自动化' in title or '自动化建设' in title:
@@ -155,6 +178,7 @@ def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None,
                 <div class="ui-remaining rich-text-content">
                     {remaining_html}
                 </div>
+                {images_html}
             </div>
         </div>
         '''
@@ -170,10 +194,70 @@ def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None,
                 <div class="panel-content">
                     {lines_html}
                 </div>
+                {images_html}
             </div>
         </div>
         '''
     return html
+
+
+def _render_image_thumbnail(image_path):
+    """
+    渲染图片缩略图HTML，点击可放大查看
+
+    参数:
+        image_path: 图片文件路径
+
+    返回:
+        HTML字符串
+    """
+    import os
+    import base64
+
+    if not image_path or not os.path.isfile(image_path):
+        return ''
+
+    # 读取图片并转换为base64
+    try:
+        with open(image_path, 'rb') as f:
+            image_data = f.read()
+        image_base64 = base64.b64encode(image_data).decode('utf-8')
+
+        # 根据文件扩展名确定MIME类型
+        ext = os.path.splitext(image_path)[1].lower()
+        mime_type = {
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.webp': 'image/webp',
+            '.bmp': 'image/bmp'
+        }.get(ext, 'image/png')
+
+        # 生成唯一ID用于弹窗
+        image_id = f'img_{os.path.basename(image_path).replace(".", "_")}'
+
+        html = f'''
+        <div class="panel-image-section">
+            <div class="image-thumbnail" onclick="showImageModal('{image_id}', '{mime_type}', '{image_base64}')">
+                <img src="data:{mime_type};base64,{image_base64}" alt="附件图片" class="thumbnail-img" />
+                <div class="image-overlay">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                        <path d="M11 8v6"></path>
+                        <path d="M8 11h6"></path>
+                    </svg>
+                    <span>点击放大</span>
+                </div>
+            </div>
+        </div>
+        '''
+        return html
+
+    except Exception as e:
+        print(f'读取图片失败: {image_path}, 错误: {e}')
+        return ''
 
 
 def _render_table_content(df):
@@ -872,17 +956,98 @@ def _render_coord_items(content_parts):
         HTML字符串
     """
     import re
+    import os
     from bs4 import BeautifulSoup
+
+    # 获取当前工作目录（Excel文件所在目录）
+    from config import INPUT_FILE
+    base_dir = os.path.dirname(os.path.abspath(INPUT_FILE))
 
     # 合并所有文本内容
     full_text = ''
     for part in content_parts:
         text = part.get('text', '')
         if text:
-            full_text += text
+            # 检查是否是HTML文件路径（以.html或.htm结尾的路径）
+            text_stripped = text.strip()
+            if text_stripped.endswith('.html') or text_stripped.endswith('.htm'):
+                # 处理路径：支持相对路径和绝对路径
+                if os.path.isabs(text_stripped):
+                    file_path = text_stripped
+                else:
+                    # 相对路径，基于Excel文件所在目录
+                    # 去掉开头的 / 或 ./
+                    if text_stripped.startswith('/'):
+                        text_stripped = text_stripped[1:]
+                    file_path = os.path.join(base_dir, text_stripped)
+
+                # 判断是否是有效的文件路径
+                if os.path.isfile(file_path):
+                    # 读取HTML文件内容
+                    try:
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            file_content = f.read()
+                            full_text += file_content
+                    except Exception as e:
+                        print(f'读取HTML文件失败: {file_path}, 错误: {e}')
+                        full_text += text
+                else:
+                    print(f'HTML文件不存在: {file_path}')
+                    full_text += text
+            else:
+                full_text += text
 
     if not full_text.strip():
         return '<p class="empty-content">暂无内容</p>'
+
+    # 修复HTML转义问题：将 &lt; 和 &gt; 转换回 < 和 >（针对表格标签）
+    # 只修复表格相关的标签
+    full_text = full_text.replace('&lt;td', '<td')
+    full_text = full_text.replace('&lt;/td&gt;', '</td>')
+    full_text = full_text.replace('&lt;tr', '<tr')
+    full_text = full_text.replace('&lt;/tr&gt;', '</tr>')
+    full_text = full_text.replace('&lt;table', '<table')
+    full_text = full_text.replace('&lt;/table&gt;', '</table>')
+    full_text = full_text.replace('&lt;th', '<th')
+    full_text = full_text.replace('&lt;/th&gt;', '</th>')
+    full_text = full_text.replace('&gt;', '>')
+
+    # 修复Excel单元格截断问题（32767字符限制）
+    # 检查是否有未闭合的td标签
+    if '<table' in full_text:
+        td_open_count = full_text.count('<td')
+        td_close_count = full_text.count('</td>')
+
+        if td_open_count > td_close_count:
+            # 找到最后一个完整的</td>位置
+            last_complete_td_end = full_text.rfind('</td>')
+            if last_complete_td_end >= 0:
+                # 找到包含这个td的tr的起始位置
+                tr_start = full_text.rfind('<tr', 0, last_complete_td_end)
+
+                # 截取到tr开始，然后重新构建这个tr
+                # 先截取到最后一个完整td结束
+                truncated = full_text[:last_complete_td_end + len('</td>')]
+
+                # 分析当前tr有多少td
+                tr_section = truncated[tr_start:]
+                current_td_count = tr_section.count('<td')
+
+                # 获取表格第一行的td数量
+                first_tr_start = truncated.find('<tr')
+                first_tr_end = truncated.find('</tr>', first_tr_start)
+                first_tr_section = truncated[first_tr_start:first_tr_end] if first_tr_end >= 0 else truncated[first_tr_start:]
+                first_td_count = first_tr_section.count('<td') + first_tr_section.count('<th')
+
+                # 补齐缺失的td
+                missing_td = first_td_count - current_td_count
+                for _ in range(missing_td):
+                    truncated += '<td></td>'
+
+                # 闭合tr、tbody和table
+                truncated += '</tr></tbody></table>'
+
+                full_text = truncated
 
     items = []
 
@@ -1140,6 +1305,7 @@ def _close_html_tags(html_content):
 
 def _clean_html_tags(html_content):
     """清理HTML标签，确保正确闭合"""
+    # 只处理标签闭合问题，不修改表格结构
     return _close_html_tags(html_content)
 
 
@@ -2054,6 +2220,105 @@ def get_home_view_css():
     .warning-detail-value .priority-高 { color: ''' + COLORS['priority_detail']['高'] + '''; }
     .warning-detail-value .priority-中 { color: ''' + COLORS['priority_detail']['中'] + '''; }
     .warning-detail-value .priority-低 { color: ''' + COLORS['priority_detail']['低'] + '''; }
+
+    /* 图片缩略图样式 */
+    .panel-image-section {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e7eb;
+    }
+    .image-thumbnail {
+        position: relative;
+        display: inline-block;
+        max-width: 200px;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .image-thumbnail:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .thumbnail-img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 150px;
+        object-fit: cover;
+    }
+    .image-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(0,0,0,0.6));
+        color: white;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        font-size: 12px;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    .image-thumbnail:hover .image-overlay {
+        opacity: 1;
+    }
+
+    /* 图片放大弹窗 */
+    .image-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    .image-modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    .image-modal-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 90%;
+    }
+    .image-modal-content img {
+        max-width: 100%;
+        max-height: 90vh;
+        border-radius: 8px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .image-modal-close {
+        position: absolute;
+        top: -40px;
+        right: 0;
+        background: white;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 20px;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s;
+    }
+    .image-modal-close:hover {
+        transform: rotate(90deg);
+    }
     '''
 
 def get_home_view_js():
@@ -2200,6 +2465,42 @@ def get_home_view_js():
     // 关闭详情弹窗
     function closeWarningModal() {
         var modal = document.getElementById('warning-modal-overlay');
+        if (modal) {
+            modal.classList.remove('active');
+            setTimeout(function() {
+                modal.remove();
+            }, 300);
+        }
+    }
+
+    // 显示图片放大弹窗
+    function showImageModal(imageId, mimeType, base64Data) {
+        // 移除已存在的弹窗
+        var existingModal = document.getElementById('image-modal-overlay');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // 创建弹窗HTML
+        var modalHtml = '<div class="image-modal-overlay" id="image-modal-overlay" onclick="closeImageModal(event)">' +
+            '<div class="image-modal-content" onclick="event.stopPropagation()">' +
+            '<button class="image-modal-close" onclick="closeImageModal(event)">&times;</button>' +
+            '<img src="data:' + mimeType + ';base64,' + base64Data + '" alt="放大图片" />' +
+            '</div>' +
+            '</div>';
+
+        // 添加弹窗到页面
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // 显示弹窗
+        setTimeout(function() {
+            document.getElementById('image-modal-overlay').classList.add('active');
+        }, 10);
+    }
+
+    // 关闭图片弹窗
+    function closeImageModal(event) {
+        var modal = document.getElementById('image-modal-overlay');
         if (modal) {
             modal.classList.remove('active');
             setTimeout(function() {

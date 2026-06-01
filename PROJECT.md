@@ -91,7 +91,8 @@ F:\AI\Claude Code\Weekly_Report\
 │   ├── v3.4.3_modular_backup.zip # v3.4.3备份
 │   ├── v3.4.4_modular_backup.zip # v3.4.4备份
 │   ├── v3.4.5_modular_backup.zip # v3.4.5备份
-│   └── v3.5_modular_backup.zip # v3.5备份
+│   ├── v3.5_modular_backup.zip # v3.5备份
+│   └── v3.5.1_modular_backup.zip # v3.5.1备份
 ├── history_reports/             # 历史报告归档目录
 │   └── PSOT_Weekly_Report_*.html # 带日期的历史版本
 ├── 缺陷明细.xlsx                # 数据源
@@ -138,8 +139,8 @@ F:\AI\Claude Code\Weekly_Report\
 - **返回**：处理后的 DataFrame
 
 #### `load_panels_data()`
-- **功能**：读取Sheet3公共面板数据，保留富文本格式
-- **返回**：面板数据列表，每项包含 title 和 content_parts
+- **功能**：读取Sheet3公共面板数据，保留富文本格式，支持多列图片路径
+- **返回**：面板数据列表，每项包含 title、content_parts、images
 
 #### `load_sheet2_data()`
 - **功能**：读取Sheet2测试进度和缺陷统计数据
@@ -193,17 +194,19 @@ F:\AI\Claude Code\Weekly_Report\
 
 **导出函数**：
 
-#### `create_home_view_html(panels_data, sheet2_data, warning_data)`
+#### `create_home_view_html(panels_data, sheet2_data, warning_data, df, total)`
 - **功能**：创建主页视图HTML
 - **参数**：
-  - `panels_data`: 公共面板数据列表
+  - `panels_data`: 公共面板数据列表（含images）
   - `sheet2_data`: Sheet2表格数据DataFrame
   - `warning_data`: 缺陷预警数据字典
+  - `df`: 缺陷明细DataFrame
+  - `total`: 缺陷总数
 - **返回**：HTML字符串
 
 **功能特性**：
 1. **本周测试概况**：两列卡片布局
-   - 测试进度概览：动态提取[xxx]标签、进度指标、缺陷统计
+   - 测试进度概览：动态提取[xxx]标签、进度指标、缺陷统计、明细统计数据
    - 缺陷预警：数据驱动展示
      - 三类预警：超期返工（优先级最高）> 超期 > 返工
      - 展示格式：蓝色圆点 + 缺陷编号 + 处理人标签（浅蓝色）+ 缺陷摘要（省略号截断）+ 浅红色标签
@@ -211,6 +214,7 @@ F:\AI\Claude Code\Weekly_Report\
      - 高度同步左侧卡片，超出滚动
 2. **测试进度和缺陷统计**：表格 + 条形图双卡片
 3. **待协调事项**：特殊渲染
+   - 支持HTML文件引用（解决Excel字符限制）
    - 按序号（如1、）划分事项，蓝色圆形序号
    - 按"——"分隔事项要点和协调人员
    - 协调人员红色样式带警告SVG图标
@@ -225,13 +229,19 @@ F:\AI\Claude Code\Weekly_Report\
    - 三列卡片展示（带SVG图标），min-height 160px
    - 成功/失败动态变色（蓝色/红色）
    - 下方展示剩余富文本内容
-6. **其他章节**：普通富文本渲染
+   - **图片缩略图**：显示在内容下方，点击放大
+6. **其他章节**：普通富文本渲染 + 图片缩略图
+
+#### `_render_image_thumbnail(image_path)`
+- **功能**：渲染图片缩略图HTML
+- **参数**：图片文件路径
+- **返回**：HTML字符串（base64嵌入，点击放大）
 
 #### `get_home_view_css()`
 - **功能**：获取主页视图专用CSS
 
 #### `get_home_view_js()`
-- **功能**：获取主页视图专用JS（tooltip检测、预警弹窗、高度同步）
+- **功能**：获取主页视图专用JS（tooltip检测、预警弹窗、高度同步、图片放大弹窗）
 
 ---
 
@@ -312,8 +322,16 @@ F:\AI\Claude Code\Weekly_Report\
 | 22 | 缺陷关闭周期(天) | 关闭时长 |
 
 **Sheet3 - 公共面板**：
-- 按行存储，每行包含标题和内容
+| 列索引 | 列名 | 说明 |
+|--------|------|------|
+| 0 | 标题 | 面板标题 |
+| 1 | 内容 | 面板内容（支持富文本HTML或HTML文件路径） |
+| 2+ | 图片1、图片2... | 图片文件路径（可选，显示在面板内容下方） |
+
+**特殊功能**：
 - 内容支持富文本格式（HTML）
+- 内容可填写HTML文件路径（如 `/待协调事项文档.html`），解决Excel单元格字符限制
+- 图片列填写图片文件路径，以缩略图形式显示，点击可放大
 
 ---
 

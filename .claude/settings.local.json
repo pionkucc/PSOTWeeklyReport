@@ -75,7 +75,8 @@
       "Bash(unzip -o versions/v2.4.2_modular_backup.zip)",
       "Bash(git checkout *)",
       "Bash(git restore *)",
-      "Bash(powershell -Command \"Compress-Archive -Path 'defect_quality_report.py','config.py','data_processor.py','requirements.txt','.gitignore','auto_push.py','views','templates','.github' -DestinationPath 'versions/v3.4.2_modular_backup.zip' -Force\")"
+      "Bash(powershell -Command \"Compress-Archive -Path 'defect_quality_report.py','config.py','data_processor.py','requirements.txt','.gitignore','auto_push.py','views','templates','.github' -DestinationPath 'versions/v3.4.2_modular_backup.zip' -Force\")",
+      "Bash(dir *.html /b)"
     ]
   }
 }
