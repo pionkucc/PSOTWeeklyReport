@@ -74,10 +74,21 @@ def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None,
             images_html += _render_image_thumbnail(image_path)
 
     if is_first:
-        lines_html, stats_html, stats_data_html, defect_html = _render_first_panel_content(content_parts, df, total)
+        lines_html, stats_html, stats_data_html, defect_html, remaining_html = _render_first_panel_content(content_parts, df, total)
 
         warning_count = warning_data['total']
         warning_list_html = _render_warning_list(warning_data)
+
+        # 构建剩余内容HTML（如果有）
+        remaining_section_html = ''
+        if remaining_html and remaining_html.strip():
+            remaining_section_html = f'''
+                    <div class="remaining-content-section">
+                        <hr class="section-divider" />
+                        <div class="remaining-content rich-text-content">
+                            {remaining_html}
+                        </div>
+                    </div>'''
 
         html = f'''
         <div class="panel-wrapper">
@@ -93,6 +104,7 @@ def _create_panel_card(panel, is_first=False, is_second=False, sheet2_data=None,
                     {stats_html}
                     {stats_data_html}
                     {defect_html}
+                    {remaining_section_html}
                 </div>
                 <div class="panel-card panel-half warning-card">
                     <div class="panel-card-title-wrap">
@@ -419,7 +431,24 @@ def _render_warning_list(warning_data):
         })
 
     if not items:
-        return '<p class="empty-content">暂无预警数据</p>'
+        return '''
+        <div class="empty-warning">
+            <svg class="empty-warning-svg" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="100" cy="80" r="60" fill="#f0f7ff"/>
+                <circle cx="100" cy="80" r="45" fill="#e6f2ff"/>
+                <path d="M100 50L104 70H96L100 50Z" fill="#b3d9ff"/>
+                <rect x="95" y="72" width="10" height="10" rx="5" fill="#b3d9ff"/>
+                <rect x="96" y="86" width="8" height="3" rx="1.5" fill="#b3d9ff"/>
+                <circle cx="55" cy="110" r="8" fill="#d6ecff"/>
+                <circle cx="145" cy="110" r="8" fill="#d6ecff"/>
+                <path d="M52 110L55 106L58 110" stroke="#b3d9ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M142 110L145 106L148 110" stroke="#b3d9ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M70 45Q75 38 82 42" stroke="#c4e0ff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                <path d="M130 45Q125 38 118 42" stroke="#c4e0ff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+            </svg>
+            <p class="empty-warning-text">暂无预警数据</p>
+        </div>
+        '''
 
     # 生成列表HTML
     rows_html = []
@@ -530,12 +559,13 @@ def _render_first_panel_content(content_parts, df=None, total=0):
         content_parts: 内容部分列表
         df: 缺陷明细DataFrame（用于计算统计数据）
         total: 缺陷总数
-    返回: (内容HTML, 进度统计HTML, 明细数据HTML, 缺陷统计HTML)
+    返回: (内容HTML, 进度统计HTML, 明细数据HTML, 缺陷统计HTML, 剩余内容HTML)
     """
     if not content_parts:
-        return '<p class="empty-content">暂无内容</p>', '', '', ''
+        return '<p class="empty-content">暂无内容</p>', '', '', '', ''
 
     import re
+    from bs4 import BeautifulSoup
 
     # 合并所有文本
     full_text = ''
@@ -543,19 +573,21 @@ def _render_first_panel_content(content_parts, df=None, total=0):
         full_text += part['text']
 
     try:
+        # 使用BeautifulSoup解析HTML
+        soup = BeautifulSoup(full_text, 'html.parser')
+
+        # 提取纯文本用于正则匹配
+        text_content = soup.get_text()
+
         # 提取测试总进度和回归总进度
-        test_progress_match = re.search(r'测试总进度[为：:]?\s*(\d+(?:\.\d+)?%)', full_text)
-        regression_progress_match = re.search(r'回归总进度[为：:]?\s*(\d+(?:\.\d+)?%)', full_text)
+        test_progress_match = re.search(r'测试总进度[为：:]?\s*(\d+(?:\.\d+)?%)', text_content)
+        regression_progress_match = re.search(r'回归总进度[为：:]?\s*(\d+(?:\.\d+)?%)', text_content)
 
         test_progress = test_progress_match.group(1) if test_progress_match else '0%'
         regression_progress = regression_progress_match.group(1) if regression_progress_match else '0%'
 
-        # 从原文中移除进度相关文字
-        clean_text = re.sub(r'[、，]?\s*测试总进度[为：:]?\s*\d+(?:\.\d+)?%', '', full_text)
-        clean_text = re.sub(r'[、，]?\s*回归总进度[为：:]?\s*\d+(?:\.\d+)?%', '', clean_text)
-
         # 提取本周新增缺陷总数
-        defect_total_match = re.search(r'本周新增缺陷总数(\d+)个', clean_text)
+        defect_total_match = re.search(r'本周新增缺陷总数(\d+)个', text_content)
         defect_total = defect_total_match.group(1) if defect_total_match else None
 
         # 提取缺陷状态统计（只提取存在的标签）
@@ -563,34 +595,125 @@ def _render_first_panel_content(content_parts, df=None, total=0):
         status_colors = COLORS['status_home']
         defect_status = {}
         for label in status_labels:
-            match = re.search(rf'{label}(\d+)个', clean_text)
+            match = re.search(rf'{label}(\d+)个', text_content)
             if match:
                 defect_status[label] = match.group(1)
 
-        # 从原文中移除缺陷统计相关文字
-        clean_text = re.sub(r'本周新增缺陷总数\d+个', '', clean_text)
-        for label in status_labels:
-            clean_text = re.sub(rf'{label}\d+个', '', clean_text)
+        # 找到缺陷统计在文本中的位置，用于分割内容
+        defect_start_pos = 0
+        defect_end_pos = 0
+        if defect_total:
+            # 找到"本周新增缺陷总数"的位置
+            defect_start_match = re.search(r'本周新增缺陷总数\d+个', text_content)
+            if defect_start_match:
+                defect_start_pos = defect_start_match.start()
+
+            # 找到最后一个状态标签的位置
+            for label in status_labels:
+                match = re.search(rf'{label}\d+个', text_content)
+                if match:
+                    defect_end_pos = max(defect_end_pos, match.end())
+
+        # 分割纯文本：缺陷统计之前和之后
+        before_defect_text = text_content[:defect_start_pos] if defect_start_pos > 0 else text_content
+        after_defect_text = text_content[defect_end_pos:] if defect_end_pos > 0 else ''
+
+        # 移除进度相关文字
+        before_defect_text = re.sub(r'[、，]?\s*测试总进度[为：:]?\s*\d+(?:\.\d+)?%', '', before_defect_text)
+        before_defect_text = re.sub(r'[、，]?\s*回归总进度[为：:]?\s*\d+(?:\.\d+)?%', '', before_defect_text)
 
         # 清理多余标点符号
-        clean_text = re.sub(r'[，。]+$', '', clean_text.strip())
-        clean_text = re.sub(r'^[，。]+', '', clean_text)
+        before_defect_text = re.sub(r'[，。]+$', '', before_defect_text.strip())
+        before_defect_text = re.sub(r'^[，。]+', '', before_defect_text)
+        after_defect_text = re.sub(r'^[，。、\s]+', '', after_defect_text.strip())
+        after_defect_text = re.sub(r'[，。]+$', '', after_defect_text)
 
-        # 将[xxx]格式替换为标签，并清理顿号、逗号、句号
-        def replace_badge(match):
-            return f'<span class="badge">{match.group(1)}</span>'
+        # 渲染缺陷统计之前的内容（使用原始HTML元素）
+        content_html = ''
+        found_defect_start = False
 
-        clean_text = re.sub(r'\[([^\]]+)\][、，。]?', replace_badge, clean_text)
+        for element in soup.find_all(['p', 'div']):
+            element_text = element.get_text(strip=True)
 
-        # 按换行分割
-        lines = clean_text.split('\n')
-        lines_html = []
-        for line in lines:
-            line = line.strip()
-            if line:
-                lines_html.append(f'<p>{line}</p>')
+            # 跳过空元素
+            if not element_text or not element_text.strip():
+                continue
 
-        content_html = '\n'.join(lines_html) if lines_html else ''
+            # 检查是否包含缺陷统计开始标记
+            if defect_total and '本周新增缺陷总数' in element_text:
+                found_defect_start = True
+                # 提取缺陷统计之前的内容（如果有）
+                before_text = element_text.split('本周新增缺陷总数')[0].strip()
+                if before_text:
+                    # 移除进度相关文字
+                    before_text = re.sub(r'[、，]?\s*测试总进度[为：:]?\s*\d+(?:\.\d+)?%', '', before_text)
+                    before_text = re.sub(r'[、，]?\s*回归总进度[为：:]?\s*\d+(?:\.\d+)?%', '', before_text)
+                    before_text = re.sub(r'[，。]+$', '', before_text.strip())
+                    # 替换[xxx]为标签
+                    before_text = re.sub(r'\[([^\]]+)\][、，。]?', lambda m: f'<span class="badge">{m.group(1)}</span>', before_text)
+                    if before_text.strip():
+                        content_html += f'<p>{before_text}</p>\n'
+                break  # 找到缺陷统计开始，停止处理
+
+            # 将[xxx]格式替换为标签
+            element_text_processed = re.sub(r'\[([^\]]+)\][、，。]?', lambda m: f'<span class="badge">{m.group(1)}</span>', element_text)
+
+            # 如果还没找到缺陷统计，添加到content_html
+            if not found_defect_start:
+                # 移除进度相关文字
+                element_text_processed = re.sub(r'[、，]?\s*测试总进度[为：:]?\s*\d+(?:\.\d+)?%', '', element_text_processed)
+                element_text_processed = re.sub(r'[、，]?\s*回归总进度[为：:]?\s*\d+(?:\.\d+)?%', '', element_text_processed)
+                element_text_processed = re.sub(r'[，。]+$', '', element_text_processed.strip())
+                if element_text_processed.strip():
+                    content_html += f'<p>{element_text_processed}</p>\n'
+
+        # 渲染缺陷统计之后的内容（剩余内容）
+        remaining_html = ''
+        if defect_total and defect_end_pos > 0:
+            found_defect_end = False
+            for element in soup.find_all(['p', 'div']):
+                element_text = element.get_text(strip=True)
+
+                if not element_text:
+                    continue
+
+                # 检查是否包含缺陷状态标签（表示到达缺陷统计区域）
+                has_status = any(label in element_text for label in status_labels)
+
+                if has_status and not found_defect_end:
+                    # 找到缺陷统计结束位置后，检查是否有剩余内容
+                    # 找到最后一个状态标签在纯文本中的位置
+                    last_status_end = 0
+                    for label in status_labels:
+                        match = re.search(rf'{label}\d+个', element_text)
+                        if match:
+                            last_status_end = max(last_status_end, match.end())
+
+                    if last_status_end > 0:
+                        # 只截取缺陷统计之后的内容（纯文本）
+                        remaining_text = element_text[last_status_end:].strip()
+                        # 清理开头多余标点
+                        remaining_text = re.sub(r'^[，。、\s]+', '', remaining_text)
+                        # 替换[xxx]为标签
+                        remaining_text = re.sub(r'\[([^\]]+)\][、，。]?', lambda m: f'<span class="badge">{m.group(1)}</span>', remaining_text)
+                        if remaining_text.strip():
+                            remaining_html += f'<p>{remaining_text}</p>\n'
+                    found_defect_end = True
+                elif found_defect_end:
+                    # 缺陷统计之后的元素，保留富文本格式
+                    if element_text.strip():
+                        # 获取元素内部HTML（保留富文本格式）
+                        inner_html = element.decode_contents().strip()
+                        # 处理内部HTML：替换[xxx]为标签，清理多余标点
+                        inner_html = re.sub(r'\[([^\]]+)\][、，。]?', lambda m: f'<span class="badge">{m.group(1)}</span>', inner_html)
+                        if inner_html.strip():
+                            remaining_html += f'<p>{inner_html}</p>\n'
+
+        # 清理多余的空<p>标签
+        content_html = re.sub(r'<p>\s*</p>', '', content_html)
+        content_html = content_html.strip()
+        remaining_html = re.sub(r'<p>\s*</p>', '', remaining_html)
+        remaining_html = remaining_html.strip()
 
         # 生成进度统计卡片
         def get_progress_color(value):
@@ -672,13 +795,13 @@ def _render_first_panel_content(content_parts, df=None, total=0):
             </div>
         </div>'''
 
-        return content_html, stats_html, stats_data_html, defect_html
+        return content_html, stats_html, stats_data_html, defect_html, remaining_html
 
     except Exception as e:
         # 异常时返回原始内容
         lines = full_text.split('\n')
         lines_html = [f'<p>{line.strip()}</p>' for line in lines if line.strip()]
-        return '\n'.join(lines_html), '', '', ''
+        return '\n'.join(lines_html), '', '', '', ''
 
 
 def _process_rich_text_content(full_text, remove_first_line=False):
@@ -1165,6 +1288,10 @@ def _render_coord_items(content_parts):
 
         # 清理可能残留的未闭合标签
         content_html = _clean_html_tags(content_html)
+
+        # 清理内联的font-size样式（与页面CSS冲突）
+        content_html = re.sub(r'\s*font-size:\s*\d+(?:\.\d+)?(?:pt|px|em|rem|%|vh|vw)?;?', '', content_html, flags=re.IGNORECASE)
+        content_html = re.sub(r'style="\s*"', '', content_html)  # 清理空的style属性
 
         # 协调人员
         assignee_html = ''
@@ -1824,6 +1951,27 @@ def get_home_view_css():
         margin-left: auto;
     }
 
+    /* 剩余内容区域（缺陷统计后） */
+    .remaining-content-section {
+    }
+    .section-divider {
+        border: none;
+        border-top: 1px solid #e5e7eb;
+        margin: 16px 0 12px 0;
+    }
+    .remaining-content {
+        padding: 0 4px;
+    }
+    .remaining-content p {
+        color: #333;
+        line-height: 1.7;
+        margin-bottom: 8px;
+        font-size: 13px;
+    }
+    .remaining-content p:last-child {
+        margin-bottom: 0;
+    }
+
     /* 面板内容 */
     .panel-content p {
         color: #333;
@@ -2037,6 +2185,25 @@ def get_home_view_css():
         font-style: italic;
         text-align: center;
         padding: 20px;
+    }
+    .empty-warning {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        height: 100%;
+        min-height: 200px;
+    }
+    .empty-warning-svg {
+        width: 160px;
+        height: 128px;
+        margin-bottom: 16px;
+    }
+    .empty-warning-text {
+        color: #9ca3af;
+        font-size: 14px;
+        margin: 0;
     }
     .warning-row {
         display: flex;

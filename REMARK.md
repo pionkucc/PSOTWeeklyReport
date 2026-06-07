@@ -512,4 +512,56 @@ def _render_image_thumbnail(image_path):
 
 ---
 
-*文档版本：v3.5.1 (2026-06-01)*
+## 十一、v3.5.2 新增功能
+
+### 11.1 测试进度概览剩余内容渲染
+
+缺陷统计之后的内容单独渲染，添加分割线展示：
+
+```python
+# views/home_view.py - _render_first_panel_content
+# 分割文本：缺陷统计之前和之后
+before_defect_text = text_content[:defect_start_pos] if defect_start_pos > 0 else text_content
+after_defect_text = text_content[defect_end_pos:] if defect_end_pos > 0 else ''
+
+# 渲染剩余内容
+if remaining_html and remaining_html.strip():
+    remaining_section_html = f'''
+        <div class="remaining-content-section">
+            <hr class="section-divider" />
+            <div class="remaining-content rich-text-content">
+                {remaining_html}
+            </div>
+        </div>'''
+```
+
+### 11.2 缺陷预警缺省页
+
+暂无预警数据时显示扁平风格SVG缺省图：
+
+```python
+# views/home_view.py - _render_warning_list
+if not items:
+    return '''
+    <div class="empty-warning">
+        <svg class="empty-warning-svg" viewBox="0 0 200 160">
+            <!-- 蓝色圆形背景 + 盾牌图标 -->
+        </svg>
+        <p class="empty-warning-text">暂无预警数据</p>
+    </div>
+    '''
+```
+
+### 11.3 待协调事项font-size清理
+
+清除内联`font-size`样式，避免与页面CSS冲突：
+
+```python
+# views/home_view.py - _render_coord_items
+content_html = re.sub(r'\s*font-size:\s*\d+(?:\.\d+)?(?:pt|px|em|rem|%|vh|vw)?;?', '', content_html, flags=re.IGNORECASE)
+content_html = re.sub(r'style="\s*"', '', content_html)  # 清理空的style属性
+```
+
+---
+
+*文档版本：v3.5.2 (2026-06-08)*
