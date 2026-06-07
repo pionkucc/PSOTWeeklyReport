@@ -43,6 +43,12 @@ jobs:
           include: |
             PSOT_Weekly_Report.html
             *.xlsx
+            *.html
+            *.jpg
+            *.png
+            *.jpeg
+            *.gif
+            *.webp
 
   deploy:
     needs: build
