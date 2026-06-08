@@ -99,12 +99,10 @@ def load_panels_data():
                 # 跳过Excel公式（如 =DISPIMG(...)）
                 if not cell_val.startswith('='):
                     # 处理路径
-                    if os.path.isabs(cell_val):
-                        full_path = cell_val
-                    else:
-                        if cell_val.startswith('/'):
-                            cell_val = cell_val[1:]
-                        full_path = os.path.join(base_dir, cell_val)
+                    # 注意：Excel中以/开头的路径应视为相对于项目根目录的路径，而非绝对路径
+                    if cell_val.startswith('/'):
+                        cell_val = cell_val[1:]
+                    full_path = os.path.join(base_dir, cell_val)
                     if os.path.isfile(full_path):
                         images.append(full_path)
 
