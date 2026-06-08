@@ -1095,14 +1095,11 @@ def _render_coord_items(content_parts):
             text_stripped = text.strip()
             if text_stripped.endswith('.html') or text_stripped.endswith('.htm'):
                 # 处理路径：支持相对路径和绝对路径
-                if os.path.isabs(text_stripped):
-                    file_path = text_stripped
-                else:
-                    # 相对路径，基于Excel文件所在目录
-                    # 去掉开头的 / 或 ./
-                    if text_stripped.startswith('/'):
-                        text_stripped = text_stripped[1:]
-                    file_path = os.path.join(base_dir, text_stripped)
+                # 注意：Excel中以/开头的路径应视为相对于项目根目录的路径，而非绝对路径
+                # 去掉开头的 / 或 ./
+                if text_stripped.startswith('/'):
+                    text_stripped = text_stripped[1:]
+                file_path = os.path.join(base_dir, text_stripped)
 
                 # 判断是否是有效的文件路径
                 if os.path.isfile(file_path):
