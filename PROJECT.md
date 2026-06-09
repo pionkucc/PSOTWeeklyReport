@@ -93,7 +93,8 @@ F:\AI\Claude Code\Weekly_Report\
 │   ├── v3.4.5_modular_backup.zip # v3.4.5备份
 │   ├── v3.5_modular_backup.zip # v3.5备份
 │   ├── v3.5.1_modular_backup.zip # v3.5.1备份
-│   └── v3.5.2_modular_backup.zip # v3.5.2备份
+│   ├── v3.5.2_modular_backup.zip # v3.5.2备份
+│   └── v3.5.4_modular_backup.zip # v3.5.4备份
 ├── history_reports/             # 历史报告归档目录
 │   └── PSOT_Weekly_Report_*.html # 带日期的历史版本
 ├── 缺陷明细.xlsx                # 数据源
