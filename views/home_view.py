@@ -1038,6 +1038,10 @@ def _render_next_week_plan(content_parts):
         # 获取HTML内容（保留富文本样式）
         inner_html = element.decode_contents().strip()
 
+        # 去除行首的序号（如 1、 2、 1. 2. 等）
+        import re
+        inner_html = re.sub(r'^(\d+[、.．]\s*)', '', inner_html)
+
         # 构建计划项HTML
         items_html.append(f'''
         <div class="next-plan-item">
@@ -1048,10 +1052,13 @@ def _render_next_week_plan(content_parts):
 
     # 如果没有段落元素，按换行分割纯文本
     if not items_html:
+        import re
         lines = full_text.split('\n')
         for line in lines:
             line = line.strip()
             if line:
+                # 去除行首的序号（如 1、 2、 1. 2. 等）
+                line = re.sub(r'^(\d+[、.．]\s*)', '', line)
                 # 处理可能存在的HTML标签
                 line_soup = BeautifulSoup(line, 'html.parser')
                 inner_text = line_soup.get_text(strip=True)
