@@ -352,6 +352,7 @@ function showWarningModal(detail) {
 | 配置项 | 文件 | 默认值 | 作用 |
 |--------|------|--------|------|
 | `SHOW_STATS_DATA` | config.py | True | 主页测试进度概览中是否显示明细统计数据 |
+| `ENABLE_NEW_CONTENT_STYLE` | config.py | False | 是否启用新内容样式（识别分点序号，每点独立卡片） |
 | `OVERDUE_DAYS` | config.py | 3 | 超期天数阈值，>=此值纳入超期预警 |
 | `REWORK_THRESHOLD` | config.py | 3 | 返工次数阈值，>=此值纳入返工预警 |
 
@@ -633,4 +634,131 @@ inner_html = re.sub(r'^(\d+[、.．]\s*)', '', inner_html)
 
 ---
 
-*文档版本：v3.5.4 (2026-06-09)*
+## 十三、v3.5.5 内容样式配置
+
+### 13.1 配置开关
+
+新增`ENABLE_NEW_CONTENT_STYLE`配置项控制非特定章节的默认样式：
+
+```python
+# config.py
+ENABLE_NEW_CONTENT_STYLE = False  # 是否启用新内容样式
+# 关闭时：使用之前的白色卡片样式（整段内容在一个panel-content中）
+# 开启时：识别"1、2、"等分点序号，每点使用独立卡片样式
+```
+
+### 13.2 样式对比
+
+| 配置值 | 样式效果 | 适用场景 |
+|--------|----------|----------|
+| `False` | 白色卡片样式，整段内容在panel-content中 | 内容较少、无需分点展示 |
+| `True` | 分点卡片样式，蓝色圆形序号+浅灰背景 | 内容有分点序号，需要突出展示 |
+
+### 13.3 新样式CSS
+
+```css
+.content-item-card {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+.content-item-num {
+    width: 28px;
+    height: 28px;
+    background: #1C91FD;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.content-item-text {
+    font-size: 13px;
+    line-height: 1.7;
+    flex: 1;
+    color: #333;
+}
+```
+
+### 13.4 渲染函数
+
+新增`_render_content_lines_new_style`函数实现分点序号识别：
+
+```python
+# views/home_view.py
+def _render_content_lines_new_style(full_text, parts_with_offset):
+    """
+    新样式渲染：识别分点序号，每点独立卡片样式
+    序号格式：1、2、3、 或 1.2.3. 等
+    保留富文本样式（bold、color）
+    """
+    import re
+    
+    # 按换行分割，逐行处理
+    lines = full_text.split('\n')
+    
+    # 检查是否以序号开头（格式：数字+顿号/点号）
+    num_match = re.match(r'^(\d+)[、.．]\s*', line_text)
+    
+    if num_match:
+        # 新事项：提取序号，移除序号文本
+        current_item = {'num': num_match.group(1), 'content': line_html_clean}
+    elif current_item:
+        # 继续上一个事项（多行内容合并）
+        current_item['content'] += '\n' + line_html
+```
+
+### 13.5 序号移除优化
+
+序号可能被`<span>`标签包裹，改进移除逻辑：
+
+```python
+def _remove_leading_number(html_content, number_text):
+    """从HTML开头移除序号文本（保留后续富文本样式）"""
+    import re
+    
+    # 处理三种情况：
+    # 1. 序号直接在开头：1、内容
+    # 2. 序号被span包裹：<span style="...">1、</span>内容
+    # 3. 序号和内容在同一span：<span style="...">1、内容</span>
+    
+    # 先尝试移除带标签的序号
+    result = re.sub(r'^<span[^>]*>(\d+)[、.．]\s*</span>\s*', '', html_content)
+    
+    # 如果没匹配到，尝试移除span内的序号（保留后续内容）
+    if result == html_content:
+        match = re.match(r'^<span[^>]*>(\d+)[、.．]\s*(.*)</span>', html_content)
+        if match:
+            remaining_content = match.group(2)
+            result = f'<span>{remaining_content}</span>'
+        else:
+            # 最后尝试直接移除纯文本序号
+            result = re.sub(r'^(\d+)[、.．]\s*', '', html_content)
+```
+
+### 13.6 富文本颜色值修复
+
+修复颜色值处理错误，跳过无效的颜色值：
+
+```python
+# views/home_view.py - _render_line_with_styles
+if current_part['color']:
+    color = current_part['color']
+    # 确保颜色值是有效的字符串（跳过无效的颜色值）
+    if isinstance(color, str) and color and not color.startswith('Values'):
+        if len(color) == 8:
+            color = color[2:]  # 去掉ARGB的Alpha通道
+        if color and len(color) >= 6:
+            style += f'color: #{color};'
+```
+
+---
+
+*文档版本：v3.5.5 (2026-06-10)*

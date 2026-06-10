@@ -94,7 +94,8 @@ F:\AI\Claude Code\Weekly_Report\
 │   ├── v3.5_modular_backup.zip # v3.5备份
 │   ├── v3.5.1_modular_backup.zip # v3.5.1备份
 │   ├── v3.5.2_modular_backup.zip # v3.5.2备份
-│   └── v3.5.4_modular_backup.zip # v3.5.4备份
+│   ├── v3.5.4_modular_backup.zip # v3.5.4备份
+│   └── v3.5.5_modular_backup.zip # v3.5.5备份
 ├── history_reports/             # 历史报告归档目录
 │   └── PSOT_Weekly_Report_*.html # 带日期的历史版本
 ├── 缺陷明细.xlsx                # 数据源
@@ -119,6 +120,7 @@ F:\AI\Claude Code\Weekly_Report\
 | `OVERDUE_DAYS` | int | 缺陷超期天数阈值，默认3 |
 | `REWORK_THRESHOLD` | int | 返工次数阈值，默认3 |
 | `SHOW_STATS_DATA` | bool | 是否显示明细统计数据，默认True |
+| `ENABLE_NEW_CONTENT_STYLE` | bool | 是否启用新内容样式，默认False |
 
 **SUBTITLE支持格式**：
 - `"2026-05-18 ~ 2026-05-22"`
