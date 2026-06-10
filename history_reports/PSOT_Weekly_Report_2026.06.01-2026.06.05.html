@@ -994,6 +994,45 @@
     .image-modal-close:hover {
         transform: rotate(90deg);
     }
+
+    /* 新内容样式：分点卡片 */
+    .content-item-card {
+        display: flex;
+        gap: 12px;
+        padding: 14px 16px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    .content-item-num {
+        width: 28px;
+        height: 28px;
+        background: #1C91FD;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .content-item-text {
+        font-size: 13px;
+        line-height: 1.7;
+        flex: 1;
+        color: #333;
+    }
+    .content-item-text p {
+        margin: 0;
+    }
+    .content-plain-paragraph {
+        color: #333;
+        line-height: 1.8;
+        margin-bottom: 12px;
+        font-size: 14px;
+    }
     
         .view-switch { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; }
         .view-btn { padding: 10px 20px; border-radius: 25px; border: 2px solid transparent; background: rgba(145, 202, 255, 0.5); color: #ffffff; font-family: 'Microsoft YaHei'; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(22,119,255,0.1); display: inline-flex; align-items: center; }
@@ -1127,7 +1166,7 @@
         <div class="warning-row" data-detail='{"登记时间": "2026-06-01 ~ 2026-06-05", "任务分类": "迭代十三", "关联任务项": "历史问题/关联影响", "缺陷编号": "NL-B-174230", "产品线": "福州研究院/业务中台/产品标准化运营工具", "产品模块": "研效工具库/产品需求列表", "缺陷状态": "New", "缺陷摘要": "【属性库】属性克隆带出的克隆属性信息不完整", "优先级": "高", "登记人": "邱钰洁", "处理人员": "刘陈明", "登记时间.1": "2026-06-05 14:43:00", "修复时间": "-", "关闭时间": "-", "发现阶段": "4.1-回归测试【基本流】", "引入阶段": "-", "引入原因": "-", "缺陷来源": "研发过程", "返工次数": 0, "严重程度": "一般", "缺陷类型": "5-数据丢失或错误", "缺陷修复周期(天)": "/", "缺陷关闭周期(天)": "/"}'>
             <span class="warning-dot"></span>
             <span class="warning-text">NL-B-174230 <span class="handler-tag">刘陈明</span> 【属性库】属性克隆带出的克隆属性信息不完整</span>
-            <span class="warning-tag">超期3天</span>
+            <span class="warning-tag">超期5天</span>
         </div>
         
                     </div>
@@ -1284,6 +1323,63 @@
 
         <div class="panel-wrapper">
             <div class="panel-section-title">
+                <span class="section-title-text">AI成效</span>
+            </div>
+            <div class="panel-card">
+                <div class="panel-content">
+                    <p>1、如下表：</p>
+<p><table></p>
+<p><tbody></p>
+<p><tr></p>
+<p><td width="59">序号</td></p>
+<p><td width="129">中心</td></p>
+<p><td width="148">团队或个人</td></p>
+<p><td width="156">工具名称</td></p>
+<p><td width="300">Git路径</td></p>
+<p><td width="253">工具用途</td></p>
+<p></tr></p>
+<p><tr></p>
+<p><td width="59">1</td></p>
+<p><td width="129">BDTC</td></p>
+<p><td width="148">林燊</td></p>
+<p><td width="156">FPA快速截图工具</td></p>
+<p><td width="300">无git，cvs路径QualityManage\work\TEST\BASS组\专题培训\AI课题研究\AI小工具\FAP截图工具</td></p>
+<p><td width="253">可根据FPA文档快速生成测试截图文档，使用快捷键进行截图自动插入对应模块，可以直接查看FPA文件；可将execl测试报告转换为对应格式的word测试报告</td></p>
+<p></tr></p>
+<p><tr></p>
+<p><td width="59">2</td></p>
+<p><td width="129">GMTC</td></p>
+<p><td width="148">管志敏</td></p>
+<p><td width="156">宽带业务工具</td></p>
+<p><td width="300">http://10.1.0.163:7080/QM/CRMTC/stored-procedure-generated-data</td></p>
+<p><td width="253">宽带账号生成与 Oracle 数据查询的一体化 Web 应用</td></p>
+<p></tr></p>
+<p><tr></p>
+<p><td width="59">3</td></p>
+<p><td width="129">PBTC</td></p>
+<p><td width="148">邱钰洁</td></p>
+<p><td width="156">POST质量周报生成器</td></p>
+<p><td width="300">&nbsp;</td></p>
+<p><td width="253">一款面向产标项目的缺陷质量分析可视化报告生成工具。读取Excel缺陷数据，自动生成交互式HTML周报，包含多维度图表、缺陷预警、三视图切换等功能，可通过在线访问，进行日常任务跟踪和质量反馈。</td></p>
+<p></tr></p>
+<p><tr></p>
+<p><td width="59">4</td></p>
+<p><td width="129">BDTC</td></p>
+<p><td width="148">廖艺棋</td></p>
+<p><td width="156">AI test 平台</td></p>
+<p><td width="300">http://10.1.0.163:7080/QM/BDTC/AI-Intelligent-Test-Production/-/tree/aiagent_test_upload?ref_type=heads</td></p>
+<p><td width="253">一个AI test 测试平台 ，利用大语言模型（LLM）和 RAG 技术实现从需求分析、测试用例生成、Playwright 自动化脚本生成到测试执行与结果分析的全流程智能化测试自动化。</td></p>
+<p></tr></p>
+<p></tbody></p>
+<p></table></p>
+                </div>
+                
+            </div>
+        </div>
+        
+
+        <div class="panel-wrapper">
+            <div class="panel-section-title">
                 <span class="section-title-text">下周测试计划</span>
             </div>
             <div class="panel-card">
@@ -1291,13 +1387,13 @@
                     
                     <div class="next-plan-item">
                         <div class="next-plan-icon"><svg viewBox="0 0 25 25" style="width:25px;height:25px;fill:#1C91FD;"><circle cx="12" cy="12" r="12"></circle><circle cx="12" cy="12" r="6" fill="#fff"></circle><circle cx="12" cy="12" r="0" fill="#1C91FD"></circle></svg></div>
-                        <div class="next-plan-text">1、迭代十三上线内容推送到po（已完成）、生产环境。</div>
+                        <div class="next-plan-text">迭代十三上线内容推送到po（已完成）、生产环境。</div>
                     </div>
                     
 
                     <div class="next-plan-item">
                         <div class="next-plan-icon"><svg viewBox="0 0 25 25" style="width:25px;height:25px;fill:#1C91FD;"><circle cx="12" cy="12" r="12"></circle><circle cx="12" cy="12" r="6" fill="#fff"></circle><circle cx="12" cy="12" r="0" fill="#1C91FD"></circle></svg></div>
-                        <div class="next-plan-text">2、进入迭代十四的功能测试。</div>
+                        <div class="next-plan-text">进入迭代十四的功能测试。</div>
                     </div>
                     
                 </div>

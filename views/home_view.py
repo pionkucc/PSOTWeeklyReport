@@ -5,7 +5,7 @@
 
 import json
 import pandas as pd
-from config import PANEL_HEADER_COLOR, COLORS, SHOW_STATS_DATA
+from config import PANEL_HEADER_COLOR, COLORS, SHOW_STATS_DATA, ENABLE_NEW_CONTENT_STYLE
 
 
 def create_home_view_html(panels_data, sheet2_data=None, warning_data=None, df=None, total=0):
@@ -1472,6 +1472,7 @@ def _split_by_dash(html_content):
 def _render_content_lines(content_parts):
     """
     渲染内容，按换行符分割成多行，保留富文本样式
+    支持新样式模式：识别"1、2、"等分点序号，每点独立卡片样式
     """
     if not content_parts:
         return '<p class="empty-content">暂无内容</p>'
@@ -1491,7 +1492,11 @@ def _render_content_lines(content_parts):
             'color': part['color']
         })
 
-    # 按换行符分割
+    # 检查是否启用新样式
+    if ENABLE_NEW_CONTENT_STYLE:
+        return _render_content_lines_new_style(full_text, parts_with_offset)
+
+    # 按换行符分割（旧样式）
     lines = full_text.split('\n')
 
     lines_html = []
@@ -1510,6 +1515,133 @@ def _render_content_lines(content_parts):
         current_offset = line_end + 1  # +1 是换行符
 
     return '\n'.join(lines_html) if lines_html else '<p class="empty-content">暂无内容</p>'
+
+
+def _render_content_lines_new_style(full_text, parts_with_offset):
+    """
+    新样式渲染：识别分点序号，每点独立卡片样式
+    序号格式：1、2、3、 或 1.2.3. 等
+    保留富文本样式（bold、color）
+    """
+    import re
+
+    if not full_text.strip():
+        return '<p class="empty-content">暂无内容</p>'
+
+    # 按换行分割，逐行处理
+    lines = full_text.split('\n')
+
+    # 收集所有内容项
+    items = []
+    current_item = None
+    current_offset = 0
+
+    for line in lines:
+        line_len = len(line)
+        line_text = line.strip()
+
+        if not line_text:
+            current_offset += line_len + 1
+            continue
+
+        # 检查是否以序号开头（格式：数字+顿号/点号）
+        num_match = re.match(r'^(\d+)[、.．]\s*', line_text)
+
+        # 渲染这一行的富文本样式
+        line_html = _render_line_with_styles(line, current_offset, parts_with_offset)
+        # 移除可能的<p>标签包裹（因为我们会用卡片样式）
+        line_html = re.sub(r'^<p>|</p>$', '', line_html).strip()
+
+        if num_match:
+            # 保存上一个事项
+            if current_item:
+                items.append(current_item)
+
+            # 新事项：提取序号
+            num_text = num_match.group(0)
+            # 移除序号部分（从渲染后的HTML中）
+            # 序号可能在富文本开头，需要精确移除
+            line_html_clean = _remove_leading_number(line_html, num_text)
+
+            current_item = {
+                'num': num_match.group(1),
+                'content': line_html_clean
+            }
+        elif current_item:
+            # 继续上一个事项（多行内容合并）
+            current_item['content'] += '\n' + line_html
+        else:
+            # 没有序号的内容，作为独立段落（使用旧样式）
+            if line_html.strip():
+                items.append({
+                    'num': None,
+                    'content': f'<p>{line_html}</p>'
+                })
+
+        current_offset += line_len + 1
+
+    # 保存最后一个事项
+    if current_item:
+        items.append(current_item)
+
+    # 如果没有识别到任何项，回退到旧样式
+    if not items:
+        lines_html = []
+        current_offset = 0
+        for line in full_text.split('\n'):
+            line_html = _render_line_with_styles(line, current_offset, parts_with_offset)
+            if line_html.strip():
+                lines_html.append(line_html)
+            current_offset += len(line) + 1
+        return '\n'.join(lines_html) if lines_html else '<p class="empty-content">暂无内容</p>'
+
+    # 渲染新样式
+    items_html = []
+    for item in items:
+        content = item['content'].strip()
+        if not content:
+            continue
+
+        if item['num']:
+            # 带序号的项：使用卡片样式
+            items_html.append(f'''
+        <div class="content-item-card">
+            <div class="content-item-num">{item['num']}</div>
+            <div class="content-item-text">{content}</div>
+        </div>''')
+        else:
+            # 无序号的项：普通段落
+            items_html.append(content)
+
+    return '\n'.join(items_html) if items_html else '<p class="empty-content">暂无内容</p>'
+
+
+def _remove_leading_number(html_content, number_text):
+    """从HTML开头移除序号文本（保留后续富文本样式）"""
+    import re
+
+    # 移除开头的序号文本（可能被<span>标签包裹）
+    # 序号格式如 "1、" 或 "1." 或 "1．"
+    # 处理三种情况：
+    # 1. 序号直接在开头：1、内容
+    # 2. 序号被span包裹：<span style="...">1、</span>内容
+    # 3. 序号和内容在同一span：<span style="...">1、内容</span>
+
+    # 先尝试移除带标签的序号
+    result = re.sub(r'^<span[^>]*>(\d+)[、.．]\s*</span>\s*', '', html_content)
+
+    # 如果没匹配到，尝试移除span内的序号（保留后续内容）
+    if result == html_content:
+        # 匹配 <span...>数字、后续内容，只移除数字、部分
+        match = re.match(r'^<span[^>]*>(\d+)[、.．]\s*(.*)</span>', html_content)
+        if match:
+            remaining_content = match.group(2)
+            result = f'<span>{remaining_content}</span>'
+        else:
+            # 最后尝试直接移除纯文本序号
+            result = re.sub(r'^(\d+)[、.．]\s*', '', html_content)
+
+    return result.strip()
 
 
 def _render_line_with_styles(line, line_start, parts_with_offset):
@@ -1551,9 +1683,12 @@ def _render_line_with_styles(line, line_start, parts_with_offset):
             if current_part['color']:
                 # 处理ARGB格式（去掉前两位Alpha）
                 color = current_part['color']
-                if len(color) == 8:
-                    color = color[2:]  # 去掉ARGB的Alpha通道
-                style += f'color: #{color};'
+                # 确保颜色值是有效的字符串（跳过无效的颜色值）
+                if isinstance(color, str) and color and not color.startswith('Values'):
+                    if len(color) == 8:
+                        color = color[2:]  # 去掉ARGB的Alpha通道
+                    if color and len(color) >= 6:
+                        style += f'color: #{color};'
 
             if style:
                 result.append(f'<span style="{style}">{run_text}</span>')
@@ -2489,6 +2624,45 @@ def get_home_view_css():
     }
     .image-modal-close:hover {
         transform: rotate(90deg);
+    }
+
+    /* 新内容样式：分点卡片 */
+    .content-item-card {
+        display: flex;
+        gap: 12px;
+        padding: 14px 16px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    .content-item-num {
+        width: 28px;
+        height: 28px;
+        background: #1C91FD;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .content-item-text {
+        font-size: 13px;
+        line-height: 1.7;
+        flex: 1;
+        color: #333;
+    }
+    .content-item-text p {
+        margin: 0;
+    }
+    .content-plain-paragraph {
+        color: #333;
+        line-height: 1.8;
+        margin-bottom: 12px;
+        font-size: 14px;
     }
     '''
 

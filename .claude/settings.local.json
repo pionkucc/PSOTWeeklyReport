@@ -76,7 +76,15 @@
       "Bash(git checkout *)",
       "Bash(git restore *)",
       "Bash(powershell -Command \"Compress-Archive -Path 'defect_quality_report.py','config.py','data_processor.py','requirements.txt','.gitignore','auto_push.py','views','templates','.github' -DestinationPath 'versions/v3.4.2_modular_backup.zip' -Force\")",
-      "Bash(dir *.html /b)"
+      "Bash(dir *.html /b)",
+      "Bash(git ls-files *)",
+      "WebFetch(domain:pionkucc.github.io)",
+      "Bash(gh api *)",
+      "Bash(grep -E \"\\\\.\\(html|jpg|png\\)$\")",
+      "Bash(grep -E \"\\\\.\\(jpg|png|html\\)$\")",
+      "Bash(git check-ignore *)",
+      "Bash(git ls-tree *)",
+      "Bash(zip -r versions/v3.5.5_modular_backup.zip defect_quality_report.py config.py data_processor.py colors.py templates/__init__.py templates/html_template.py views/__init__.py views/home_view.py views/chart_views.py views/detail_view.py auto_push.py -x \"*.pyc\" \"__pycache__/*\")"
     ]
   }
 }
