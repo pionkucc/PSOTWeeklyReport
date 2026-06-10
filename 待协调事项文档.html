@@ -3,7 +3,7 @@
 <p style="padding-left: 40px;">1）<strong>运营指标 - 前置取数</strong> -- <span style="color: #fc0101;">规则<strong>未开发 </strong></span></p>
 <p style="padding-left: 40px;">2）<strong>所有</strong>同步接口 <strong>opType:DELETE</strong> -- <span style="color: #fc0101;">删除</span>的场景<span style="color: #fc0101;"><strong>未验证</strong></span>。</p>
 <p style="padding-left: 40px;">3）<strong>规则BPMN大图</strong>和<strong>规则yaml</strong>因测试/回归环境<strong>获取不到文件数据</strong><span style="color: #fc0101;">（网络问题无法进入对象存储）</span> --规则到产标的数据同步的<span style="color: #fc0101;"><strong>可用性</strong></span>还需<span style="color: #fc0101;"><strong>产标SA、PO等进一步确认</strong></span></p>
-<table style="border-collapse: collapse; width: 94.8929%; background-color: #F0F4F8; border-color: #7e8c8d; border-style: solid; height: 286px;" border="1">
+<table border="1">
 <tbody>
 <tr style="height: 44px; background-color:#E3F2FD;font-weight:bold; ">
 <td style="width: 15.7074%; height: 44px;" width="232">产标-业务对象</td>
@@ -96,13 +96,31 @@
 <p>3、<strong>回归环境</strong>动作库中台动作的<strong>反向数据<span style="color: #fc0101; background-color: #ffe9e8;">未同步</span><span style="color: #fc0101;">。</span></strong><strong><span style="color: #fc0101;">&mdash;&mdash;请 PM 及时跟进。</span></strong></p>
 <p>4、局测、回归环境涉及<span style="color: #fc0101;">多个复用、修改、保存</span>等<span style="color: #fc0101;"><strong><span style="background-color: #ffe9e8;">接口耗时长、响应慢</span>等性能问题</strong></span>，请开发及时<span style="color: #fc0101;"><strong>优化</strong></span>。<strong><span style="color: #fc0101;">&mdash;&mdash;请 PM 及时跟进。</span></strong></p>
 <style>
-  th {
-    font-weight: bold; /* 加粗 */
-    text-align: center; /* 水平居中 */
-    vertical-align: middle; /* 垂直居中 */
-  }
-  td {
-    text-align: center;
-    vertical-align: middle;
-  }
+/* 表格整体边框 */
+table {
+  border-collapse: collapse;
+}
+table, td {
+  border: 1px solid #ccc; /* 原文 border=1 标准边框 */
+}
+
+/* 表头行样式（蓝色背景+加粗） */
+tr:first-child {
+  height: 44px;
+  background-color: #E3F2FD;
+  font-weight: bold;
+}
+
+/* 单元格通用居中 */
+td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* 表头文字样式 */
+th {
+  font-weight: bold;
+  text-align: center;
+  vertical-align: middle;
+}
 </style>

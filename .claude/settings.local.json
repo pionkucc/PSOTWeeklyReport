@@ -84,7 +84,8 @@
       "Bash(grep -E \"\\\\.\\(jpg|png|html\\)$\")",
       "Bash(git check-ignore *)",
       "Bash(git ls-tree *)",
-      "Bash(zip -r versions/v3.5.5_modular_backup.zip defect_quality_report.py config.py data_processor.py colors.py templates/__init__.py templates/html_template.py views/__init__.py views/home_view.py views/chart_views.py views/detail_view.py auto_push.py -x \"*.pyc\" \"__pycache__/*\")"
+      "Bash(zip -r versions/v3.5.5_modular_backup.zip defect_quality_report.py config.py data_processor.py colors.py templates/__init__.py templates/html_template.py views/__init__.py views/home_view.py views/chart_views.py views/detail_view.py auto_push.py -x \"*.pyc\" \"__pycache__/*\")",
+      "Bash(ping *)"
     ]
   }
 }
